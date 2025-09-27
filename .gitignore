@@ -1,0 +1,311 @@
+# =============================================================================
+# ASTERIXCodec - .gitignore
+# =============================================================================
+
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+bin/
+lib/
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!cmake/*.cmake
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# =============================================================================
+# IDE and Editor files
+# =============================================================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# CLion
+.idea/
+cmake-build-*/
+
+# Qt Creator
+CMakeLists.txt.user*
+
+# Code::Blocks
+*.cbp
+*.layout
+*.depend
+
+# Dev-C++
+*.dev
+
+# Eclipse CDT
+.cproject
+.project
+.settings/
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# Documentation
+# =============================================================================
+
+# Doxygen output
+docs/html/
+docs/latex/
+docs/rtf/
+docs/man/
+docs/xml/
+Doxyfile
+
+# =============================================================================
+# Testing and Coverage
+# =============================================================================
+
+# Google Test
+gtest/
+googletest/
+
+# Coverage reports
+*.gcov
+*.gcda
+*.gcno
+coverage/
+coverage.info
+*.coverage
+htmlcov/
+
+# Valgrind
+*.valgrind
+callgrind.out.*
+massif.out.*
+
+# =============================================================================
+# Package Management
+# =============================================================================
+
+# Conan
+conanfile.txt.template
+conanbuildinfo.*
+conan.lock
+graph_info.json
+
+# vcpkg
+vcpkg_installed/
+.vcpkg-root
+
+# Hunter
+_builds/
+
+# =============================================================================
+# System files
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# Project specific
+# =============================================================================
+
+# Log files
+*.log
+logs/
+
+# Test data (if sensitive)
+# Uncomment if test data contains sensitive information
+# test_data/
+# sample_data/
+
+# Benchmark results
+benchmark_results/
+*.benchmark
+
+# Performance profiling
+*.perf
+perf.data*
+*.prof
+
+# Generated files
+generated/
+output/
+exports/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.bak
+*.backup
+
+# Configuration files with secrets
+config_local.*
+.env
+.env.local
+
+# =============================================================================
+# Archives and packages
+# =============================================================================
+
+# Compressed files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Packages
+*.deb
+*.rpm
+*.pkg
+*.msi
+
+# =============================================================================
+# Cache and runtime
+# =============================================================================
+
+# Cache directories
+.cache/
+cache/
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# =============================================================================
+# Custom rules for ASTERIXCodec
+# =============================================================================
+
+# Example configuration files (keep templates)
+data/config_example.xml
+!data/asterix_categories/
+
+# Output files from examples
+output.json
+decoded_messages.json
+statistics.txt
+
+# Large test files
+*.ast
+*.asterix
+large_test_files/
+
+# Profiling and debugging
+*.gprof
+core
+core.*
+vgcore.*
+
+# Clang tools
+compile_commands.json
+.clangd/
+.clang-format
+.clang-tidy
