@@ -300,8 +300,6 @@ large_test_files/
 
 # Profiling and debugging
 *.gprof
-core
-core.*
 vgcore.*
 
 # Clang tools
