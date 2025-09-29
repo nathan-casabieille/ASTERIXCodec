@@ -3,6 +3,7 @@
 #include "asterix/utils/byte_buffer.hpp"
 #include <cstdint>
 #include <cstddef>
+#include <cstring>
 
 namespace asterix {
 

@@ -21,7 +21,7 @@ namespace asterix {
  */
 class FieldValue {
 private:
-    std::variant
+    std::variant<
         std::uint64_t,              // unsigned
         std::int64_t,               // signed  
         bool,                       // boolean

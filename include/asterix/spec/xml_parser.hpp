@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 // Forward declarations pour éviter les dépendances circulaires
 namespace tinyxml2 {
