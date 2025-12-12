@@ -141,42 +141,19 @@ int main(int argc, char* argv[]) {
         AsterixDecoder decoder(cat002);
         std::cout << "✓ Decoder initialized\n";
         
-        // 3. Exemples de messages CAT002 à décoder
+        // 3. Messages CAT002 à décoder
         
-        // Message 1: North Marker (simple example)
-        // CAT=002, LEN=10, UAP with I002/000, I002/010, I002/020
-        std::string msg1 = "02 00 0A E0 01 12 34 05";
+        // Message 1
+        std::string msg1 = "02 00 0C F4 08 11 02 E0 22 05 39 60";
         // Breakdown:
         // 02: Category 002
-        // 00 0A: Length = 10 bytes
-        // E0: UAP byte (bits 8,7,6 set = I002/000, I002/010, I002/020 present)
-        // 01: I002/000 = North Marker (0x01)
-        // 12 34: I002/010 = SAC=0x12, SIC=0x34
-        // 05: I002/020 = Sector Number = 5
+        // 00 0C: Length = 12 bytes
+        // F4: UAP byte (bits 8,7,6,5,3 set)
+        // Remaining bytes: data items
         
-        decodeAndPrintMessage(decoder, msg1, "Test Message 1: North Marker");
+        decodeAndPrintMessage(decoder, msg1, "Test Message 1");
         
-        // Message 2: Sector Crossing (with Time of Day)
-        // CAT=002, LEN=13, UAP with I002/000, I002/010, I002/020, I002/030
-        std::string msg2 = "02 00 0D F0 02 FF EE 08 12 34 56";
-        // Breakdown:
-        // 02: Category 002
-        // 00 0D: Length = 13 bytes
-        // F0: UAP byte (bits 8,7,6,5 set)
-        // 02: I002/000 = Sector Crossing (0x02)
-        // FF EE: I002/010 = SAC=0xFF, SIC=0xEE
-        // 08: I002/020 = Sector Number = 8
-        // 12 34 56: I002/030 = Time of Day (3 bytes)
-        
-        decodeAndPrintMessage(decoder, msg2, "Test Message 2: Sector Crossing with Time");
-        
-        // Message 3: Test avec données invalides (pour tester la gestion d'erreur)
-        std::string msg3_invalid = "02 00 05 E0";
-        // Ce message est trop court
-        
-        decodeAndPrintMessage(decoder, msg3_invalid, "Test Message 3: Invalid Message (too short)");
-        
-        // Message 4: Message avec données utilisateur (si disponible)
+        // Message utilisateur si fourni
         if (argc > 2) {
             std::string custom_msg = argv[2];
             decodeAndPrintMessage(decoder, custom_msg, "Custom Message from Command Line");
@@ -188,7 +165,7 @@ int main(int argc, char* argv[]) {
         std::cout << "  spec_file.xml : Path to CAT002 XML specification (default: specs/cat002_v1.1.xml)\n";
         std::cout << "  hex_message   : Hexadecimal message to decode\n";
         std::cout << "\nExample:\n";
-        std::cout << "  " << argv[0] << " specs/cat002_v1.1.xml \"02 00 0A E0 01 12 34 05\"\n\n";
+        std::cout << "  " << argv[0] << " specs/cat002_v1.1.xml \"02 00 0C F4 08 11 02 E0 22 05 39 60\"\n\n";
         
         return 0;
         

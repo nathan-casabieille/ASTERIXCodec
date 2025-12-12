@@ -91,12 +91,12 @@ UapSpec XmlParser::parseUap(const tinyxml2::XMLElement* uap_element) {
         std::uint8_t bit_position = parseBitPosition(bit_str);
         
         // Vérifier que la position de bit est valide (1-7, bit 1 est réservé pour FX)
-        if (bit_position < 2 || bit_position > 7) {
+        if (bit_position < 2 || bit_position > 8) {
             throwParsingError("UAP parsing", 
                 "Invalid bit position " + bit_str + " for item " + name + 
-                ". Valid range is 2-7 (bit 1 reserved for FX)");
+                ". Valid range is 2-8 (bit 1 reserved for FX)");
         }
-        
+                
         uap_items.push_back({bit_position, name, mandatory});
     }
     
