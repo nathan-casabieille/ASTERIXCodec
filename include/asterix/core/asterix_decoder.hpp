@@ -16,8 +16,8 @@ namespace asterix {
  * Utilise une spécification AsterixCategory pour décoder des messages ASTERIX bruts.
  * Le décodeur suit le processus standard ASTERIX :
  * 1. Lire l'en-tête (CAT + LEN)
- * 2. Décoder l'UAP pour déterminer quels Data Items sont présents
- * 3. Décoder chaque Data Item selon sa spécification
+ * 2. Décoder les Data Records jusqu'à consommer toute la longueur
+ * 3. Pour chaque record : décoder l'UAP puis les Data Items
  */
 class AsterixDecoder {
 private:
@@ -33,6 +33,18 @@ private:
      */
     void decodeHeader(const ByteBuffer& buffer, std::size_t& offset,
                      CategoryNumber& out_category, std::uint16_t& out_length) const;
+    
+    /**
+     * @brief Décode un Data Record
+     * @param buffer Buffer contenant les données
+     * @param offset Position courante (sera mise à jour)
+     * @param end_offset Position maximale (fin du Data Block)
+     * @return Record décodé
+     * @throws DecodingException si le décodage échoue
+     */
+    AsterixRecord decodeRecord(const ByteBuffer& buffer, 
+                               std::size_t& offset,
+                               std::size_t end_offset) const;
     
     /**
      * @brief Décode l'UAP pour obtenir la liste des Data Items présents
@@ -82,14 +94,14 @@ public:
     /**
      * @brief Décode un message ASTERIX depuis un ByteBuffer
      * @param buffer Buffer contenant les données brutes
-     * @return Message ASTERIX décodé
+     * @return Message ASTERIX décodé (peut contenir plusieurs records)
      * @throws DecodingException si le décodage échoue
      */
     AsterixMessage decode(const ByteBuffer& buffer) const;
     
     /**
      * @brief Décode un message ASTERIX depuis une chaîne hexadécimale
-     * @param hex_data Données au format hexadécimal (ex: "02 00 0C ...")
+     * @param hex_data Données au format hexadécimal (ex: "22 00 0C ...")
      * @return Message ASTERIX décodé
      * @throws DecodingException si le décodage échoue
      */

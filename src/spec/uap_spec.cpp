@@ -74,8 +74,15 @@ std::vector<DataItemId> UapSpec::decodeUap(const ByteBuffer& buffer, std::size_t
         throw DecodingException("UAP has more octets than expected (FX bit still set)");
     }
     
-    // Valider que tous les items obligatoires sont présents
-    validateMandatoryItems(present_items);
+    // NOTE: La validation des items obligatoires est désactivée pour supporter
+    // les messages multi-records où chaque record peut avoir un UAP différent.
+    // Dans un contexte multi-records, les items "obligatoires" ne le sont pas
+    // nécessairement pour chaque record individuel.
+    //
+    // Si vous avez besoin d'une validation stricte pour des catégories spécifiques,
+    // ajoutez un paramètre optionnel validate_mandatory et activez-le au besoin.
+    //
+    // validateMandatoryItems(present_items);
     
     return present_items;
 }

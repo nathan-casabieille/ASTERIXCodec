@@ -6,22 +6,25 @@
 
 namespace asterix {
 
-const DataItem& AsterixMessage::getDataItem(const DataItemId& id) const {
+// ============================================================================
+// AsterixRecord - Implémentation
+// ============================================================================
+
+const DataItem& AsterixRecord::getDataItem(const DataItemId& id) const {
     auto it = data_items_.find(id);
     if (it == data_items_.end()) {
         throw InvalidDataException(
-            "Data Item '" + id + "' not found in ASTERIX message (Category " + 
-            std::to_string(category_) + ")"
+            "Data Item '" + id + "' not found in this record"
         );
     }
     return it->second;
 }
 
-bool AsterixMessage::hasDataItem(const DataItemId& id) const {
+bool AsterixRecord::hasDataItem(const DataItemId& id) const {
     return data_items_.find(id) != data_items_.end();
 }
 
-std::vector<DataItemId> AsterixMessage::getDataItemIds() const {
+std::vector<DataItemId> AsterixRecord::getDataItemIds() const {
     std::vector<DataItemId> ids;
     ids.reserve(data_items_.size());
     
@@ -29,45 +32,34 @@ std::vector<DataItemId> AsterixMessage::getDataItemIds() const {
         ids.push_back(id);
     }
     
-    // Trier les IDs pour avoir un ordre déterministe
     std::sort(ids.begin(), ids.end());
-    
     return ids;
 }
 
-const Field& AsterixMessage::getField(const DataItemId& item_id, 
-                                      const FieldName& field_name) const {
+const Field& AsterixRecord::getField(const DataItemId& item_id, 
+                                     const FieldName& field_name) const {
     const DataItem& item = getDataItem(item_id);
     return item.getField(field_name);
 }
 
-FieldValue AsterixMessage::getFieldValue(const DataItemId& item_id, 
-                                         const FieldName& field_name) const {
+FieldValue AsterixRecord::getFieldValue(const DataItemId& item_id, 
+                                        const FieldName& field_name) const {
     const DataItem& item = getDataItem(item_id);
     return item.getFieldValue(field_name);
 }
 
-bool AsterixMessage::hasField(const DataItemId& item_id, 
-                              const FieldName& field_name) const {
+bool AsterixRecord::hasField(const DataItemId& item_id, 
+                             const FieldName& field_name) const {
     if (!hasDataItem(item_id)) {
         return false;
     }
     return data_items_.at(item_id).hasField(field_name);
 }
 
-std::string AsterixMessage::toString() const {
+std::string AsterixRecord::toString() const {
     std::ostringstream oss;
     
-    // En-tête du message
-    oss << "=== ASTERIX Message ===\n";
-    oss << "Category: " << static_cast<int>(category_) << "\n";
-    oss << "Length: " << message_length_ << " bytes\n";
-    oss << "Data Items: " << data_items_.size() << "\n";
-    oss << "\n";
-    
-    // Afficher chaque Data Item
     if (!data_items_.empty()) {
-        // Obtenir les IDs triés pour un affichage cohérent
         auto sorted_ids = getDataItemIds();
         
         for (const auto& id : sorted_ids) {
@@ -76,21 +68,16 @@ std::string AsterixMessage::toString() const {
             oss << "\n";
         }
     } else {
-        oss << "  (no data items)\n";
+        oss << "  (empty record)\n";
     }
-    
-    oss << "======================\n";
     
     return oss.str();
 }
 
-std::string AsterixMessage::getSummary() const {
+std::string AsterixRecord::getSummary() const {
     std::ostringstream oss;
     
-    oss << "ASTERIX CAT" << std::setfill('0') << std::setw(3) 
-        << static_cast<int>(category_);
-    oss << " | Length: " << message_length_ << " bytes";
-    oss << " | Items: " << data_items_.size();
+    oss << "Items: " << data_items_.size();
     
     if (!data_items_.empty()) {
         oss << " [";
@@ -108,28 +95,106 @@ std::string AsterixMessage::getSummary() const {
     return oss.str();
 }
 
-bool AsterixMessage::validate() const {
-    // Vérifier que la catégorie est valide (0-255, déjà garanti par le type)
+// ============================================================================
+// AsterixMessage - Implémentation
+// ============================================================================
+
+const AsterixRecord& AsterixMessage::getRecord(std::size_t index) const {
+    if (index >= records_.size()) {
+        throw std::out_of_range(
+            "Record index " + std::to_string(index) + 
+            " out of range (message has " + std::to_string(records_.size()) + 
+            " records)"
+        );
+    }
+    return records_[index];
+}
+
+const AsterixRecord& AsterixMessage::getFirstRecord() const {
+    if (records_.empty()) {
+        throw InvalidDataException("Message has no records");
+    }
+    return records_[0];
+}
+
+std::string AsterixMessage::toString() const {
+    std::ostringstream oss;
     
+    // En-tête du message
+    oss << "=== ASTERIX Message ===\n";
+    oss << "Category: " << static_cast<int>(category_) << "\n";
+    oss << "Length: " << message_length_ << " bytes\n";
+    oss << "Records: " << records_.size() << "\n";
+    oss << "\n";
+    
+    // Afficher chaque Data Record
+    for (std::size_t i = 0; i < records_.size(); ++i) {
+        oss << "--- Data Record " << (i + 1) << " ---\n";
+        oss << records_[i].toString();
+        if (i < records_.size() - 1) {
+            oss << "\n";
+        }
+    }
+    
+    oss << "======================\n";
+    
+    return oss.str();
+}
+
+std::string AsterixMessage::getSummary() const {
+    std::ostringstream oss;
+    
+    oss << "ASTERIX CAT" << std::setfill('0') << std::setw(3) 
+        << static_cast<int>(category_);
+    oss << " | Length: " << message_length_ << " bytes";
+    oss << " | Records: " << records_.size();
+    
+    if (records_.size() == 1 && !records_.empty()) {
+        oss << " | " << records_[0].getSummary();
+    } else if (records_.size() > 1) {
+        // Compter le total d'items
+        std::size_t total_items = 0;
+        for (const auto& record : records_) {
+            total_items += record.getDataItemCount();
+        }
+        oss << " | Total Items: " << total_items;
+    }
+    
+    return oss.str();
+}
+
+bool AsterixMessage::validate() const {
     // Vérifier que la longueur est cohérente
-    // La longueur minimale est 3 octets (CAT + LEN)
     if (message_length_ < 3) {
         return false;
     }
     
-    // Vérifier que chaque Data Item est valide
-    for (const auto& [id, item] : data_items_) {
-        // Vérifier que le Data Item n'est pas vide (sauf pour les répétitifs avec 0 répétitions)
-        if (item.isEmpty() && !item.isRepetitive()) {
+    // Vérifier qu'il y a au moins un record
+    if (records_.empty()) {
+        return false;
+    }
+    
+    // Vérifier que chaque record est valide
+    for (const auto& record : records_) {
+        // Vérifier que le record n'est pas vide
+        if (record.isEmpty()) {
             return false;
         }
         
-        // Si c'est répétitif, vérifier que les répétitions sont cohérentes
-        if (item.isRepetitive()) {
-            for (std::size_t i = 0; i < item.getRepetitionCount(); ++i) {
-                const auto& rep = item.getRepetition(i);
-                if (rep.isEmpty()) {
-                    return false;
+        // Vérifier que chaque Data Item est valide
+        for (const auto& [id, item] : record.getAllDataItems()) {
+            // Vérifier que le Data Item n'est pas vide (sauf répétitifs avec 0 répétitions)
+            if (item.isEmpty() && !item.isRepetitive()) {
+                return false;
+            }
+            
+            // Si c'est répétitif, vérifier la cohérence
+            if (item.isRepetitive()) {
+                for (std::size_t i = 0; i < item.getRepetitionCount(); ++i) {
+                    const auto& rep = item.getRepetition(i);
+                    if (rep.isEmpty()) {
+                        return false;
+                    }
                 }
             }
         }

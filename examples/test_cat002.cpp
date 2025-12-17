@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
         // F4: UAP byte (bits 8,7,6,5,3 set)
         // Remaining bytes: data items
         
-        decodeAndPrintMessage(decoder, msg1, "Test Message 1");
+        decodeAndPrintMessage(decoder, msg1, "Test Message CAT02");
         
         // Message utilisateur si fourni
         if (argc > 2) {

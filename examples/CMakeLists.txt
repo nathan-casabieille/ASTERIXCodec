@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(asterix_cat002_test)
+project(asterix_tests)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,7 +10,7 @@ set(ASTERIX_INCLUDE_DIR "${PROJECT_ROOT}/include")
 set(ASTERIX_BUILD_DIR "${PROJECT_ROOT}/build")
 
 message(STATUS "=================================")
-message(STATUS "ASTERIX CAT002 Test Configuration")
+message(STATUS "ASTERIX Tests Configuration")
 message(STATUS "=================================")
 message(STATUS "Project root: ${PROJECT_ROOT}")
 message(STATUS "Build dir: ${ASTERIX_BUILD_DIR}")
@@ -45,27 +45,32 @@ endif()
 
 message(STATUS "✓ Found TinyXML2")
 
-# Créer l'exécutable de test
-add_executable(test_cat002 test_cat002.cpp)
+# Fonction pour créer un exécutable de test
+function(add_asterix_test target_name source_file)
+    add_executable(${target_name} ${source_file})
+    
+    target_include_directories(${target_name} PRIVATE 
+        ${ASTERIX_INCLUDE_DIR}
+        ${TINYXML2_INCLUDE_DIR}
+    )
+    
+    target_link_libraries(${target_name} PRIVATE 
+        ${ASTERIX_BUILD_DIR}/libasterix.a
+        ${TINYXML2_LIBRARY}
+    )
+    
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4)
+    else()
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+    
+    message(STATUS "✓ Added test target: ${target_name}")
+endfunction()
 
-# Inclure les headers
-target_include_directories(test_cat002 PRIVATE 
-    ${ASTERIX_INCLUDE_DIR}
-    ${TINYXML2_INCLUDE_DIR}
-)
-
-# Lier les bibliothèques
-target_link_libraries(test_cat002 PRIVATE 
-    ${ASTERIX_BUILD_DIR}/libasterix.a
-    ${TINYXML2_LIBRARY}
-)
-
-# Options de compilation
-if(MSVC)
-    target_compile_options(test_cat002 PRIVATE /W4)
-else()
-    target_compile_options(test_cat002 PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+# Créer les exécutables de test
+add_asterix_test(test_cat002 test_cat002.cpp)
+add_asterix_test(test_cat034 test_cat034.cpp)
 
 message(STATUS "=================================")
 message(STATUS "Configuration Summary:")
@@ -73,4 +78,5 @@ message(STATUS "  ASTERIX include: ${ASTERIX_INCLUDE_DIR}")
 message(STATUS "  ASTERIX lib:     ${ASTERIX_BUILD_DIR}/libasterix.a")
 message(STATUS "  TinyXML2 inc:    ${TINYXML2_INCLUDE_DIR}")
 message(STATUS "  TinyXML2 lib:    ${TINYXML2_LIBRARY}")
+message(STATUS "  Targets:         test_cat002, test_cat034")
 message(STATUS "=================================")

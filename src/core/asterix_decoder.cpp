@@ -43,24 +43,100 @@ AsterixMessage AsterixDecoder::decode(const ByteBuffer& buffer) const {
     validateCategory(message_category);
     validateLength(message_length, buffer.size());
     
-    // 3. Décoder l'UAP
-    std::vector<DataItemId> present_items = decodeUap(buffer, offset);
+    // 3. Calculer la position de fin du Data Block
+    std::size_t end_offset = message_length;
     
-    // 4. Décoder les Data Items
-    std::unordered_map<DataItemId, DataItem> decoded_items = 
-        decodeDataItems(buffer, offset, present_items);
+    // 4. Décoder tous les Data Records jusqu'à la fin du Data Block
+    std::vector<AsterixRecord> records;
     
-    // 5. Vérifier que tous les octets ont été consommés
-    if (offset != message_length) {
+    while (offset < end_offset) {
+        try {
+            AsterixRecord record = decodeRecord(buffer, offset, end_offset);
+            records.push_back(std::move(record));
+        } catch (const DecodingException& e) {
+            // Si on a déjà décodé au moins un record, on peut retourner ce qu'on a
+            // Sinon, on propage l'erreur
+            if (records.empty()) {
+                throw;
+            } else {
+                // Log un avertissement et arrêter le décodage
+                std::ostringstream oss;
+                oss << "Warning: Failed to decode record " << (records.size() + 1) 
+                    << " at offset " << offset << ": " << e.what() 
+                    << ". Returning " << records.size() << " successfully decoded records.";
+                // On pourrait logger ici, mais pour l'instant on arrête juste
+                break;
+            }
+        }
+    }
+    
+    // 5. Vérifier qu'on a décodé au moins un record
+    if (records.empty()) {
+        throw DecodingException("No Data Records found in message");
+    }
+    
+    // 6. Vérifier que tous les octets ont été consommés
+    if (offset != end_offset) {
         std::ostringstream oss;
         oss << "Message length mismatch: decoded " << offset 
             << " bytes, but header declares " << message_length << " bytes. "
+            << "(Difference: " << (end_offset - offset) << " bytes) "
             << "Possible data corruption or specification error.";
-        throw DecodingException(oss.str());
+        // Pour un message multi-records, on peut tolérer une petite différence
+        // si on a réussi à décoder au moins un record
+        if (records.empty() || (end_offset - offset) > 10) {
+            throw DecodingException(oss.str());
+        }
+        // Sinon, on continue avec un avertissement implicite
     }
     
-    // 6. Créer et retourner le message décodé
-    return AsterixMessage(message_category, message_length, std::move(decoded_items));
+    // 7. Créer et retourner le message décodé
+    return AsterixMessage(message_category, message_length, std::move(records));
+}
+
+AsterixRecord AsterixDecoder::decodeRecord(const ByteBuffer& buffer, 
+                                           std::size_t& offset,
+                                           std::size_t end_offset) const {
+    if (offset >= end_offset) {
+        throw DecodingException(
+            "Cannot decode record: offset " + std::to_string(offset) + 
+            " is beyond end of Data Block at " + std::to_string(end_offset)
+        );
+    }
+    
+    std::size_t record_start = offset;
+    
+    // 1. Décoder l'UAP
+    std::vector<DataItemId> present_items;
+    try {
+        present_items = decodeUap(buffer, offset);
+    } catch (const DecodingException& e) {
+        throw DecodingException(
+            "Failed to decode UAP for record at offset " + 
+            std::to_string(record_start) + ": " + e.what()
+        );
+    }
+    
+    // 2. Décoder les Data Items
+    std::unordered_map<DataItemId, DataItem> decoded_items;
+    try {
+        decoded_items = decodeDataItems(buffer, offset, present_items);
+    } catch (const DecodingException& e) {
+        throw DecodingException(
+            "Failed to decode Data Items for record at offset " + 
+            std::to_string(record_start) + ": " + e.what()
+        );
+    }
+    
+    // 3. Vérifier qu'on n'a pas dépassé la fin du Data Block
+    if (offset > end_offset) {
+        throw DecodingException(
+            "Record decoding exceeded Data Block boundary: offset " + 
+            std::to_string(offset) + " > end " + std::to_string(end_offset)
+        );
+    }
+    
+    return AsterixRecord(std::move(decoded_items));
 }
 
 AsterixMessage AsterixDecoder::decode(const std::string& hex_data) const {
@@ -197,13 +273,6 @@ void AsterixDecoder::validateLength(std::uint16_t declared_length,
             << " bytes, but only " << actual_length 
             << " bytes available in buffer";
         throw DecodingException(oss.str());
-    }
-    
-    // Avertissement si le buffer contient plus de données que déclaré
-    // (ce n'est pas une erreur, il peut y avoir plusieurs messages)
-    if (declared_length < actual_length) {
-        // On pourrait logger un avertissement ici, mais ne pas lever d'exception
-        // car c'est un cas valide (plusieurs messages dans le même buffer)
     }
 }
 

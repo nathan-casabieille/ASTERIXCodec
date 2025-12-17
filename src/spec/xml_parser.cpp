@@ -391,7 +391,10 @@ void XmlParser::validateUapStructure(const tinyxml2::XMLElement* uap_element) {
         throwParsingError("UAP validation", "UAP section must contain at least one item");
     }
     
-    std::set<std::uint8_t> used_bits;
+    // NOTE: Dans ASTERIX, les UAP multi-octets réutilisent les positions de bits 2-8
+    // pour chaque octet. C'est normal et attendu. On ne vérifie donc PAS l'unicité 
+    // des positions de bits, seulement l'unicité des noms d'items.
+    
     std::set<std::string> used_names;
     
     for (const auto* item = uap_element->FirstChildElement("item");
@@ -404,19 +407,15 @@ void XmlParser::validateUapStructure(const tinyxml2::XMLElement* uap_element) {
         
         std::uint8_t bit_pos = parseBitPosition(bit_str);
         
-        // Vérifier l'unicité des positions de bit
-        if (used_bits.count(bit_pos)) {
-            throwParsingError("UAP validation", 
-                "Duplicate bit position " + bit_str + " in UAP");
-        }
-        used_bits.insert(bit_pos);
-        
-        // Vérifier l'unicité des noms
+        // Vérifier l'unicité des noms (les doublons de noms ne sont jamais permis)
         if (used_names.count(name)) {
             throwParsingError("UAP validation", 
                 "Duplicate item name '" + name + "' in UAP");
         }
         used_names.insert(name);
+        
+        // Les positions de bits peuvent être dupliquées (multi-octet UAP)
+        // donc on ne vérifie PAS l'unicité des positions de bits
     }
 }
 

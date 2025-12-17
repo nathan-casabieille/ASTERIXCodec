@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<asterix_category number="34" version="1.29">
+    <title>Transmission of Monoradar Service Messages</title>
+    <date>2021-03-15</date>
+    <preamble>Surveillance data exchange.</preamble>
+
+    <!-- User Application Profile (UAP) -->
+    <uap>
+        <!-- First UAP octet (bits 8-2, bit 1 = FX) -->
+        <item bit="8" name="I034/010" mandatory="false"/>  <!-- Data Source Identifier -->
+        <item bit="7" name="I034/000" mandatory="false"/>  <!-- Message Type -->
+        <item bit="6" name="I034/030" mandatory="false"/>  <!-- Time of Day -->
+        <item bit="5" name="I034/020" mandatory="false"/>  <!-- Sector Number -->
+        <item bit="4" name="I034/041" mandatory="false"/>  <!-- Antenna Rotation Speed -->
+        <item bit="3" name="I034/050" mandatory="false"/>  <!-- System Configuration and Status -->
+        <item bit="2" name="I034/060" mandatory="false"/>  <!-- System Processing Mode -->
+        <!-- bit 1 = FX (Field Extension), if set, second UAP octet follows -->
+        <!-- Second UAP octet (bits 8-2 of second byte, bit 1 = FX) -->
+        <item bit="8" name="I034/070" mandatory="false"/>  <!-- Message Count Values -->
+        <item bit="7" name="I034/100" mandatory="false"/>  <!-- Generic Polar Window -->
+        <item bit="6" name="I034/110" mandatory="false"/>  <!-- Data Filter -->
+        <item bit="5" name="I034/120" mandatory="false"/>  <!-- 3D-Position Of Data Source -->
+        <item bit="4" name="I034/090" mandatory="false"/>  <!-- Collimation Error -->
+        <item bit="3" name="I034/RE" mandatory="false"/>   <!-- Reserved Expansion Field -->
+        <item bit="2" name="I034/SP" mandatory="false"/>   <!-- Special Purpose Field -->
+        <!-- bit 1 = FX (Field Extension) -->
+    </uap>
+
+    <!-- Data Items Specifications -->
+    <data_items>
+        
+        <!-- I034/000 - Message Type -->
+        <item name="I034/000" title="Message Type">
+            <definition>This Data Item allows for a more convenient handling of the messages at the receiver side by further defining the type of transaction.</definition>
+            <fixed_length bytes="1">
+                <field name="message_type" type="enum" bits="8" unit="none">
+                    <enum_value key="1" value="North marker message"/>
+                    <enum_value key="2" value="Sector crossing message"/>
+                    <enum_value key="3" value="Geographical filtering message"/>
+                    <enum_value key="4" value="Jamming strobe message"/>
+                    <enum_value key="5" value="Solar Storm Message"/>
+                    <enum_value key="6" value="SSR Jamming Strobe Message"/>
+                    <enum_value key="7" value="Mode S Jamming Strobe Message"/>
+                </field>
+            </fixed_length>
+            <remark>All Message Type values are reserved for common standard use.</remark>
+        </item>
+
+        <!-- I034/010 - Data Source Identifier -->
+        <item name="I034/010" title="Data Source Identifier">
+            <definition>Identification of the radar station from which the data are received.</definition>
+            <fixed_length bytes="2">
+                <field name="SAC" type="unsigned" bits="8" unit="none"/>
+                <field name="SIC" type="unsigned" bits="8" unit="none"/>
+            </fixed_length>
+            <remark>The up-to-date list of SACs is published on the EUROCONTROL Web Site (http://www.eurocontrol.int/asterix).</remark>
+        </item>
+
+        <!-- I034/020 - Sector Number -->
+        <item name="I034/020" title="Sector Number">
+            <definition>Eight most significant bits of the antenna azimuth defining a particular azimuth sector.</definition>
+            <fixed_length bytes="1">
+                <field name="sector_number" type="unsigned" bits="8" unit="degrees" scale="1.40625"/>
+            </fixed_length>
+            <remark>Scale: 360/256 degrees = 1.40625 degrees</remark>
+        </item>
+
+        <!-- I034/030 - Time of Day -->
+        <item name="I034/030" title="Time of Day">
+            <definition>Absolute time stamping expressed as UTC time.</definition>
+            <fixed_length bytes="3">
+                <field name="time_of_day" type="unsigned" bits="24" unit="seconds" scale="0.0078125"/>
+            </fixed_length>
+            <remark>The time of day value is reset to zero each day at midnight. Scale: 1/128 seconds = 0.0078125 seconds</remark>
+        </item>
+
+        <!-- I034/041 - Antenna Rotation Speed -->
+        <item name="I034/041" title="Antenna Rotation Speed">
+            <definition>Antenna rotation period as measured between two consecutive North crossings or as averaged during a period of time.</definition>
+            <fixed_length bytes="2">
+                <field name="rotation_period" type="unsigned" bits="16" unit="seconds" scale="0.0078125"/>
+            </fixed_length>
+            <remark>Scale: 1/128 seconds = 0.0078125 seconds. This item represents the antenna rotation period as measured by the radar station between two consecutive North crossings.</remark>
+        </item>
+
+        <!-- I034/050 - System Configuration and Status -->
+        <item name="I034/050" title="System Configuration and Status">
+            <definition>Information concerning the configuration and status of a System.</definition>
+            <variable_length has_fx="true">
+                <!-- Common Part - First octet -->
+                <field name="NOGO" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="System is released for operational use"/>
+                    <enum_value key="1" value="Operational use of System is inhibited"/>
+                </field>
+                <field name="RDPC" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="RDPC-1 selected"/>
+                    <enum_value key="1" value="RDPC-2 selected"/>
+                </field>
+                <field name="RDPR" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="Default situation"/>
+                    <enum_value key="1" value="Reset of RDPC"/>
+                </field>
+                <field name="OVLRDP" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="Default, no overload"/>
+                    <enum_value key="1" value="Overload in RDP"/>
+                </field>
+                <field name="OVLXMT" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="Default, no overload"/>
+                    <enum_value key="1" value="Overload in transmission subsystem"/>
+                </field>
+                <field name="MSC" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="Monitoring system connected"/>
+                    <enum_value key="1" value="Monitoring system disconnected"/>
+                </field>
+                <field name="TSV" type="enum" bits="1" unit="none">
+                    <enum_value key="0" value="Valid"/>
+                    <enum_value key="1" value="Invalid"/>
+                </field>
+                <!-- bit 1 is FX, handled by variable_length structure -->
+            </variable_length>
+            <remark>This is a compound structure with FX extension mechanism. Additional subfields for PSR, SSR, and Mode S sensors can be present.</remark>
+        </item>
+
+        <!-- I034/060 - System Processing Mode -->
+        <item name="I034/060" title="System Processing Mode">
+            <definition>Status concerning the processing options, in use during the last antenna revolution, for the various Sensors, composing the System.</definition>
+            <variable_length has_fx="true">
+                <!-- Common Part - First octet -->
+                <field name="spare_bit7" type="boolean" bits="1" unit="none"/>
+                <field name="REDRDP" type="enum" bits="3" unit="none">
+                    <enum_value key="0" value="No reduction active"/>
+                    <enum_value key="1" value="Reduction step 1 active"/>
+                    <enum_value key="2" value="Reduction step 2 active"/>
+                    <enum_value key="3" value="Reduction step 3 active"/>
+                    <enum_value key="4" value="Reduction step 4 active"/>
+                    <enum_value key="5" value="Reduction step 5 active"/>
+                    <enum_value key="6" value="Reduction step 6 active"/>
+                    <enum_value key="7" value="Reduction step 7 active"/>
+                </field>
+                <field name="REDXMT" type="enum" bits="3" unit="none">
+                    <enum_value key="0" value="No reduction active"/>
+                    <enum_value key="1" value="Reduction step 1 active"/>
+                    <enum_value key="2" value="Reduction step 2 active"/>
+                    <enum_value key="3" value="Reduction step 3 active"/>
+                    <enum_value key="4" value="Reduction step 4 active"/>
+                    <enum_value key="5" value="Reduction step 5 active"/>
+                    <enum_value key="6" value="Reduction step 6 active"/>
+                    <enum_value key="7" value="Reduction step 7 active"/>
+                </field>
+                <!-- bit 1 is FX, handled by variable_length structure -->
+            </variable_length>
+            <remark>The actual mapping between the up to seven data reduction steps and their associated data reduction measures is not subject to standardisation.</remark>
+        </item>
+
+        <!-- I034/070 - Message Count Values -->
+        <item name="I034/070" title="Message Count Values">
+            <definition>Message Count values, according the various types of messages, for the last completed antenna revolution, counted between two North crossings</definition>
+            <repetitive_fixed bytes="2">
+                <field name="TYP" type="enum" bits="5" unit="none">
+                    <enum_value key="0" value="No detection (number of misses)"/>
+                    <enum_value key="1" value="Single PSR target reports"/>
+                    <enum_value key="2" value="Single SSR target reports (Non-Mode S)"/>
+                    <enum_value key="3" value="SSR+PSR target reports (Non-Mode S)"/>
+                    <enum_value key="4" value="Single All-Call target reports (Mode S)"/>
+                    <enum_value key="5" value="Single Roll-Call target reports (Mode S)"/>
+                    <enum_value key="6" value="All-Call + PSR (Mode S) target reports"/>
+                    <enum_value key="7" value="Roll-Call + PSR (Mode S) target reports"/>
+                    <enum_value key="8" value="Filter for Weather data"/>
+                    <enum_value key="9" value="Filter for Jamming Strobe"/>
+                    <enum_value key="10" value="Filter for PSR data"/>
+                    <enum_value key="11" value="Filter for SSR/Mode S data"/>
+                    <enum_value key="12" value="Filter for SSR/Mode S+PSR data"/>
+                    <enum_value key="13" value="Filter for Enhanced Surveillance data"/>
+                    <enum_value key="14" value="Filter for PSR+Enhanced Surveillance"/>
+                    <enum_value key="15" value="Filter for PSR+Enhanced Surveillance + SSR/Mode S data not in Area of Prime Interest"/>
+                    <enum_value key="16" value="Filter for PSR+Enhanced Surveillance + all SSR/Mode S data"/>
+                    <enum_value key="17" value="Re-Interrogations (per sector)"/>
+                    <enum_value key="18" value="BDS Swap and wrong DF replies(per sector)"/>
+                    <enum_value key="19" value="Mode A/C FRUIT (per sector)"/>
+                    <enum_value key="20" value="Mode S FRUIT (per sector)"/>
+                </field>
+                <field name="COUNTER" type="unsigned" bits="11" unit="none"/>
+            </repetitive_fixed>
+            <remark>First byte contains REP (repetition factor), followed by REP occurrences of 2-byte structures.</remark>
+        </item>
+
+        <!-- I034/090 - Collimation Error -->
+        <item name="I034/090" title="Collimation Error">
+            <definition>Averaged difference in range and in azimuth for the primary target position with respect to the SSR target position as calculated by the radar station.</definition>
+            <fixed_length bytes="2">
+                <field name="RNG" type="signed" bits="8" unit="NM" scale="0.0078125"/>
+                <field name="AZM" type="signed" bits="8" unit="degrees" scale="0.02197265625"/>
+            </fixed_length>
+            <remark>RNG (Range Error) scale: 1/128 NM. AZM (Azimuth Error) scale: 360/16384 degrees = 0.02197265625 degrees. Negative values are coded in two's complement form.</remark>
+        </item>
+
+        <!-- I034/100 - Generic Polar Window -->
+        <item name="I034/100" title="Generic Polar Window">
+            <definition>Geographical window defined in polar co-ordinates.</definition>
+            <fixed_length bytes="8">
+                <field name="RHOST" type="unsigned" bits="16" unit="NM" scale="0.00390625"/>
+                <field name="RHOEND" type="unsigned" bits="16" unit="NM" scale="0.00390625"/>
+                <field name="THETAST" type="unsigned" bits="16" unit="degrees" scale="0.0054931640625"/>
+                <field name="THETAEND" type="unsigned" bits="16" unit="degrees" scale="0.0054931640625"/>
+            </fixed_length>
+            <remark>RHOST (Rho Start), RHOEND (Rho End): scale 1/256 NM, max value less than or equal to 256 NM. THETAST (Theta Start), THETAEND (Theta End): scale 360/65536 degrees.</remark>
+        </item>
+
+        <!-- I034/110 - Data Filter -->
+        <item name="I034/110" title="Data Filter">
+            <definition>Data Filter, which allows suppression of individual data types.</definition>
+            <fixed_length bytes="1">
+                <field name="data_filter" type="enum" bits="8" unit="none">
+                    <enum_value key="0" value="Invalid value"/>
+                    <enum_value key="1" value="Filter for Weather data"/>
+                    <enum_value key="2" value="Filter for Jamming Strobe"/>
+                    <enum_value key="3" value="Filter for PSR data"/>
+                    <enum_value key="4" value="Filter for SSR/Mode S data"/>
+                    <enum_value key="5" value="Filter for SSR/Mode S + PSR data"/>
+                    <enum_value key="6" value="Enhanced Surveillance data"/>
+                    <enum_value key="7" value="Filter for PSR+Enhanced Surveillance data"/>
+                    <enum_value key="8" value="Filter for PSR+Enhanced Surveillance + SSR/Mode S data not in Area of Prime Interest"/>
+                    <enum_value key="9" value="Filter for PSR+Enhanced Surveillance + all SSR/Mode S data"/>
+                </field>
+            </fixed_length>
+            <remark>This Data Item is often used in conjunction with I034/100 and represents a Data Filter for a specific geographical subarea. If I034/110 is not accompanied with I034/100, then the Data Filter is valid throughout the total area of coverage.</remark>
+        </item>
+
+        <!-- I034/120 - 3D-Position Of Data Source -->
+        <item name="I034/120" title="3D-Position Of Data Source">
+            <definition>3D-Position of Data Source in WGS 84 Co-ordinates</definition>
+            <fixed_length bytes="8">
+                <field name="HGT" type="signed" bits="16" unit="m" scale="1"/>
+                <field name="LAT" type="signed" bits="24" unit="degrees" scale="0.000021457672119140625"/>
+                <field name="LON" type="signed" bits="24" unit="degrees" scale="0.000021457672119140625"/>
+            </fixed_length>
+            <remark>HGT (Height): scale 1 meter. LAT (Latitude): scale 180/2^23 degrees, range -90 to +90 degrees. LON (Longitude): scale 180/2^23 degrees, range -180 to +180 degrees.</remark>
+        </item>
+
+        <!-- I034/RE - Reserved Expansion Field -->
+        <item name="I034/RE" title="Reserved Expansion Field">
+            <definition>Expansion</definition>
+            <variable_length has_fx="true">
+                <field name="reserved_data" type="raw" bits="7" unit="none"/>
+            </variable_length>
+            <remark>Reserved for future expansion. Structure uses FX extension mechanism.</remark>
+        </item>
+
+        <!-- I034/SP - Special Purpose Field -->
+        <item name="I034/SP" title="Special Purpose Field">
+            <definition>Special Purpose Field</definition>
+            <variable_length has_fx="false">
+                <field name="sp_data" type="raw" bits="8" unit="none"/>
+            </variable_length>
+            <remark>Special purpose field for application-specific data. First byte contains the length in bytes.</remark>
+        </item>
+
+    </data_items>
+</asterix_category>
