@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT01.xml – ASTERIX Category 001 "Transmission of Monoradar Data Target Reports"
+  Edition 1.4, 2022-08-18.
+
+  Schema conventions used by SpecLoader:
+    <Fixed>         – byte-aligned, fixed-length group of named sub-elements.
+    <Extended>      – variable length; each <Octet> has 7 data bits + implicit FX LSB.
+                      FX=1 → next octet follows; FX=0 → last octet.
+    <Repetitive type="fx"> – each byte = 7-bit value + FX bit (list of values).
+    <Explicit type="sp">   – first byte is payload length (excl. itself), raw payload follows.
+    <Element>       – a named bit field.  Attributes: name, bits, encoding.
+    <Spare>         – anonymous pad bits.  Attribute: bits.
+    <Entry>         – table row.  Attributes: value (decimal), meaning.
+-->
+<Category cat="1"
+          name="Transmission of Monoradar Data Target Reports"
+          edition="1.4"
+          date="2022-08-18">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/020 – Target Report Descriptor  (Extended, 1–3 octets)
+         Each <Octet> must contain exactly 7 bits of named elements/spares.
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Target Report Descriptor">
+      <Extended>
+        <!-- Octet 1 (bits 8–2, bit 1 = FX) -->
+        <Octet>
+          <Element name="TYP" bits="1" encoding="table">
+            <Entry value="0" meaning="Plot"/>
+            <Entry value="1" meaning="Track"/>
+          </Element>
+          <Element name="SIM" bits="1" encoding="table">
+            <Entry value="0" meaning="Actual plot or track"/>
+            <Entry value="1" meaning="Simulated plot or track"/>
+          </Element>
+          <Element name="SSRPSR" bits="2" encoding="table">
+            <Entry value="0" meaning="No detection"/>
+            <Entry value="1" meaning="Sole primary detection"/>
+            <Entry value="2" meaning="Sole secondary detection"/>
+            <Entry value="3" meaning="Combined primary and secondary detection"/>
+          </Element>
+          <Element name="ANT" bits="1" encoding="table">
+            <Entry value="0" meaning="Target report from antenna 1"/>
+            <Entry value="1" meaning="Target report from antenna 2"/>
+          </Element>
+          <Element name="SPI" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Special Position Identification"/>
+          </Element>
+          <Element name="RAB" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Plot or track from a fixed transponder"/>
+          </Element>
+        </Octet>
+        <!-- Octet 2 (optional) -->
+        <Octet>
+          <Element name="TST" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Test target indicator"/>
+          </Element>
+          <Element name="DS1DS2" bits="2" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Unlawful interference (code 7500)"/>
+            <Entry value="2" meaning="Radio-communication failure (code 7600)"/>
+            <Entry value="3" meaning="Emergency (code 7700)"/>
+          </Element>
+          <Element name="ME" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Military emergency"/>
+          </Element>
+          <Element name="MI" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Military identification"/>
+          </Element>
+          <Spare bits="2"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/030 – Warning/Error Conditions  (Repetitive FX, 7-bit values)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="Warning/Error Conditions">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="table">
+          <Entry value="0"  meaning="No warning nor error condition"/>
+          <Entry value="1"  meaning="Garbled reply"/>
+          <Entry value="2"  meaning="Reflection"/>
+          <Entry value="3"  meaning="Sidelobe reply"/>
+          <Entry value="4"  meaning="Split plot"/>
+          <Entry value="5"  meaning="Second time around reply"/>
+          <Entry value="6"  meaning="Angels"/>
+          <Entry value="7"  meaning="Terrestrial vehicles"/>
+          <Entry value="64" meaning="Possible wrong code in Mode-3/A"/>
+          <Entry value="65" meaning="Possible wrong altitude information"/>
+          <Entry value="66" meaning="Possible phantom MSSR plot"/>
+          <Entry value="80" meaning="Fixed PSR plot"/>
+          <Entry value="81" meaning="Slow PSR plot"/>
+          <Entry value="82" meaning="Low quality PSR plot"/>
+        </Element>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/040 – Measured Position in Polar Co-ordinates  (Fixed, 4 bytes)
+         RHO: LSB = 1/128 NM;  THETA: LSB = 360/65536 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="040" name="Measured Position in Polar Co-ordinates">
+      <Fixed>
+        <Element name="RHO"   bits="16" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="NM" max="512"/>
+        <Element name="THETA" bits="16" encoding="unsigned_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/042 – Calculated Position in Cartesian Co-ordinates  (Fixed, 4 bytes)
+         X, Y: signed, LSB = 1/64 NM
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="042" name="Calculated Position in Cartesian Co-ordinates">
+      <Fixed>
+        <Element name="X" bits="16" encoding="signed_quantity"
+                 scale="0.015625" unit="NM" min="-512" max="512"/>
+        <Element name="Y" bits="16" encoding="signed_quantity"
+                 scale="0.015625" unit="NM" min="-512" max="512"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/050 – Mode-2 Code in Octal Representation  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="050" name="Mode-2 Code in Octal Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-2 code as derived from reply"/>
+          <Entry value="1" meaning="Smoothed Mode-2 code from local tracker"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MODE2" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/060 – Mode-2 Code Confidence Indicator  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="Mode-2 Code Confidence Indicator">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="QA4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A4"/>
+          <Entry value="1" meaning="Low quality pulse A4"/>
+        </Element>
+        <Element name="QA2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A2"/>
+          <Entry value="1" meaning="Low quality pulse A2"/>
+        </Element>
+        <Element name="QA1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A1"/>
+          <Entry value="1" meaning="Low quality pulse A1"/>
+        </Element>
+        <Element name="QB4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B4"/>
+          <Entry value="1" meaning="Low quality pulse B4"/>
+        </Element>
+        <Element name="QB2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B2"/>
+          <Entry value="1" meaning="Low quality pulse B2"/>
+        </Element>
+        <Element name="QB1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B1"/>
+          <Entry value="1" meaning="Low quality pulse B1"/>
+        </Element>
+        <Element name="QC4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C4"/>
+          <Entry value="1" meaning="Low quality pulse C4"/>
+        </Element>
+        <Element name="QC2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C2"/>
+          <Entry value="1" meaning="Low quality pulse C2"/>
+        </Element>
+        <Element name="QC1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C1"/>
+          <Entry value="1" meaning="Low quality pulse C1"/>
+        </Element>
+        <Element name="QD4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D4"/>
+          <Entry value="1" meaning="Low quality pulse D4"/>
+        </Element>
+        <Element name="QD2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D2"/>
+          <Entry value="1" meaning="Low quality pulse D2"/>
+        </Element>
+        <Element name="QD1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D1"/>
+          <Entry value="1" meaning="Low quality pulse D1"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/070 – Mode-3/A Code in Octal Representation  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="070" name="Mode-3/A Code in Octal Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-3/A code derived from reply"/>
+          <Entry value="1" meaning="Smoothed Mode-3/A code from local tracker"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MODE3A" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/080 – Mode-3/A Code Confidence Indicator  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="080" name="Mode-3/A Code Confidence Indicator">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="QA4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A4"/>
+          <Entry value="1" meaning="Low quality pulse A4"/>
+        </Element>
+        <Element name="QA2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A2"/>
+          <Entry value="1" meaning="Low quality pulse A2"/>
+        </Element>
+        <Element name="QA1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A1"/>
+          <Entry value="1" meaning="Low quality pulse A1"/>
+        </Element>
+        <Element name="QB4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B4"/>
+          <Entry value="1" meaning="Low quality pulse B4"/>
+        </Element>
+        <Element name="QB2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B2"/>
+          <Entry value="1" meaning="Low quality pulse B2"/>
+        </Element>
+        <Element name="QB1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B1"/>
+          <Entry value="1" meaning="Low quality pulse B1"/>
+        </Element>
+        <Element name="QC4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C4"/>
+          <Entry value="1" meaning="Low quality pulse C4"/>
+        </Element>
+        <Element name="QC2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C2"/>
+          <Entry value="1" meaning="Low quality pulse C2"/>
+        </Element>
+        <Element name="QC1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C1"/>
+          <Entry value="1" meaning="Low quality pulse C1"/>
+        </Element>
+        <Element name="QD4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D4"/>
+          <Entry value="1" meaning="Low quality pulse D4"/>
+        </Element>
+        <Element name="QD2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D2"/>
+          <Entry value="1" meaning="Low quality pulse D2"/>
+        </Element>
+        <Element name="QD1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D1"/>
+          <Entry value="1" meaning="Low quality pulse D1"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/090 – Mode-C Code in Binary Representation  (Fixed, 2 bytes)
+         HGT: 14-bit signed, LSB = 1/4 FL
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Mode-C Code in Binary Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="HGT" bits="14" encoding="signed_quantity"
+                 scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/100 – Mode-C Code and Code Confidence Indicator  (Fixed, 4 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="100" name="Mode-C Code and Code Confidence Indicator">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Spare bits="2"/>
+        <Element name="MODEC" bits="12" encoding="raw"/>
+        <Spare bits="4"/>
+        <Element name="QC1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C1"/>
+          <Entry value="1" meaning="Low quality pulse C1"/>
+        </Element>
+        <Element name="QA1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A1"/>
+          <Entry value="1" meaning="Low quality pulse A1"/>
+        </Element>
+        <Element name="QC2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C2"/>
+          <Entry value="1" meaning="Low quality pulse C2"/>
+        </Element>
+        <Element name="QA2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A2"/>
+          <Entry value="1" meaning="Low quality pulse A2"/>
+        </Element>
+        <Element name="QC4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C4"/>
+          <Entry value="1" meaning="Low quality pulse C4"/>
+        </Element>
+        <Element name="QA4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A4"/>
+          <Entry value="1" meaning="Low quality pulse A4"/>
+        </Element>
+        <Element name="QB1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B1"/>
+          <Entry value="1" meaning="Low quality pulse B1"/>
+        </Element>
+        <Element name="QD1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D1"/>
+          <Entry value="1" meaning="Low quality pulse D1"/>
+        </Element>
+        <Element name="QB2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B2"/>
+          <Entry value="1" meaning="Low quality pulse B2"/>
+        </Element>
+        <Element name="QD2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D2"/>
+          <Entry value="1" meaning="Low quality pulse D2"/>
+        </Element>
+        <Element name="QB4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B4"/>
+          <Entry value="1" meaning="Low quality pulse B4"/>
+        </Element>
+        <Element name="QD4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D4"/>
+          <Entry value="1" meaning="Low quality pulse D4"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/120 – Measured Radial Doppler Speed  (Fixed, 1 byte)
+         Signed, LSB = 1/256 NM/s  (≈ 14.0625 kt)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="120" name="Measured Radial Doppler Speed">
+      <Fixed>
+        <Element name="SPEED" bits="8" encoding="signed_quantity"
+                 scale="0.00390625" unit="NM/s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/130 – Radar Plot Characteristics  (Repetitive FX, raw 7-bit values)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="130" name="Radar Plot Characteristics">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/131 – Received Power  (Fixed, 1 byte)
+         Signed, LSB = 1 dBm
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="131" name="Received Power">
+      <Fixed>
+        <Element name="POWER" bits="8" encoding="signed_quantity"
+                 scale="1.0" unit="dBm"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/141 – Truncated Time of Day  (Fixed, 2 bytes)
+         Unsigned, LSB = 1/128 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="141" name="Truncated Time of Day">
+      <Fixed>
+        <Element name="TIMEDAY" bits="16" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/150 – Presence of X-Pulse  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="150" name="Presence of X-Pulse">
+      <Fixed>
+        <Element name="XA" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="X-pulse received in Mode-3/A reply"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="XC" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="X-pulse received in Mode-C reply"/>
+        </Element>
+        <Spare bits="2"/>
+        <Element name="X2" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="X-pulse received in Mode-2 reply"/>
+        </Element>
+        <Spare bits="2"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/161 – Track Plot Number  (Fixed, 2 bytes, raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="161" name="Track Plot Number">
+      <Fixed>
+        <Element name="TRKNO" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/170 – Track Status  (Extended, 1–2 octets)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="170" name="Track Status">
+      <Extended>
+        <!-- Octet 1 -->
+        <Octet>
+          <Element name="CON" bits="1" encoding="table">
+            <Entry value="0" meaning="Confirmed Track"/>
+            <Entry value="1" meaning="Track in initialisation phase"/>
+          </Element>
+          <Element name="RAD" bits="1" encoding="table">
+            <Entry value="0" meaning="Primary track"/>
+            <Entry value="1" meaning="SSR/Combined track"/>
+          </Element>
+          <Element name="MAN" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Aircraft manoeuvring"/>
+          </Element>
+          <Element name="DOU" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Doubtful plot to track association"/>
+          </Element>
+          <Element name="RDPC" bits="1" encoding="table">
+            <Entry value="0" meaning="RDP Chain 1"/>
+            <Entry value="1" meaning="RDP Chain 2"/>
+          </Element>
+          <Spare bits="1"/>
+          <Element name="GHO" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Ghost track"/>
+          </Element>
+        </Octet>
+        <!-- Octet 2 (optional) -->
+        <Octet>
+          <Element name="TRE" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Last report for a track"/>
+          </Element>
+          <Spare bits="6"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/200 – Calculated Track Velocity in Polar Co-ordinates  (Fixed, 4 bytes)
+         GSP: LSB = 1/16384 NM/s;  HDG: LSB = 360/65536 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="200" name="Calculated Track Velocity in Polar Co-ordinates">
+      <Fixed>
+        <Element name="GSP" bits="16" encoding="unsigned_quantity"
+                 scale="0.000061035156" unit="NM/s"/>
+        <Element name="HDG" bits="16" encoding="unsigned_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I001/210 – Track Quality  (Repetitive FX, raw 7-bit values)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="210" name="Track Quality">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field  (Explicit: first byte = length)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP (User Application Profile)
+       Two variations: "plot" (TYP=0) and "track" (TYP=1).
+       "-"   = unused FSPEC bit slot (no item).
+       "rfs" = Random Field Sequencing (not decoded, reserved).
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="plot">
+
+    <Variation name="plot">
+      <Item ref="010"/>  <!-- FSPEC bit 1, octet 1 -->
+      <Item ref="020"/>  <!-- FSPEC bit 2, octet 1 -->
+      <Item ref="040"/>  <!-- FSPEC bit 3, octet 1 -->
+      <Item ref="070"/>  <!-- FSPEC bit 4, octet 1 -->
+      <Item ref="090"/>  <!-- FSPEC bit 5, octet 1 -->
+      <Item ref="130"/>  <!-- FSPEC bit 6, octet 1 -->
+      <Item ref="141"/>  <!-- FSPEC bit 7, octet 1 (FX=bit8) -->
+      <Item ref="050"/>  <!-- FSPEC bit 1, octet 2 -->
+      <Item ref="120"/>  <!-- FSPEC bit 2, octet 2 -->
+      <Item ref="131"/>  <!-- FSPEC bit 3, octet 2 -->
+      <Item ref="080"/>  <!-- FSPEC bit 4, octet 2 -->
+      <Item ref="100"/>  <!-- FSPEC bit 5, octet 2 -->
+      <Item ref="060"/>  <!-- FSPEC bit 6, octet 2 -->
+      <Item ref="030"/>  <!-- FSPEC bit 7, octet 2 -->
+      <Item ref="150"/>  <!-- FSPEC bit 1, octet 3 -->
+      <Item ref="-"/>    <!-- FSPEC bit 2, octet 3 – unused -->
+      <Item ref="-"/>    <!-- FSPEC bit 3, octet 3 – unused -->
+      <Item ref="-"/>    <!-- FSPEC bit 4, octet 3 – unused -->
+      <Item ref="-"/>    <!-- FSPEC bit 5, octet 3 – unused -->
+      <Item ref="SP"/>   <!-- FSPEC bit 6, octet 3 -->
+      <Item ref="rfs"/>  <!-- FSPEC bit 7, octet 3 -->
+    </Variation>
+
+    <Variation name="track">
+      <Item ref="010"/>  <!-- FSPEC bit 1, octet 1 -->
+      <Item ref="020"/>  <!-- FSPEC bit 2, octet 1 -->
+      <Item ref="161"/>  <!-- FSPEC bit 3, octet 1 -->
+      <Item ref="040"/>  <!-- FSPEC bit 4, octet 1 -->
+      <Item ref="042"/>  <!-- FSPEC bit 5, octet 1 -->
+      <Item ref="200"/>  <!-- FSPEC bit 6, octet 1 -->
+      <Item ref="070"/>  <!-- FSPEC bit 7, octet 1 -->
+      <Item ref="090"/>  <!-- FSPEC bit 1, octet 2 -->
+      <Item ref="141"/>  <!-- FSPEC bit 2, octet 2 -->
+      <Item ref="130"/>  <!-- FSPEC bit 3, octet 2 -->
+      <Item ref="131"/>  <!-- FSPEC bit 4, octet 2 -->
+      <Item ref="120"/>  <!-- FSPEC bit 5, octet 2 -->
+      <Item ref="170"/>  <!-- FSPEC bit 6, octet 2 -->
+      <Item ref="210"/>  <!-- FSPEC bit 7, octet 2 -->
+      <Item ref="050"/>  <!-- FSPEC bit 1, octet 3 -->
+      <Item ref="080"/>  <!-- FSPEC bit 2, octet 3 -->
+      <Item ref="100"/>  <!-- FSPEC bit 3, octet 3 -->
+      <Item ref="060"/>  <!-- FSPEC bit 4, octet 3 -->
+      <Item ref="030"/>  <!-- FSPEC bit 5, octet 3 -->
+      <Item ref="SP"/>   <!-- FSPEC bit 6, octet 3 -->
+      <Item ref="rfs"/>  <!-- FSPEC bit 7, octet 3 -->
+      <Item ref="150"/>  <!-- FSPEC bit 1, octet 4 -->
+    </Variation>
+
+    <!-- Select variation based on I001/020, field TYP -->
+    <Case item="020" field="TYP">
+      <When value="0" use="plot"/>
+      <When value="1" use="track"/>
+    </Case>
+
+  </UAPs>
+
+</Category>
