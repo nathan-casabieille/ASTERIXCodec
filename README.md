@@ -1,5 +1,13 @@
 # ASTERIXCodec
 
+## CI Status
+
+| Category | Tests |
+|----------|-------|
+| CAT001   | [![CAT01 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml) |
+
+---
+
 A high-performance, spec-driven C++20 library for encoding and decoding **ASTERIX** (All Purpose Structured EUROCONTROL Surveillance Information Exchange) messages.
 
 The category structure is loaded at runtime from an XML file, making it straightforward to add new categories without recompiling the library.
