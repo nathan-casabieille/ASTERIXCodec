@@ -1,4 +1,15 @@
-# ASTERIXCodec
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset=".github/images/logo.png">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/images/logo.png">
+    <img alt="ASTERIXCodec Logo" src=".github/images/logo.png" width="80%">
+  </picture>
+</div>
+
+<div align="center">
+  <h3>Comprehensive ASTERIX protocol toolkit for Air Traffic Management (ATM)</h3>
+</div>
+
 
 ## CI Status
 
