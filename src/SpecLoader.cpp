@@ -129,17 +129,46 @@ static void parseRepetitive(pugi::xml_node node, DataItemDef& item) {
     std::string rep_type = node.attribute("type").as_string("fx");
 
     if (rep_type == "fx") {
-        item.type = ItemType::Repetitive;
-        // Exactly one <Element> child expected (the 7-bit repeated field)
+        // Two sub-cases: a single 7-bit <Element> (Repetitive) or a <Group>
+        // of (N*8-1) bits (RepetitiveGroupFX, where the last bit is the FX flag).
+        auto grp_node  = node.child("Group");
         auto elem_node = node.child("Element");
-        if (!elem_node)
-            throw SpecLoadError("Repetitive item '" + item.id + "' has no <Element>");
 
-        ElementDef e = parseElementNode(elem_node);
-        if (e.bits != 7)
-            throw SpecLoadError("Repetitive item '" + item.id +
-                                "' element must be 7 bits, got " + std::to_string(e.bits));
-        item.rep_element = std::move(e);
+        if (grp_node) {
+            // RepetitiveGroupFX: FX-terminated structured groups.
+            // group_bits must satisfy (group_bits + 1) % 8 == 0 (FX occupies the last bit).
+            item.type = ItemType::RepetitiveGroupFX;
+            uint32_t total_bits = 0;
+            for (auto child : grp_node.children()) {
+                if (strcmp(child.name(), "Element") == 0 ||
+                    strcmp(child.name(), "Spare")   == 0) {
+                    ElementDef e = parseElementNode(child);
+                    total_bits  += e.bits;
+                    item.rep_group_elements.push_back(std::move(e));
+                }
+            }
+            if (item.rep_group_elements.empty())
+                throw SpecLoadError("Repetitive[fx/Group] item '" + item.id +
+                                    "' <Group> has no elements");
+            if ((total_bits + 1) % 8 != 0)
+                throw SpecLoadError("Repetitive[fx/Group] item '" + item.id +
+                                    "' group bits (" + std::to_string(total_bits) +
+                                    ") + FX bit is not a multiple of 8");
+            item.rep_group_bits = static_cast<uint16_t>(total_bits);
+
+        } else if (elem_node) {
+            // Standard Repetitive: 7-bit value + FX per byte.
+            item.type = ItemType::Repetitive;
+            ElementDef e = parseElementNode(elem_node);
+            if (e.bits != 7)
+                throw SpecLoadError("Repetitive item '" + item.id +
+                                    "' element must be 7 bits, got " + std::to_string(e.bits));
+            item.rep_element = std::move(e);
+
+        } else {
+            throw SpecLoadError("Repetitive[fx] item '" + item.id +
+                                "' has neither <Element> nor <Group> child");
+        }
 
     } else if (rep_type == "count") {
         item.type = ItemType::RepetitiveGroup;

@@ -22,13 +22,14 @@ enum class Encoding {
 
 // ─── Item structural type ─────────────────────────────────────────────────────
 enum class ItemType {
-    Fixed,           // Fixed byte-length; one or more sub-elements
-    Extended,        // Variable octets, each with a trailing FX bit
-    Repetitive,      // N octets, each = 7-bit value + FX bit (list semantics)
-    RepetitiveGroup, // 1-byte count prefix, then count × structured group
-    Explicit,        // First byte carries length; followed by that many bytes
-    SP,              // Special Purpose Field (explicit, SP-marker in UAP)
-    Compound,        // PSF-driven optional sub-items, each a Fixed group
+    Fixed,             // Fixed byte-length; one or more sub-elements
+    Extended,          // Variable octets, each with a trailing FX bit
+    Repetitive,        // N octets, each = 7-bit value + FX bit (list semantics)
+    RepetitiveGroup,   // 1-byte count prefix, then count × structured group
+    RepetitiveGroupFX, // FX-terminated structured groups; FX is the last bit of each group
+    Explicit,          // First byte carries length; followed by that many bytes
+    SP,                // Special Purpose Field (explicit, SP-marker in UAP)
+    Compound,          // PSF-driven optional sub-items, each a Fixed group
 };
 
 // ─── Mandatory / Conditional / Optional presence rule ─────────────────────────

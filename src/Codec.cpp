@@ -181,6 +181,31 @@ DecodedItem Codec::decodeItem(const DataItemDef& def,
         break;
     }
 
+    // ── Repetitive FX with structured group ───────────────────────────────
+    // Each group is (rep_group_bits + 1) / 8 bytes wide.
+    // The last bit of each group is the FX flag (1 = more groups follow).
+    case ItemType::RepetitiveGroupFX: {
+        size_t group_bytes = (static_cast<size_t>(def.rep_group_bits) + 1) / 8;
+        size_t offset = 0;
+        do {
+            if (offset + group_bytes > item_buf.size())
+                throw std::runtime_error("Item " + def.id +
+                                         ": buffer too short in RepetitiveGroupFX");
+            BitReader br{item_buf.subspan(offset, group_bytes)};
+            std::map<std::string, uint64_t> grp;
+            for (const auto& e : def.rep_group_elements) {
+                if (e.is_spare) { br.skip(e.bits); continue; }
+                grp[e.name] = br.readU(e.bits);
+            }
+            bool fx = br.readBit(); // FX is the last bit of the group
+            out.group_repetitions.push_back(std::move(grp));
+            offset += group_bytes;
+            if (!fx) break;
+        } while (true);
+        consumed = offset;
+        break;
+    }
+
     // ── Explicit / SP ─────────────────────────────────────────────────────
     case ItemType::SP: {
         if (item_buf.empty())
@@ -488,6 +513,31 @@ std::vector<uint8_t> Codec::encodeItem(const DataItemDef& def,
                 auto it = grp.find(e.name);
                 if (it != grp.end()) v = it->second;
                 bw.writeU(v, e.bits);
+            }
+        }
+        break;
+    }
+
+    case ItemType::RepetitiveGroupFX: {
+        const auto& grps = val.group_repetitions;
+        if (grps.empty()) {
+            // Emit one zero-filled group with FX=0
+            for (const auto& e : def.rep_group_elements) {
+                if (e.is_spare) { bw.writeU(0, e.bits); continue; }
+                bw.writeU(0, e.bits);
+            }
+            bw.writeBit(false); // FX=0
+        } else {
+            for (size_t i = 0; i < grps.size(); ++i) {
+                bool is_last = (i + 1 == grps.size());
+                for (const auto& e : def.rep_group_elements) {
+                    if (e.is_spare) { bw.writeU(0, e.bits); continue; }
+                    uint64_t v = 0;
+                    auto it = grps[i].find(e.name);
+                    if (it != grps[i].end()) v = it->second;
+                    bw.writeU(v, e.bits);
+                }
+                bw.writeBit(!is_last); // FX=1 → more groups, FX=0 → last
             }
         }
         break;

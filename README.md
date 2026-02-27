@@ -19,6 +19,7 @@
 | CAT002   | [![CAT02 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml) |
 | CAT034   | [![CAT34 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml) |
 | CAT048   | [![CAT48 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat48.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat48.yml) |
+| CAT062   | [![CAT62 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat62.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat62.yml) |
 
 ---
 
@@ -31,7 +32,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 ## Features
 
 - **XML-driven data dictionary** — category definitions (items, encodings, UAP) are parsed from `specs/CATXX.xml` via [pugixml](https://github.com/zeux/pugixml); no hardcoded category logic.
-- **All standard item types** — Fixed (group), Extended (FX-bit chaining), Repetitive (FX-bit list), RepetitiveGroup (count-prefixed structured groups), Compound (PSF-driven optional sub-items), and Explicit/SP.
+- **All standard item types** — Fixed (group), Extended (FX-bit chaining), Repetitive (FX-bit list), RepetitiveGroup (count-prefixed structured groups), RepetitiveGroupFX (FX-terminated structured groups), Compound (PSF-driven optional sub-items), and Explicit/SP.
 - **Dynamic UAP selection** — for CAT01 the plot/track variant is auto-detected from `I001/020 TYP` on a per-record basis.
 - **Multi-record blocks** — a single Data Block can carry any number of Data Records; the decode loop handles them correctly.
 - **Strict bounds checking** — `BitReader` and `BitWriter` throw on any out-of-bounds access; mandatory-item violations are flagged on the `DecodedRecord`.
@@ -48,6 +49,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT002   | Transmission of Monoradar Service Messages | 1.2 |
 | CAT034   | Transmission of Monoradar Service Messages | 1.29 |
 | CAT048   | Monoradar Target Reports | 1.32 |
+| CAT062   | SDPS Track Messages | 1.21 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -67,19 +69,17 @@ ASTERIXCodec/
 │   ├── SpecLoader.cpp               # pugixml → CategoryDef parser
 │   └── Codec.cpp                    # FSPEC + item decode/encode engine
 ├── specs/
-│   ├── CAT01_definition.txt         # Original EUROCONTROL source definition
 │   ├── CAT01.xml                    # XML spec consumed by the library
-│   ├── CAT02_definition.txt         # Original EUROCONTROL source definition
 │   ├── CAT02.xml                    # XML spec consumed by the library
-│   ├── CAT34_definition.txt         # Original EUROCONTROL source definition
 │   ├── CAT34.xml                    # XML spec consumed by the library
-│   ├── CAT48_definition.txt         # Original EUROCONTROL source definition
-│   └── CAT48.xml                    # XML spec consumed by the library
+│   ├── CAT48.xml                    # XML spec consumed by the library
+│   └── CAT62.xml                    # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
     ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
     ├── test_cat34.cpp               # 10 test cases covering all CAT34 item types incl. Compound
-    └── test_cat48.cpp               # 10 test cases covering all CAT48 item types
+    ├── test_cat48.cpp               # 10 test cases covering all CAT48 item types
+    └── test_cat62.cpp               # 10 test cases, 100 assertions incl. RepetitiveGroupFX
 ```
 
 ---
@@ -108,12 +108,14 @@ cmake --build build -j$(nproc)
 ./build/test_cat02
 ./build/test_cat34
 ./build/test_cat48
+./build/test_cat62
 
 # Optionally override the spec file path
 ./build/test_cat01 /path/to/specs/CAT01.xml
 ./build/test_cat02 /path/to/specs/CAT02.xml
 ./build/test_cat34 /path/to/specs/CAT34.xml
 ./build/test_cat48 /path/to/specs/CAT48.xml
+./build/test_cat62 /path/to/specs/CAT62.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.
@@ -184,6 +186,7 @@ Data Block
 | Extended | Variable octets; each = 7 data bits + 1 FX bit |
 | Repetitive | FX-terminated list; each octet = 7-bit value + FX |
 | RepetitiveGroup | 1-byte count prefix; then N × structured sub-element group |
+| RepetitiveGroupFX | FX-terminated list of structured groups; FX is the last bit of each group |
 | Compound | PSF indicator byte(s) select optional named sub-items (each a Fixed group) |
 | Explicit (SP/RE) | First byte = total length (inclusive); raw payload follows |
 
