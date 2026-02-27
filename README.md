@@ -18,6 +18,7 @@
 | CAT001   | [![CAT01 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml) |
 | CAT002   | [![CAT02 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml) |
 | CAT034   | [![CAT34 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml) |
+| CAT048   | [![CAT48 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat48.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat48.yml) |
 
 ---
 
@@ -46,6 +47,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT001   | Transmission of Monoradar Data Target Reports | 1.4 |
 | CAT002   | Transmission of Monoradar Service Messages | 1.2 |
 | CAT034   | Transmission of Monoradar Service Messages | 1.29 |
+| CAT048   | Monoradar Target Reports | 1.32 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -70,11 +72,14 @@ ASTERIXCodec/
 │   ├── CAT02_definition.txt         # Original EUROCONTROL source definition
 │   ├── CAT02.xml                    # XML spec consumed by the library
 │   ├── CAT34_definition.txt         # Original EUROCONTROL source definition
-│   └── CAT34.xml                    # XML spec consumed by the library
+│   ├── CAT34.xml                    # XML spec consumed by the library
+│   ├── CAT48_definition.txt         # Original EUROCONTROL source definition
+│   └── CAT48.xml                    # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
     ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
-    └── test_cat34.cpp               # 10 test cases covering all CAT34 item types incl. Compound
+    ├── test_cat34.cpp               # 10 test cases covering all CAT34 item types incl. Compound
+    └── test_cat48.cpp               # 10 test cases covering all CAT48 item types
 ```
 
 ---
@@ -102,11 +107,13 @@ cmake --build build -j$(nproc)
 ./build/test_cat01
 ./build/test_cat02
 ./build/test_cat34
+./build/test_cat48
 
 # Optionally override the spec file path
 ./build/test_cat01 /path/to/specs/CAT01.xml
 ./build/test_cat02 /path/to/specs/CAT02.xml
 ./build/test_cat34 /path/to/specs/CAT34.xml
+./build/test_cat48 /path/to/specs/CAT48.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.
