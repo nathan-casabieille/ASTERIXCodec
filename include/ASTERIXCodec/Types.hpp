@@ -28,6 +28,7 @@ enum class ItemType {
     RepetitiveGroup, // 1-byte count prefix, then count × structured group
     Explicit,        // First byte carries length; followed by that many bytes
     SP,              // Special Purpose Field (explicit, SP-marker in UAP)
+    Compound,        // PSF-driven optional sub-items, each a Fixed group
 };
 
 // ─── Mandatory / Conditional / Optional presence rule ─────────────────────────
@@ -60,6 +61,15 @@ struct OctetDef {
     std::vector<ElementDef> elements; // bits must sum to exactly 7
 };
 
+// ─── One sub-item inside a Compound Data Item ─────────────────────────────────
+// Each sub-item occupies one PSF slot and (if not unused) is a Fixed group.
+// "-" name means the slot is unused (reserved by the standard).
+struct CompoundSubItemDef {
+    std::string             name;          // "COM", "PSR", etc.; "-" = unused slot
+    std::vector<ElementDef> elements;      // Fields inside this sub-item
+    uint16_t                fixed_bytes{0};// Byte length of this sub-item (0 if unused)
+};
+
 // ─── Full definition of one Data Item ─────────────────────────────────────────
 struct DataItemDef {
     std::string id;    // "010", "020", … "SP"
@@ -82,6 +92,9 @@ struct DataItemDef {
 
     // Computed total byte length for Fixed items (filled by SpecLoader)
     uint16_t fixed_bytes{0};
+
+    // Compound: ordered sub-item definitions (one per PSF slot)
+    std::vector<CompoundSubItemDef> compound_sub_items;
 };
 
 // ─── UAP discriminator (e.g. I001/020 TYP selects plot vs. track) ─────────────
@@ -131,6 +144,10 @@ struct DecodedItem {
 
     // Explicit / SP: raw payload bytes (length byte itself is NOT included).
     std::vector<uint8_t> raw_bytes;
+
+    // Compound: present sub-items keyed by sub-item name.
+    // Each value is a map of { field_name → raw_uint64 } for that sub-item.
+    std::map<std::string, std::map<std::string, uint64_t>> compound_sub_fields;
 };
 
 // ─── A fully decoded Data Record ──────────────────────────────────────────────

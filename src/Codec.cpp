@@ -194,6 +194,47 @@ DecodedItem Codec::decodeItem(const DataItemDef& def,
         break;
     }
 
+    // ── Compound ──────────────────────────────────────────────────────────
+    // Wire format: PSF byte(s) [same FX-extension as outer FSPEC] followed by
+    // the fixed-size payload of each sub-item whose PSF slot bit is set.
+    // PSF bit mapping: bit 7 = sub-item 0, bit 6 = sub-item 1, … bit 1 = sub-item 6.
+    // bit 0 of each PSF byte is the FX continuation flag.
+    case ItemType::Compound: {
+        // Read PSF byte(s)
+        size_t offset = 0;
+        std::vector<uint8_t> psf;
+        do {
+            if (offset >= item_buf.size())
+                throw std::runtime_error("Item " + def.id + ": truncated Compound PSF");
+            uint8_t b = item_buf[offset++];
+            psf.push_back(b);
+        } while (psf.back() & 0x01u); // FX=1 means more PSF bytes follow
+
+        // Decode each sub-item whose PSF slot is set
+        for (size_t slot = 0; slot < def.compound_sub_items.size(); ++slot) {
+            const auto& si = def.compound_sub_items[slot];
+            size_t psf_byte = slot / 7;
+            size_t psf_bit  = 7 - (slot % 7); // bit 7 = slot 0, bit 1 = slot 6
+            bool   present  = (psf_byte < psf.size()) &&
+                              ((psf[psf_byte] >> psf_bit) & 0x01u);
+            if (!present || si.name == "-") continue;
+
+            if (offset + si.fixed_bytes > item_buf.size())
+                throw std::runtime_error("Item " + def.id + "/" + si.name +
+                                         ": buffer too short for Compound sub-item");
+            std::map<std::string, uint64_t> sub_fields;
+            BitReader br{item_buf.subspan(offset, si.fixed_bytes)};
+            for (const auto& e : si.elements) {
+                if (e.is_spare) { br.skip(e.bits); continue; }
+                sub_fields[e.name] = br.readU(e.bits);
+            }
+            out.compound_sub_fields[si.name] = std::move(sub_fields);
+            offset += si.fixed_bytes;
+        }
+        consumed = offset;
+        break;
+    }
+
     default:
         throw std::runtime_error("Item " + def.id + ": unsupported item type");
     }
@@ -457,6 +498,50 @@ std::vector<uint8_t> Codec::encodeItem(const DataItemDef& def,
         uint8_t len = static_cast<uint8_t>(val.raw_bytes.size() + 1);
         bw.writeByte(len);
         bw.writeBytes(val.raw_bytes);
+        break;
+    }
+
+    case ItemType::Compound: {
+        const auto& subs = def.compound_sub_items;
+
+        // Find the highest-indexed slot that has a present sub-item
+        int last_slot = -1;
+        for (size_t i = 0; i < subs.size(); ++i) {
+            if (subs[i].name != "-" && val.compound_sub_fields.count(subs[i].name))
+                last_slot = static_cast<int>(i);
+        }
+
+        // Always emit at least one PSF byte (even if nothing is present)
+        size_t last_psf_byte = (last_slot >= 0) ? (static_cast<size_t>(last_slot) / 7) : 0;
+        std::vector<uint8_t> psf_bytes(last_psf_byte + 1, 0);
+
+        for (size_t i = 0; i < subs.size(); ++i) {
+            if (subs[i].name == "-") continue;
+            if (!val.compound_sub_fields.count(subs[i].name)) continue;
+            size_t pb  = i / 7;
+            size_t bit = 7 - (i % 7);
+            psf_bytes[pb] |= static_cast<uint8_t>(1u << bit);
+        }
+        // FX bit for all PSF bytes except the last
+        for (size_t i = 0; i + 1 < psf_bytes.size(); ++i)
+            psf_bytes[i] |= 0x01u;
+
+        bw.writeBytes(psf_bytes);
+
+        // Write each present sub-item's fields in PSF slot order
+        for (const auto& si : subs) {
+            if (si.name == "-") continue;
+            auto it = val.compound_sub_fields.find(si.name);
+            if (it == val.compound_sub_fields.end()) continue;
+            const auto& sub_fields = it->second;
+            for (const auto& e : si.elements) {
+                if (e.is_spare) { bw.writeU(0, e.bits); continue; }
+                uint64_t v = 0;
+                auto fit = sub_fields.find(e.name);
+                if (fit != sub_fields.end()) v = fit->second;
+                bw.writeU(v, e.bits);
+            }
+        }
         break;
     }
 

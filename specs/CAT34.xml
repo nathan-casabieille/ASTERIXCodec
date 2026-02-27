@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT34.xml – ASTERIX Category 034 "Transmission of Monoradar Service Messages"
+  Edition 1.29, 2021-03-15.
+
+  Schema conventions (same as CAT01/CAT02, plus Compound):
+    <Fixed>             – byte-aligned, fixed-length group of named sub-elements.
+    <Compound>          – PSF-driven set of named sub-items, each a Fixed group.
+                          PSF byte: bit7=sub-item 0, bit6=sub-item 1, ..., bit0=FX.
+    <Repetitive type="count"> – 1-byte REP count, then REP × <Group>.
+    <Explicit type="re/sp">   – first byte is total length (incl. itself).
+    <Element>           – a named bit field inside a Fixed or Compound sub-item.
+    <Spare>             – anonymous pad bits.
+    <Entry>             – table row.
+
+  I034/050 and I034/060 use <Compound> with sub-items:
+    COM, - (unused), - (unused), PSR, SSR, MDS
+  PSF slot mapping (0-indexed):
+    slot 0 (PSF bit7) = COM
+    slot 1 (PSF bit6) = - (unused)
+    slot 2 (PSF bit5) = - (unused)
+    slot 3 (PSF bit4) = PSR
+    slot 4 (PSF bit3) = SSR
+    slot 5 (PSF bit2) = MDS
+-->
+<Category cat="34"
+          name="Transmission of Monoradar Service Messages"
+          edition="1.29"
+          date="2021-03-15">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type" presence="mandatory">
+      <Fixed>
+        <Element name="MT" bits="8" encoding="table">
+          <Entry value="1" meaning="North marker message"/>
+          <Entry value="2" meaning="Sector crossing message"/>
+          <Entry value="3" meaning="Geographical filtering message"/>
+          <Entry value="4" meaning="Jamming strobe message"/>
+          <Entry value="5" meaning="Solar Storm Message"/>
+          <Entry value="6" meaning="SSR Jamming Strobe Message"/>
+          <Entry value="7" meaning="Mode S Jamming Strobe Message"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/020 – Sector Number  (Fixed, 1 byte)
+         LSB = 360/2^8 = 1.40625 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Sector Number">
+      <Fixed>
+        <Element name="SN" bits="8" encoding="unsigned_quantity"
+                 scale="1.40625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/030 – Time of Day  (Fixed, 3 bytes)
+         LSB = 1/2^7 = 0.0078125 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/041 – Antenna Rotation Speed  (Fixed, 2 bytes)
+         LSB = 1/2^7 = 0.0078125 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="041" name="Antenna Rotation Speed">
+      <Fixed>
+        <Element name="ARS" bits="16" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/050 – System Configuration and Status  (Compound)
+         PSF slots (0-indexed):
+           0=COM (8b), 1=- (unused), 2=- (unused), 3=PSR (8b), 4=SSR (8b), 5=MDS (16b)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="050" name="System Configuration and Status">
+      <Compound>
+        <!-- slot 0: PSF bit7 – COM (1 byte) -->
+        <SubItem name="COM">
+          <Fixed>
+            <Element name="NOGO"   bits="1" encoding="table">
+              <Entry value="0" meaning="System is released for operational use"/>
+              <Entry value="1" meaning="Operational use of System is inhibited"/>
+            </Element>
+            <Element name="RDPC"   bits="1" encoding="table">
+              <Entry value="0" meaning="RDPC-1 selected"/>
+              <Entry value="1" meaning="RDPC-2 selected"/>
+            </Element>
+            <Element name="RDPR"   bits="1" encoding="table">
+              <Entry value="0" meaning="Default situation"/>
+              <Entry value="1" meaning="Reset of RDPC"/>
+            </Element>
+            <Element name="OVLRDP" bits="1" encoding="table">
+              <Entry value="0" meaning="Default, no overload"/>
+              <Entry value="1" meaning="Overload in RDP"/>
+            </Element>
+            <Element name="OVLXMT" bits="1" encoding="table">
+              <Entry value="0" meaning="Default, no overload"/>
+              <Entry value="1" meaning="Overload in transmission subsystem"/>
+            </Element>
+            <Element name="MSC"    bits="1" encoding="table">
+              <Entry value="0" meaning="Monitoring system connected"/>
+              <Entry value="1" meaning="Monitoring system disconnected"/>
+            </Element>
+            <Element name="TSV"    bits="1" encoding="table">
+              <Entry value="0" meaning="Valid"/>
+              <Entry value="1" meaning="Invalid"/>
+            </Element>
+            <Spare bits="1"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: PSF bit6 – unused -->
+        <SubItem name="-"/>
+        <!-- slot 2: PSF bit5 – unused -->
+        <SubItem name="-"/>
+        <!-- slot 3: PSF bit4 – PSR (1 byte) -->
+        <SubItem name="PSR">
+          <Fixed>
+            <Element name="ANT"  bits="1" encoding="table">
+              <Entry value="0" meaning="Antenna 1"/>
+              <Entry value="1" meaning="Antenna 2"/>
+            </Element>
+            <Element name="CHAB" bits="2" encoding="table">
+              <Entry value="0" meaning="No channel selected"/>
+              <Entry value="1" meaning="Channel A only selected"/>
+              <Entry value="2" meaning="Channel B only selected"/>
+              <Entry value="3" meaning="Diversity mode; Channel A and B selected"/>
+            </Element>
+            <Element name="OVL"  bits="1" encoding="table">
+              <Entry value="0" meaning="No overload"/>
+              <Entry value="1" meaning="Overload"/>
+            </Element>
+            <Element name="MSC"  bits="1" encoding="table">
+              <Entry value="0" meaning="Monitoring system connected"/>
+              <Entry value="1" meaning="Monitoring system disconnected"/>
+            </Element>
+            <Spare bits="3"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: PSF bit3 – SSR (1 byte) -->
+        <SubItem name="SSR">
+          <Fixed>
+            <Element name="ANT"  bits="1" encoding="table">
+              <Entry value="0" meaning="Antenna 1"/>
+              <Entry value="1" meaning="Antenna 2"/>
+            </Element>
+            <Element name="CHAB" bits="2" encoding="table">
+              <Entry value="0" meaning="No channel selected"/>
+              <Entry value="1" meaning="Channel A only selected"/>
+              <Entry value="2" meaning="Channel B only selected"/>
+              <Entry value="3" meaning="Invalid combination"/>
+            </Element>
+            <Element name="OVL"  bits="1" encoding="table">
+              <Entry value="0" meaning="No overload"/>
+              <Entry value="1" meaning="Overload"/>
+            </Element>
+            <Element name="MSC"  bits="1" encoding="table">
+              <Entry value="0" meaning="Monitoring system connected"/>
+              <Entry value="1" meaning="Monitoring system disconnected"/>
+            </Element>
+            <Spare bits="3"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: PSF bit2 – MDS (2 bytes) -->
+        <SubItem name="MDS">
+          <Fixed>
+            <Element name="ANT"    bits="1" encoding="table">
+              <Entry value="0" meaning="Antenna 1"/>
+              <Entry value="1" meaning="Antenna 2"/>
+            </Element>
+            <Element name="CHAB"   bits="2" encoding="table">
+              <Entry value="0" meaning="No channel selected"/>
+              <Entry value="1" meaning="Channel A only selected"/>
+              <Entry value="2" meaning="Channel B only selected"/>
+              <Entry value="3" meaning="Illegal combination"/>
+            </Element>
+            <Element name="OVLSUR" bits="1" encoding="table">
+              <Entry value="0" meaning="No overload"/>
+              <Entry value="1" meaning="Overload"/>
+            </Element>
+            <Element name="MSC"    bits="1" encoding="table">
+              <Entry value="0" meaning="Monitoring system connected"/>
+              <Entry value="1" meaning="Monitoring system disconnected"/>
+            </Element>
+            <Element name="SCF"    bits="1" encoding="table">
+              <Entry value="0" meaning="Channel A in use"/>
+              <Entry value="1" meaning="Channel B in use"/>
+            </Element>
+            <Element name="DLF"    bits="1" encoding="table">
+              <Entry value="0" meaning="Channel A in use"/>
+              <Entry value="1" meaning="Channel B in use"/>
+            </Element>
+            <Element name="OVLSCF" bits="1" encoding="table">
+              <Entry value="0" meaning="No overload"/>
+              <Entry value="1" meaning="Overload"/>
+            </Element>
+            <Element name="OVLDLF" bits="1" encoding="table">
+              <Entry value="0" meaning="No overload"/>
+              <Entry value="1" meaning="Overload"/>
+            </Element>
+            <Spare bits="7"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/060 – System Processing Mode  (Compound)
+         PSF slots (0-indexed):
+           0=COM (8b), 1=- (unused), 2=- (unused), 3=PSR (8b), 4=SSR (8b), 5=MDS (8b)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="System Processing Mode">
+      <Compound>
+        <!-- slot 0: PSF bit7 – COM (1 byte) -->
+        <SubItem name="COM">
+          <Fixed>
+            <Spare bits="1"/>
+            <Element name="REDRDP" bits="3" encoding="table">
+              <Entry value="0" meaning="No reduction active"/>
+              <Entry value="1" meaning="Reduction step 1 active"/>
+              <Entry value="2" meaning="Reduction step 2 active"/>
+              <Entry value="3" meaning="Reduction step 3 active"/>
+              <Entry value="4" meaning="Reduction step 4 active"/>
+              <Entry value="5" meaning="Reduction step 5 active"/>
+              <Entry value="6" meaning="Reduction step 6 active"/>
+              <Entry value="7" meaning="Reduction step 7 active"/>
+            </Element>
+            <Element name="REDXMT" bits="3" encoding="table">
+              <Entry value="0" meaning="No reduction active"/>
+              <Entry value="1" meaning="Reduction step 1 active"/>
+              <Entry value="2" meaning="Reduction step 2 active"/>
+              <Entry value="3" meaning="Reduction step 3 active"/>
+              <Entry value="4" meaning="Reduction step 4 active"/>
+              <Entry value="5" meaning="Reduction step 5 active"/>
+              <Entry value="6" meaning="Reduction step 6 active"/>
+              <Entry value="7" meaning="Reduction step 7 active"/>
+            </Element>
+            <Spare bits="1"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: PSF bit6 – unused -->
+        <SubItem name="-"/>
+        <!-- slot 2: PSF bit5 – unused -->
+        <SubItem name="-"/>
+        <!-- slot 3: PSF bit4 – PSR (1 byte) -->
+        <SubItem name="PSR">
+          <Fixed>
+            <Element name="POL"    bits="1" encoding="table">
+              <Entry value="0" meaning="Linear polarization"/>
+              <Entry value="1" meaning="Circular polarization"/>
+            </Element>
+            <Element name="REDRAD" bits="3" encoding="table">
+              <Entry value="0" meaning="No reduction active"/>
+              <Entry value="1" meaning="Reduction step 1 active"/>
+              <Entry value="2" meaning="Reduction step 2 active"/>
+              <Entry value="3" meaning="Reduction step 3 active"/>
+              <Entry value="4" meaning="Reduction step 4 active"/>
+              <Entry value="5" meaning="Reduction step 5 active"/>
+              <Entry value="6" meaning="Reduction step 6 active"/>
+              <Entry value="7" meaning="Reduction step 7 active"/>
+            </Element>
+            <Element name="STC"    bits="2" encoding="table">
+              <Entry value="0" meaning="STC Map-1"/>
+              <Entry value="1" meaning="STC Map-2"/>
+              <Entry value="2" meaning="STC Map-3"/>
+              <Entry value="3" meaning="STC Map-4"/>
+            </Element>
+            <Spare bits="2"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: PSF bit3 – SSR (1 byte) -->
+        <SubItem name="SSR">
+          <Fixed>
+            <Element name="REDRAD" bits="3" encoding="table">
+              <Entry value="0" meaning="No reduction active"/>
+              <Entry value="1" meaning="Reduction step 1 active"/>
+              <Entry value="2" meaning="Reduction step 2 active"/>
+              <Entry value="3" meaning="Reduction step 3 active"/>
+              <Entry value="4" meaning="Reduction step 4 active"/>
+              <Entry value="5" meaning="Reduction step 5 active"/>
+              <Entry value="6" meaning="Reduction step 6 active"/>
+              <Entry value="7" meaning="Reduction step 7 active"/>
+            </Element>
+            <Spare bits="5"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: PSF bit2 – MDS (1 byte) -->
+        <SubItem name="MDS">
+          <Fixed>
+            <Element name="REDRAD" bits="3" encoding="table">
+              <Entry value="0" meaning="No reduction active"/>
+              <Entry value="1" meaning="Reduction step 1 active"/>
+              <Entry value="2" meaning="Reduction step 2 active"/>
+              <Entry value="3" meaning="Reduction step 3 active"/>
+              <Entry value="4" meaning="Reduction step 4 active"/>
+              <Entry value="5" meaning="Reduction step 5 active"/>
+              <Entry value="6" meaning="Reduction step 6 active"/>
+              <Entry value="7" meaning="Reduction step 7 active"/>
+            </Element>
+            <Element name="CLU"    bits="1" encoding="table">
+              <Entry value="0" meaning="Autonomous"/>
+              <Entry value="1" meaning="Not autonomous"/>
+            </Element>
+            <Spare bits="4"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/070 – Message Count Values  (Repetitive count-prefixed)
+         REP(1B) + REP × { TYP(5b) + COUNT(11b) } = REP × 2B
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="070" name="Message Count Values">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="TYP" bits="5" encoding="table">
+            <Entry value="0"  meaning="No detection (number of misses)"/>
+            <Entry value="1"  meaning="Single PSR target reports"/>
+            <Entry value="2"  meaning="Single SSR target reports (Non-Mode S)"/>
+            <Entry value="3"  meaning="SSR+PSR target reports (Non-Mode S)"/>
+            <Entry value="4"  meaning="Single All-Call target reports (Mode S)"/>
+            <Entry value="5"  meaning="Single Roll-Call target reports (Mode S)"/>
+            <Entry value="6"  meaning="All-Call + PSR (Mode S) target reports"/>
+            <Entry value="7"  meaning="Roll-Call + PSR (Mode S) target reports"/>
+            <Entry value="8"  meaning="Filter for Weather data"/>
+            <Entry value="9"  meaning="Filter for Jamming Strobe"/>
+            <Entry value="10" meaning="Filter for PSR data"/>
+            <Entry value="11" meaning="Filter for SSR/Mode S data"/>
+            <Entry value="12" meaning="Filter for SSR/Mode S+PSR data"/>
+            <Entry value="13" meaning="Filter for Enhanced Surveillance data"/>
+            <Entry value="14" meaning="Filter for PSR+Enhanced Surveillance"/>
+            <Entry value="15" meaning="Filter for PSR+Enhanced Surveillance + SSR/Mode S data not in Area of Prime Interest"/>
+            <Entry value="16" meaning="Filter for PSR+Enhanced Surveillance + all SSR/Mode S data"/>
+            <Entry value="17" meaning="Re-Interrogations (per sector)"/>
+            <Entry value="18" meaning="BDS Swap and wrong DF replies (per sector)"/>
+            <Entry value="19" meaning="Mode A/C FRUIT (per sector)"/>
+            <Entry value="20" meaning="Mode S FRUIT (per sector)"/>
+          </Element>
+          <Element name="COUNT" bits="11" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/090 – Collimation Error  (Fixed, 2 bytes)
+         RNG: LSB = 1/2^7 NM (signed)
+         AZM: LSB = 360/2^14 ° (signed)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Collimation Error">
+      <Fixed>
+        <Element name="RNG" bits="8" encoding="signed_quantity"
+                 scale="0.0078125" unit="NM"/>
+        <Element name="AZM" bits="8" encoding="signed_quantity"
+                 scale="0.02197265625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/100 – Generic Polar Window  (Fixed, 8 bytes)
+         RHOST/RHOEND: LSB = 1/2^8 = 0.00390625 NM (unsigned, max 256)
+         THETAST/THETAEND: LSB = 360/2^16 ° (unsigned)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="100" name="Generic Polar Window">
+      <Fixed>
+        <Element name="RHOST"    bits="16" encoding="unsigned_quantity"
+                 scale="0.00390625" unit="NM" max="256"/>
+        <Element name="RHOEND"   bits="16" encoding="unsigned_quantity"
+                 scale="0.00390625" unit="NM" max="256"/>
+        <Element name="THETAST"  bits="16" encoding="unsigned_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+        <Element name="THETAEND" bits="16" encoding="unsigned_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/110 – Data Filter  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="110" name="Data Filter">
+      <Fixed>
+        <Element name="TF" bits="8" encoding="table">
+          <Entry value="0" meaning="Invalid value"/>
+          <Entry value="1" meaning="Filter for Weather data"/>
+          <Entry value="2" meaning="Filter for Jamming Strobe"/>
+          <Entry value="3" meaning="Filter for PSR data"/>
+          <Entry value="4" meaning="Filter for SSR/Mode S data"/>
+          <Entry value="5" meaning="Filter for SSR/Mode S + PSR data"/>
+          <Entry value="6" meaning="Enhanced Surveillance data"/>
+          <Entry value="7" meaning="Filter for PSR+Enhanced Surveillance data"/>
+          <Entry value="8" meaning="Filter for PSR+Enhanced Surveillance + SSR/Mode S data not in Area of Prime Interest"/>
+          <Entry value="9" meaning="Filter for PSR+Enhanced Surveillance + all SSR/Mode S data"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I034/120 – 3D-Position Of Data Source  (Fixed, 8 bytes)
+         HGT: 16-bit signed, 1 m/LSB
+         LAT: 24-bit signed, 180/2^23 °/LSB  (range -90..+90)
+         LON: 24-bit signed, 180/2^23 °/LSB  (range -180..+180)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="120" name="3D-Position Of Data Source">
+      <Fixed>
+        <Element name="HGT" bits="16" encoding="signed_quantity"
+                 scale="1.0" unit="m"/>
+        <Element name="LAT" bits="24" encoding="signed_quantity"
+                 scale="0.000021457672119140625" unit="deg" min="-90" max="90"/>
+        <Element name="LON" bits="24" encoding="signed_quantity"
+                 scale="0.000021457672119140625" unit="deg" min="-180" max="180"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RE – Reserved Expansion Field  (Explicit: first byte = total length)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field  (Explicit: first byte = total length)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP (User Application Profile) – single variation, no discriminator.
+       "-"   = unused FSPEC slot.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+
+    <Variation name="default">
+      <Item ref="010"/>  <!-- FSPEC slot  1 -->
+      <Item ref="000"/>  <!-- FSPEC slot  2 -->
+      <Item ref="030"/>  <!-- FSPEC slot  3 -->
+      <Item ref="020"/>  <!-- FSPEC slot  4 -->
+      <Item ref="041"/>  <!-- FSPEC slot  5 -->
+      <Item ref="050"/>  <!-- FSPEC slot  6 -->
+      <Item ref="060"/>  <!-- FSPEC slot  7 -->
+      <Item ref="070"/>  <!-- FSPEC slot  8 -->
+      <Item ref="100"/>  <!-- FSPEC slot  9 -->
+      <Item ref="110"/>  <!-- FSPEC slot 10 -->
+      <Item ref="120"/>  <!-- FSPEC slot 11 -->
+      <Item ref="090"/>  <!-- FSPEC slot 12 -->
+      <Item ref="RE"/>   <!-- FSPEC slot 13 -->
+      <Item ref="SP"/>   <!-- FSPEC slot 14 -->
+    </Variation>
+
+  </UAPs>
+
+</Category>

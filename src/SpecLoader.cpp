@@ -175,6 +175,46 @@ static void parseExplicit(pugi::xml_node /*node*/, DataItemDef& item) {
     item.type = ItemType::SP; // both SP and generic Explicit handled the same way
 }
 
+// ─── Parse a <Compound> block ─────────────────────────────────────────────────
+// Each <SubItem name="..."> holds a <Fixed> with elements.
+// <SubItem name="-"/> marks an unused PSF slot (no data follows when set).
+
+static void parseCompound(pugi::xml_node node, DataItemDef& item) {
+    item.type = ItemType::Compound;
+
+    for (auto sub_node : node.children("SubItem")) {
+        CompoundSubItemDef si;
+        si.name = sub_node.attribute("name").as_string("-");
+
+        if (si.name != "-") {
+            auto fixed_node = sub_node.child("Fixed");
+            if (!fixed_node)
+                throw SpecLoadError("Compound '" + item.id + "' SubItem '" +
+                                    si.name + "' has no <Fixed>");
+
+            uint32_t total_bits = 0;
+            for (auto child : fixed_node.children()) {
+                if (strcmp(child.name(), "Element") == 0 ||
+                    strcmp(child.name(), "Spare")   == 0) {
+                    ElementDef e = parseElementNode(child);
+                    total_bits  += e.bits;
+                    si.elements.push_back(std::move(e));
+                }
+            }
+            if (total_bits % 8 != 0)
+                throw SpecLoadError("Compound '" + item.id + "' SubItem '" +
+                                    si.name + "' total bits (" +
+                                    std::to_string(total_bits) +
+                                    ") not a multiple of 8");
+            si.fixed_bytes = static_cast<uint16_t>(total_bits / 8);
+        }
+        item.compound_sub_items.push_back(std::move(si));
+    }
+
+    if (item.compound_sub_items.empty())
+        throw SpecLoadError("Compound item '" + item.id + "' has no <SubItem> children");
+}
+
 // ─── Parse one <DataItem> node ────────────────────────────────────────────────
 
 static DataItemDef parseDataItem(pugi::xml_node node) {
@@ -190,6 +230,7 @@ static DataItemDef parseDataItem(pugi::xml_node node) {
     else if (auto ext = node.child("Extended"))   parseExtended(ext, item);
     else if (auto rep = node.child("Repetitive")) parseRepetitive(rep, item);
     else if (auto exp = node.child("Explicit"))   parseExplicit(exp, item);
+    else if (auto cmp = node.child("Compound"))   parseCompound(cmp, item);
     else
         throw SpecLoadError("DataItem '" + item.id + "' has no recognised type element");
 

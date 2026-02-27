@@ -17,6 +17,7 @@
 |----------|-------|
 | CAT001   | [![CAT01 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml) |
 | CAT002   | [![CAT02 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml) |
+| CAT034   | [![CAT34 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml) |
 
 ---
 
@@ -29,7 +30,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 ## Features
 
 - **XML-driven data dictionary** — category definitions (items, encodings, UAP) are parsed from `specs/CATXX.xml` via [pugixml](https://github.com/zeux/pugixml); no hardcoded category logic.
-- **All standard item types** — Fixed (group), Extended (FX-bit chaining), Repetitive (FX-bit list), RepetitiveGroup (count-prefixed structured groups), and Explicit/SP.
+- **All standard item types** — Fixed (group), Extended (FX-bit chaining), Repetitive (FX-bit list), RepetitiveGroup (count-prefixed structured groups), Compound (PSF-driven optional sub-items), and Explicit/SP.
 - **Dynamic UAP selection** — for CAT01 the plot/track variant is auto-detected from `I001/020 TYP` on a per-record basis.
 - **Multi-record blocks** — a single Data Block can carry any number of Data Records; the decode loop handles them correctly.
 - **Strict bounds checking** — `BitReader` and `BitWriter` throw on any out-of-bounds access; mandatory-item violations are flagged on the `DecodedRecord`.
@@ -44,6 +45,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 |----------|-------------|---------|
 | CAT001   | Transmission of Monoradar Data Target Reports | 1.4 |
 | CAT002   | Transmission of Monoradar Service Messages | 1.2 |
+| CAT034   | Transmission of Monoradar Service Messages | 1.29 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -66,10 +68,13 @@ ASTERIXCodec/
 │   ├── CAT01_definition.txt         # Original EUROCONTROL source definition
 │   ├── CAT01.xml                    # XML spec consumed by the library
 │   ├── CAT02_definition.txt         # Original EUROCONTROL source definition
-│   └── CAT02.xml                    # XML spec consumed by the library
+│   ├── CAT02.xml                    # XML spec consumed by the library
+│   ├── CAT34_definition.txt         # Original EUROCONTROL source definition
+│   └── CAT34.xml                    # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
-    └── test_cat02.cpp               # 7 test cases covering all CAT02 item types
+    ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
+    └── test_cat34.cpp               # 10 test cases covering all CAT34 item types incl. Compound
 ```
 
 ---
@@ -96,10 +101,12 @@ cmake --build build -j$(nproc)
 # Run tests
 ./build/test_cat01
 ./build/test_cat02
+./build/test_cat34
 
 # Optionally override the spec file path
 ./build/test_cat01 /path/to/specs/CAT01.xml
 ./build/test_cat02 /path/to/specs/CAT02.xml
+./build/test_cat34 /path/to/specs/CAT34.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.
@@ -170,7 +177,8 @@ Data Block
 | Extended | Variable octets; each = 7 data bits + 1 FX bit |
 | Repetitive | FX-terminated list; each octet = 7-bit value + FX |
 | RepetitiveGroup | 1-byte count prefix; then N × structured sub-element group |
-| Explicit (SP) | First byte = total length (inclusive); raw payload follows |
+| Compound | PSF indicator byte(s) select optional named sub-items (each a Fixed group) |
+| Explicit (SP/RE) | First byte = total length (inclusive); raw payload follows |
 
 **CAT01 UAP selection** — `I001/020` field `TYP` acts as a discriminator: `TYP=0` selects the **plot** UAP, `TYP=1` selects the **track** UAP. Because both UAPs share the same first two FSPEC slots (I010, I020), a single decode pass is sufficient.
 
@@ -223,6 +231,30 @@ The `specs/CAT01.xml` file follows this structure:
       </Repetitive>
     </DataItem>
 
+    <!-- Compound item (e.g. CAT034/050 System Configuration and Status)        -->
+    <!-- PSF byte: bit7=sub-item 0, …, bit1=sub-item 6, bit0=FX continuation  -->
+    <!-- Only present sub-items follow the PSF byte(s) on the wire.            -->
+    <DataItem id="050" name="System Configuration and Status">
+      <Compound>
+        <SubItem name="COM">           <!-- slot 0: PSF bit7 -->
+          <Fixed>
+            <Element name="NOGO" bits="1" encoding="table">
+              <Entry value="0" meaning="System is released for operational use"/>
+              <Entry value="1" meaning="Operational use of System is inhibited"/>
+            </Element>
+            <!-- … -->
+            <Spare bits="1"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="-"/>            <!-- slot 1: PSF bit6 – unused -->
+        <SubItem name="-"/>            <!-- slot 2: PSF bit5 – unused -->
+        <SubItem name="PSR">           <!-- slot 3: PSF bit4 -->
+          <Fixed> <!-- … --> </Fixed>
+        </SubItem>
+        <!-- … -->
+      </Compound>
+    </DataItem>
+
     <!-- Special Purpose Field -->
     <DataItem id="SP" name="Special Purpose Field">
       <Explicit type="sp"/>
@@ -247,6 +279,8 @@ The `specs/CAT01.xml` file follows this structure:
 ```
 
 **Supported `encoding` values:** `raw`, `table`, `unsigned_quantity`, `signed_quantity`, `string_octal`.
+
+Decoded Compound sub-fields are accessed via `item.compound_sub_fields["COM"]["NOGO"]`.
 
 ---
 
