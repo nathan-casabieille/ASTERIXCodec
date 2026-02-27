@@ -22,11 +22,12 @@ enum class Encoding {
 
 // ─── Item structural type ─────────────────────────────────────────────────────
 enum class ItemType {
-    Fixed,      // Fixed byte-length; one or more sub-elements
-    Extended,   // Variable octets, each with a trailing FX bit
-    Repetitive, // N octets, each = 7-bit value + FX bit (list semantics)
-    Explicit,   // First byte carries length; followed by that many bytes
-    SP,         // Special Purpose Field (explicit, SP-marker in UAP)
+    Fixed,           // Fixed byte-length; one or more sub-elements
+    Extended,        // Variable octets, each with a trailing FX bit
+    Repetitive,      // N octets, each = 7-bit value + FX bit (list semantics)
+    RepetitiveGroup, // 1-byte count prefix, then count × structured group
+    Explicit,        // First byte carries length; followed by that many bytes
+    SP,              // Special Purpose Field (explicit, SP-marker in UAP)
 };
 
 // ─── Mandatory / Conditional / Optional presence rule ─────────────────────────
@@ -72,8 +73,12 @@ struct DataItemDef {
     // Extended: per-octet element lists
     std::vector<OctetDef> octets;
 
-    // Repetitive: the single repeated 7-bit element template
+    // Repetitive (FX-based): the single repeated 7-bit element template
     ElementDef rep_element;
+
+    // RepetitiveGroup (count-prefixed): elements for each structured group
+    std::vector<ElementDef> rep_group_elements;
+    uint16_t rep_group_bits{0};  // total bits per group (sum of element bits)
 
     // Computed total byte length for Fixed items (filled by SpecLoader)
     uint16_t fixed_bytes{0};
@@ -118,8 +123,11 @@ struct DecodedItem {
     // Value is the raw unsigned integer extracted from the wire.
     std::map<std::string, uint64_t> fields;
 
-    // Repetitive items: each entry is the 7-bit raw value.
+    // Repetitive (FX-based) items: each entry is the 7-bit raw value.
     std::vector<uint64_t> repetitions;
+
+    // RepetitiveGroup items: each entry holds one group's named field values.
+    std::vector<std::map<std::string, uint64_t>> group_repetitions;
 
     // Explicit / SP: raw payload bytes (length byte itself is NOT included).
     std::vector<uint8_t> raw_bytes;

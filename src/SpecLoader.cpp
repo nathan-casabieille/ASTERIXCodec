@@ -126,17 +126,47 @@ static void parseExtended(pugi::xml_node node, DataItemDef& item) {
 // ─── Parse a <Repetitive> block ───────────────────────────────────────────────
 
 static void parseRepetitive(pugi::xml_node node, DataItemDef& item) {
-    item.type = ItemType::Repetitive;
-    // Exactly one <Element> child expected (the 7-bit repeated field)
-    auto elem_node = node.child("Element");
-    if (!elem_node)
-        throw SpecLoadError("Repetitive item '" + item.id + "' has no <Element>");
+    std::string rep_type = node.attribute("type").as_string("fx");
 
-    ElementDef e = parseElementNode(elem_node);
-    if (e.bits != 7)
+    if (rep_type == "fx") {
+        item.type = ItemType::Repetitive;
+        // Exactly one <Element> child expected (the 7-bit repeated field)
+        auto elem_node = node.child("Element");
+        if (!elem_node)
+            throw SpecLoadError("Repetitive item '" + item.id + "' has no <Element>");
+
+        ElementDef e = parseElementNode(elem_node);
+        if (e.bits != 7)
+            throw SpecLoadError("Repetitive item '" + item.id +
+                                "' element must be 7 bits, got " + std::to_string(e.bits));
+        item.rep_element = std::move(e);
+
+    } else if (rep_type == "count") {
+        item.type = ItemType::RepetitiveGroup;
+        auto grp_node = node.child("Group");
+        if (!grp_node)
+            throw SpecLoadError("Repetitive[count] item '" + item.id + "' has no <Group>");
+
+        uint32_t total_bits = 0;
+        for (auto child : grp_node.children()) {
+            if (strcmp(child.name(), "Element") == 0 || strcmp(child.name(), "Spare") == 0) {
+                ElementDef e = parseElementNode(child);
+                total_bits += e.bits;
+                item.rep_group_elements.push_back(std::move(e));
+            }
+        }
+        if (item.rep_group_elements.empty())
+            throw SpecLoadError("Repetitive[count] item '" + item.id + "' <Group> has no elements");
+        if (total_bits % 8 != 0)
+            throw SpecLoadError("Repetitive[count] item '" + item.id +
+                                "' group bits (" + std::to_string(total_bits) +
+                                ") not a multiple of 8");
+        item.rep_group_bits = static_cast<uint16_t>(total_bits);
+
+    } else {
         throw SpecLoadError("Repetitive item '" + item.id +
-                            "' element must be 7 bits, got " + std::to_string(e.bits));
-    item.rep_element = std::move(e);
+                            "' unknown type '" + rep_type + "'");
+    }
 }
 
 // ─── Parse an <Explicit> block ────────────────────────────────────────────────

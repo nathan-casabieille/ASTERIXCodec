@@ -156,6 +156,31 @@ DecodedItem Codec::decodeItem(const DataItemDef& def,
         break;
     }
 
+    // ── Repetitive count-prefixed (structured group) ───────────────────────
+    case ItemType::RepetitiveGroup: {
+        if (item_buf.empty())
+            throw std::runtime_error("Item " + def.id + ": buffer too short for RepetitiveGroup");
+        uint8_t rep_count  = item_buf[0];
+        size_t  group_bytes = static_cast<size_t>(def.rep_group_bits) / 8;
+        size_t  total_need  = 1 + static_cast<size_t>(rep_count) * group_bytes;
+        if (item_buf.size() < total_need)
+            throw std::runtime_error("Item " + def.id + ": buffer too short for RepetitiveGroup data");
+
+        size_t offset = 1;
+        for (uint8_t i = 0; i < rep_count; ++i) {
+            std::map<std::string, uint64_t> grp;
+            BitReader br{item_buf.subspan(offset, group_bytes)};
+            for (const auto& e : def.rep_group_elements) {
+                if (e.is_spare) { br.skip(e.bits); continue; }
+                grp[e.name] = br.readU(e.bits);
+            }
+            out.group_repetitions.push_back(std::move(grp));
+            offset += group_bytes;
+        }
+        consumed = total_need;
+        break;
+    }
+
     // ── Explicit / SP ─────────────────────────────────────────────────────
     case ItemType::SP: {
         if (item_buf.empty())
@@ -408,6 +433,21 @@ std::vector<uint8_t> Codec::encodeItem(const DataItemDef& def,
         if (reps.empty()) {
             bw.writeU(0, 7);
             bw.writeBit(false);
+        }
+        break;
+    }
+
+    case ItemType::RepetitiveGroup: {
+        const auto& grps = val.group_repetitions;
+        bw.writeByte(static_cast<uint8_t>(grps.size())); // 1-byte count prefix
+        for (const auto& grp : grps) {
+            for (const auto& e : def.rep_group_elements) {
+                if (e.is_spare) { bw.writeU(0, e.bits); continue; }
+                uint64_t v = 0;
+                auto it = grp.find(e.name);
+                if (it != grp.end()) v = it->second;
+                bw.writeU(v, e.bits);
+            }
         }
         break;
     }

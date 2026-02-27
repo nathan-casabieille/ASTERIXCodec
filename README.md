@@ -16,6 +16,7 @@
 | Category | Tests |
 |----------|-------|
 | CAT001   | [![CAT01 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat01.yml) |
+| CAT002   | [![CAT02 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat02.yml) |
 
 ---
 
@@ -27,8 +28,8 @@ The category structure is loaded at runtime from an XML file, making it straight
 
 ## Features
 
-- **XML-driven data dictionary** — category definitions (items, encodings, UAP) are parsed from `specs/CAT01.xml` via [pugixml](https://github.com/zeux/pugixml); no hardcoded category logic.
-- **All standard item types** — Fixed (group), Extended (FX-bit chaining), Repetitive (FX-bit list), and Explicit/SP.
+- **XML-driven data dictionary** — category definitions (items, encodings, UAP) are parsed from `specs/CATXX.xml` via [pugixml](https://github.com/zeux/pugixml); no hardcoded category logic.
+- **All standard item types** — Fixed (group), Extended (FX-bit chaining), Repetitive (FX-bit list), RepetitiveGroup (count-prefixed structured groups), and Explicit/SP.
 - **Dynamic UAP selection** — for CAT01 the plot/track variant is auto-detected from `I001/020 TYP` on a per-record basis.
 - **Multi-record blocks** — a single Data Block can carry any number of Data Records; the decode loop handles them correctly.
 - **Strict bounds checking** — `BitReader` and `BitWriter` throw on any out-of-bounds access; mandatory-item violations are flagged on the `DecodedRecord`.
@@ -42,6 +43,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | Category | Description | Edition |
 |----------|-------------|---------|
 | CAT001   | Transmission of Monoradar Data Target Reports | 1.4 |
+| CAT002   | Transmission of Monoradar Service Messages | 1.2 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -62,9 +64,12 @@ ASTERIXCodec/
 │   └── Codec.cpp                    # FSPEC + item decode/encode engine
 ├── specs/
 │   ├── CAT01_definition.txt         # Original EUROCONTROL source definition
-│   └── CAT01.xml                    # XML spec consumed by the library
+│   ├── CAT01.xml                    # XML spec consumed by the library
+│   ├── CAT02_definition.txt         # Original EUROCONTROL source definition
+│   └── CAT02.xml                    # XML spec consumed by the library
 └── tests/
-    └── test_cat01.cpp               # 7 test cases, 87+ assertions
+    ├── test_cat01.cpp               # 7 test cases, 87+ assertions
+    └── test_cat02.cpp               # 7 test cases covering all CAT02 item types
 ```
 
 ---
@@ -90,9 +95,11 @@ cmake --build build -j$(nproc)
 
 # Run tests
 ./build/test_cat01
+./build/test_cat02
 
 # Optionally override the spec file path
 ./build/test_cat01 /path/to/specs/CAT01.xml
+./build/test_cat02 /path/to/specs/CAT02.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.
@@ -162,6 +169,7 @@ Data Block
 | Fixed | Fixed-length; sub-elements bit-packed MSB-first |
 | Extended | Variable octets; each = 7 data bits + 1 FX bit |
 | Repetitive | FX-terminated list; each octet = 7-bit value + FX |
+| RepetitiveGroup | 1-byte count prefix; then N × structured sub-element group |
 | Explicit (SP) | First byte = total length (inclusive); raw payload follows |
 
 **CAT01 UAP selection** — `I001/020` field `TYP` acts as a discriminator: `TYP=0` selects the **plot** UAP, `TYP=1` selects the **track** UAP. Because both UAPs share the same first two FSPEC slots (I010, I020), a single decode pass is sufficient.
@@ -201,6 +209,17 @@ The `specs/CAT01.xml` file follows this structure:
     <DataItem id="030" name="Warning/Error Conditions">
       <Repetitive type="fx">
         <Element bits="7" encoding="table"> <!-- ... --> </Element>
+      </Repetitive>
+    </DataItem>
+
+    <!-- Repetitive count-prefixed structured group (e.g. CAT002/070) -->
+    <DataItem id="070" name="Plot Count Values">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="A"       bits="1"  encoding="table"/>
+          <Element name="IDENT"   bits="5"  encoding="table"/>
+          <Element name="COUNTER" bits="10" encoding="raw"/>
+        </Group>
       </Repetitive>
     </DataItem>
 

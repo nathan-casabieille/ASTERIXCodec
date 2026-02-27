@@ -38,8 +38,11 @@ target_compile_options(ASTERIXCodec PRIVATE
 )
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
-option(ASTERIX_BUILD_TESTS "Build CAT01 test executable" ON)
+option(ASTERIX_BUILD_TESTS "Build test executables" ON)
 if(ASTERIX_BUILD_TESTS)
     add_executable(test_cat01 tests/test_cat01.cpp)
     target_link_libraries(test_cat01 PRIVATE ASTERIXCodec)
+
+    add_executable(test_cat02 tests/test_cat02.cpp)
+    target_link_libraries(test_cat02 PRIVATE ASTERIXCodec)
 endif()

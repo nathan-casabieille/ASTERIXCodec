@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT02.xml – ASTERIX Category 002 "Transmission of Monoradar Service Messages"
+  Edition 1.2, 2024-03-15.
+
+  Schema conventions (same as CAT01):
+    <Fixed>         – byte-aligned, fixed-length group of named sub-elements.
+    <Repetitive type="fx">    – FX-based list: each byte = 7 data bits + FX bit.
+    <Repetitive type="count"> – Count-prefixed list: 1-byte REP count, then
+                                REP × <Group> of structured sub-elements.
+    <Explicit type="sp">      – first byte is total length (incl. itself).
+    <Element>       – a named bit field.
+    <Spare>         – anonymous pad bits.
+    <Entry>         – table row.
+-->
+<Category cat="2"
+          name="Transmission of Monoradar Service Messages"
+          edition="1.2"
+          date="2024-03-15">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type" presence="mandatory">
+      <Fixed>
+        <Element name="MT" bits="8" encoding="table">
+          <Entry value="1" meaning="North marker message"/>
+          <Entry value="2" meaning="Sector crossing message"/>
+          <Entry value="3" meaning="South marker message"/>
+          <Entry value="8" meaning="Activation of blind zone filtering"/>
+          <Entry value="9" meaning="Stop of blind zone filtering"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/020 – Sector Number  (Fixed, 1 byte)
+         LSB = 360/2^8 = 1.40625 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Sector Number">
+      <Fixed>
+        <Element name="SN" bits="8" encoding="unsigned_quantity"
+                 scale="1.40625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/030 – Time of Day  (Fixed, 3 bytes)
+         LSB = 1/2^7 = 0.0078125 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/041 – Antenna Rotation Speed  (Fixed, 2 bytes)
+         LSB = 1/2^7 = 0.0078125 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="041" name="Antenna Rotation Speed">
+      <Fixed>
+        <Element name="ARS" bits="16" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/050 – Station Configuration Status  (Repetitive FX, 7-bit raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="050" name="Station Configuration Status">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/060 – Station Processing Mode  (Repetitive FX, 7-bit raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="Station Processing Mode">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/070 – Plot Count Values
+         Repetitive with 1-byte count prefix.
+         Each group: A(1b) + IDENT(5b) + COUNTER(10b) = 16 bits = 2 bytes.
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="070" name="Plot Count Values">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="A" bits="1" encoding="table">
+            <Entry value="0" meaning="Counter for antenna 1"/>
+            <Entry value="1" meaning="Counter for antenna 2"/>
+          </Element>
+          <Element name="IDENT" bits="5" encoding="table">
+            <Entry value="1" meaning="Sole primary plots"/>
+            <Entry value="2" meaning="Sole SSR plots"/>
+            <Entry value="3" meaning="Combined plots"/>
+          </Element>
+          <Element name="COUNTER" bits="10" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/080 – Warning/Error Conditions  (Repetitive FX, 7-bit raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="080" name="Warning/Error Conditions">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/090 – Collimation Error  (Fixed, 2 bytes)
+         RE: LSB = 1/2^7 NM (signed)
+         AE: LSB = 360/2^14 ° (signed)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Collimation Error">
+      <Fixed>
+        <Element name="RE" bits="8" encoding="signed_quantity"
+                 scale="0.0078125" unit="NM"/>
+        <Element name="AE" bits="8" encoding="signed_quantity"
+                 scale="0.02197265625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I002/100 – Dynamic Window Type 1  (Fixed, 8 bytes)
+         RS, RE: LSB = 1/2^7 NM, max 512 NM (unsigned)
+         TS, TE: LSB = 360/2^16 ° (unsigned)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="100" name="Dynamic Window Type 1">
+      <Fixed>
+        <Element name="RS" bits="16" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="NM" max="512"/>
+        <Element name="RE" bits="16" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="NM" max="512"/>
+        <Element name="TS" bits="16" encoding="unsigned_quantity"
+                 scale="0.00549316406" unit="deg"/>
+        <Element name="TE" bits="16" encoding="unsigned_quantity"
+                 scale="0.00549316406" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field  (Explicit: first byte = total length)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP (User Application Profile) – single variation, no discriminator.
+       "-"   = unused FSPEC slot.
+       "rfs" = Random Field Sequencing (not decoded, reserved).
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+
+    <Variation name="default">
+      <Item ref="010"/>  <!-- FSPEC slot  1 -->
+      <Item ref="000"/>  <!-- FSPEC slot  2 -->
+      <Item ref="020"/>  <!-- FSPEC slot  3 -->
+      <Item ref="030"/>  <!-- FSPEC slot  4 -->
+      <Item ref="041"/>  <!-- FSPEC slot  5 -->
+      <Item ref="050"/>  <!-- FSPEC slot  6 -->
+      <Item ref="060"/>  <!-- FSPEC slot  7 -->
+      <Item ref="070"/>  <!-- FSPEC slot  8 -->
+      <Item ref="100"/>  <!-- FSPEC slot  9 -->
+      <Item ref="090"/>  <!-- FSPEC slot 10 -->
+      <Item ref="080"/>  <!-- FSPEC slot 11 -->
+      <Item ref="-"/>    <!-- FSPEC slot 12 – unused -->
+      <Item ref="SP"/>   <!-- FSPEC slot 13 -->
+      <Item ref="rfs"/>  <!-- FSPEC slot 14 -->
+    </Variation>
+
+  </UAPs>
+
+</Category>
