@@ -41,6 +41,88 @@ static int failures = 0;
         }                                                                  \
     } while(0)
 
+// ─── Deep comparison helper ──────────────────────────────────────────────────
+static void checkItemsMatch(const std::map<std::string, DecodedItem>& got,
+                             const std::map<std::string, DecodedItem>& expected,
+                             const std::string& label) {
+    for (const auto& [id, src] : expected) {
+        auto it = got.find(id);
+        if (it == got.end()) {
+            std::cerr << "FAIL [RT] " << label << " I" << id << " missing\n";
+            ++failures;
+            continue;
+        }
+        const auto& dst = it->second;
+        const std::string p = label + "/I" + id;
+
+        for (const auto& [name, val] : src.fields) {
+            auto fit = dst.fields.find(name);
+            if (fit == dst.fields.end()) {
+                std::cerr << "FAIL [RT] " << p << "." << name << " missing\n";
+                ++failures;
+            } else {
+                CHECK(fit->second == val, p + "." + name);
+            }
+        }
+
+        if (dst.repetitions != src.repetitions) {
+            std::cerr << "FAIL [RT] " << p << " repetitions mismatch ("
+                      << src.repetitions.size() << " vs "
+                      << dst.repetitions.size() << " entries)\n";
+            ++failures;
+        } else if (!src.repetitions.empty()) {
+            std::cout << "OK   " << p << ".repetitions["
+                      << src.repetitions.size() << "]\n";
+        }
+
+        if (dst.group_repetitions.size() != src.group_repetitions.size()) {
+            std::cerr << "FAIL [RT] " << p << " group_repetitions count mismatch\n";
+            ++failures;
+        } else {
+            for (size_t gi = 0; gi < src.group_repetitions.size(); ++gi) {
+                for (const auto& [gname, gval] : src.group_repetitions[gi]) {
+                    auto git = dst.group_repetitions[gi].find(gname);
+                    if (git == dst.group_repetitions[gi].end()) {
+                        std::cerr << "FAIL [RT] " << p << "[" << gi << "]."
+                                  << gname << " missing\n";
+                        ++failures;
+                    } else {
+                        CHECK(git->second == gval,
+                              p + "[" + std::to_string(gi) + "]." + gname);
+                    }
+                }
+            }
+        }
+
+        if (dst.raw_bytes != src.raw_bytes) {
+            std::cerr << "FAIL [RT] " << p << " raw_bytes mismatch\n";
+            ++failures;
+        } else if (!src.raw_bytes.empty()) {
+            std::cout << "OK   " << p << ".raw_bytes["
+                      << src.raw_bytes.size() << "]\n";
+        }
+
+        for (const auto& [sname, sfields] : src.compound_sub_fields) {
+            auto sit = dst.compound_sub_fields.find(sname);
+            if (sit == dst.compound_sub_fields.end()) {
+                std::cerr << "FAIL [RT] " << p << "/" << sname << " missing\n";
+                ++failures;
+                continue;
+            }
+            for (const auto& [fname, fval] : sfields) {
+                auto sfit = sit->second.find(fname);
+                if (sfit == sit->second.end()) {
+                    std::cerr << "FAIL [RT] " << p << "/" << sname << "."
+                              << fname << " missing\n";
+                    ++failures;
+                } else {
+                    CHECK(sfit->second == fval, p + "/" + sname + "." + fname);
+                }
+            }
+        }
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Test 1: XML spec loads without error
 // ─────────────────────────────────────────────────────────────────────────────
@@ -687,6 +769,111 @@ static void testMultiRecord(const Codec& codec) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  Test 11: Full encode-decode round-trip – verifies every field value is
+//           preserved exactly after encode → decode.
+//
+//  Exercises all item types present in CAT34:
+//    • Fixed items      (I010, I000, I030, I041, I090, I100)
+//    • Compound items   (I050, I060)
+//    • RepetitiveGroup  (I070)
+//    • SP               (raw payload)
+// ─────────────────────────────────────────────────────────────────────────────
+static void testFullRoundTrip(const Codec& codec) {
+    std::cout << "\n=== Test: CAT34 full encode-decode round-trip ===\n";
+
+    DecodedRecord src;
+    src.uap_variation = "default";
+
+    // I034/010 – Fixed
+    { DecodedItem di; di.item_id = "010"; di.type = ItemType::Fixed;
+      di.fields["SAC"] = 3; di.fields["SIC"] = 7;
+      src.items["010"] = std::move(di); }
+
+    // I034/000 – Fixed (Message Type)
+    { DecodedItem di; di.item_id = "000"; di.type = ItemType::Fixed;
+      di.fields["MT"] = 1;   // North marker
+      src.items["000"] = std::move(di); }
+
+    // I034/030 – Fixed (Time of Day)
+    { DecodedItem di; di.item_id = "030"; di.type = ItemType::Fixed;
+      di.fields["TOD"] = 11200;
+      src.items["030"] = std::move(di); }
+
+    // I034/041 – Fixed (Antenna Rotation Speed)
+    { DecodedItem di; di.item_id = "041"; di.type = ItemType::Fixed;
+      di.fields["ARS"] = 2048;
+      src.items["041"] = std::move(di); }
+
+    // I034/050 – Compound (System Configuration and Status)
+    //   PSF: COM + PSR + SSR (sub-items 0, 3, 4)
+    { DecodedItem di; di.item_id = "050"; di.type = ItemType::Compound;
+      di.compound_sub_fields["COM"] = {
+          {"NOGO", 1}, {"RDPC", 0}, {"RDPR", 0},
+          {"OVLRDP", 0}, {"OVLXMT", 0}, {"MSC", 0}, {"TSV", 0}
+      };
+      di.compound_sub_fields["PSR"] = {
+          {"ANT", 1}, {"CHAB", 3}, {"OVL", 0}, {"MSC", 0}
+      };
+      di.compound_sub_fields["SSR"] = {
+          {"ANT", 0}, {"CHAB", 2}, {"OVL", 1}, {"MSC", 0}
+      };
+      src.items["050"] = std::move(di); }
+
+    // I034/060 – Compound (System Processing Mode)
+    //   PSF: COM + PSR + SSR
+    { DecodedItem di; di.item_id = "060"; di.type = ItemType::Compound;
+      di.compound_sub_fields["COM"] = {{"REDRDP", 3}, {"REDXMT", 1}};
+      di.compound_sub_fields["PSR"] = {{"POL", 0}, {"REDRAD", 3}, {"STC", 1}};
+      di.compound_sub_fields["SSR"] = {{"REDRAD", 2}};
+      src.items["060"] = std::move(di); }
+
+    // I034/070 – RepetitiveGroup (Message Count Values)
+    { DecodedItem di; di.item_id = "070"; di.type = ItemType::RepetitiveGroup;
+      di.group_repetitions.push_back({{"TYP", 3},  {"COUNT", 75}});
+      di.group_repetitions.push_back({{"TYP", 7},  {"COUNT", 200}});
+      di.group_repetitions.push_back({{"TYP", 12}, {"COUNT", 42}});
+      src.items["070"] = std::move(di); }
+
+    // I034/090 – Fixed (Collimation Error; positive values only)
+    { DecodedItem di; di.item_id = "090"; di.type = ItemType::Fixed;
+      di.fields["RNG"] = 3;
+      di.fields["AZM"] = 5;
+      src.items["090"] = std::move(di); }
+
+    // I034/100 – Fixed (Generic Polar Window)
+    { DecodedItem di; di.item_id = "100"; di.type = ItemType::Fixed;
+      di.fields["RHOST"]    = 256;
+      di.fields["RHOEND"]   = 512;
+      di.fields["THETAST"]  = 8192;
+      di.fields["THETAEND"] = 16384;
+      src.items["100"] = std::move(di); }
+
+    // SP – Special Purpose Field
+    { DecodedItem di; di.item_id = "SP"; di.type = ItemType::SP;
+      di.raw_bytes = {0xAB, 0xCD};
+      src.items["SP"] = std::move(di); }
+
+    // ── Encode ────────────────────────────────────────────────────────────────
+    auto encoded = codec.encode(34, {src});
+    hexdump(encoded, "CAT34 full RT encoded");
+    CHECK(encoded.size() >= 3, "full RT: encoded non-empty");
+
+    // ── Decode ────────────────────────────────────────────────────────────────
+    auto block = codec.decode(encoded);
+    CHECK(block.valid,               "full RT: block valid");
+    CHECK(block.cat == 34,           "full RT: cat == 34");
+    CHECK(block.records.size() == 1, "full RT: one record");
+    if (block.records.empty()) return;
+
+    const auto& rec = block.records[0];
+    CHECK(rec.valid,                       "full RT: record valid");
+    CHECK(rec.uap_variation == "default",  "full RT: UAP = default");
+
+    // ── Deep field comparison ─────────────────────────────────────────────────
+    checkItemsMatch(rec.items, src.items, "CAT34");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  main
 // ─────────────────────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
@@ -709,6 +896,7 @@ int main(int argc, char* argv[]) {
         testRoundTripMessageCountValues(codec);
         testRoundTrip3DPosition(codec);
         testMultiRecord(codec);
+        testFullRoundTrip(codec);
     }
 
     std::cout << "\n──────────────────────────────────\n";

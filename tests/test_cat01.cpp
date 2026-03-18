@@ -40,6 +40,95 @@ static int failures = 0;
         }                                                                  \
     } while(0)
 
+// ─── Deep comparison helper ──────────────────────────────────────────────────
+// Iterates over every item in `expected` and verifies that the matching item in
+// `got` carries exactly the same fields, repetitions, group repetitions,
+// raw_bytes and compound sub-fields.  Any mismatch is reported as a failure.
+static void checkItemsMatch(const std::map<std::string, DecodedItem>& got,
+                             const std::map<std::string, DecodedItem>& expected,
+                             const std::string& label) {
+    for (const auto& [id, src] : expected) {
+        auto it = got.find(id);
+        if (it == got.end()) {
+            std::cerr << "FAIL [RT] " << label << " I" << id << " missing\n";
+            ++failures;
+            continue;
+        }
+        const auto& dst = it->second;
+        const std::string p = label + "/I" + id;
+
+        for (const auto& [name, val] : src.fields) {
+            auto fit = dst.fields.find(name);
+            if (fit == dst.fields.end()) {
+                std::cerr << "FAIL [RT] " << p << "." << name << " missing\n";
+                ++failures;
+            } else {
+                CHECK(fit->second == val, p + "." + name);
+            }
+        }
+
+        if (dst.repetitions != src.repetitions) {
+            std::cerr << "FAIL [RT] " << p << " repetitions mismatch ("
+                      << src.repetitions.size() << " vs "
+                      << dst.repetitions.size() << " entries)\n";
+            ++failures;
+        } else if (!src.repetitions.empty()) {
+            std::cout << "OK   " << p << ".repetitions["
+                      << src.repetitions.size() << "]\n";
+        }
+
+        if (dst.group_repetitions.size() != src.group_repetitions.size()) {
+            std::cerr << "FAIL [RT] " << p << " group_repetitions count mismatch ("
+                      << src.group_repetitions.size() << " vs "
+                      << dst.group_repetitions.size() << ")\n";
+            ++failures;
+        } else {
+            for (size_t gi = 0; gi < src.group_repetitions.size(); ++gi) {
+                for (const auto& [gname, gval] : src.group_repetitions[gi]) {
+                    auto git = dst.group_repetitions[gi].find(gname);
+                    if (git == dst.group_repetitions[gi].end()) {
+                        std::cerr << "FAIL [RT] " << p << "[" << gi << "]."
+                                  << gname << " missing\n";
+                        ++failures;
+                    } else {
+                        CHECK(git->second == gval,
+                              p + "[" + std::to_string(gi) + "]." + gname);
+                    }
+                }
+            }
+        }
+
+        if (dst.raw_bytes != src.raw_bytes) {
+            std::cerr << "FAIL [RT] " << p << " raw_bytes mismatch ("
+                      << src.raw_bytes.size() << " vs "
+                      << dst.raw_bytes.size() << " bytes)\n";
+            ++failures;
+        } else if (!src.raw_bytes.empty()) {
+            std::cout << "OK   " << p << ".raw_bytes["
+                      << src.raw_bytes.size() << "]\n";
+        }
+
+        for (const auto& [sname, sfields] : src.compound_sub_fields) {
+            auto sit = dst.compound_sub_fields.find(sname);
+            if (sit == dst.compound_sub_fields.end()) {
+                std::cerr << "FAIL [RT] " << p << "/" << sname << " missing\n";
+                ++failures;
+                continue;
+            }
+            for (const auto& [fname, fval] : sfields) {
+                auto sfit = sit->second.find(fname);
+                if (sfit == sit->second.end()) {
+                    std::cerr << "FAIL [RT] " << p << "/" << sname << "."
+                              << fname << " missing\n";
+                    ++failures;
+                } else {
+                    CHECK(sfit->second == fval, p + "/" + sname + "." + fname);
+                }
+            }
+        }
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Test 1: XML spec loads without error
 // ─────────────────────────────────────────────────────────────────────────────
@@ -718,6 +807,114 @@ static void testRealMessage(const Codec& codec) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  Test 8: Full encode-decode round-trip – verifies every field value is
+//          preserved exactly after encode → decode.
+//
+//  Uses the "track" UAP variation and exercises:
+//    • Fixed items         (I010, I040, I070, I090, I161, I200)
+//    • Extended item       (I020 – 2 octets; I170 – 1 octet)
+//    • Repetitive FX item  (I030)
+//    • Special-Purpose     (SP)
+// ─────────────────────────────────────────────────────────────────────────────
+static void testFullRoundTrip(const Codec& codec) {
+    std::cout << "\n=== Test: CAT01 full encode-decode round-trip ===\n";
+
+    DecodedRecord src;
+    src.uap_variation = "track";
+
+    // I001/010 – Fixed (2 bytes)
+    { DecodedItem di; di.item_id = "010"; di.type = ItemType::Fixed;
+      di.fields["SAC"] = 15; di.fields["SIC"] = 200;
+      src.items["010"] = std::move(di); }
+
+    // I001/020 – Extended: TYP=1 selects track UAP; TST=1 forces octet 2
+    { DecodedItem di; di.item_id = "020"; di.type = ItemType::Extended;
+      di.fields["TYP"]    = 1;   // track
+      di.fields["SIM"]    = 1;
+      di.fields["SSRPSR"] = 2;
+      di.fields["ANT"]    = 1;
+      di.fields["SPI"]    = 0;
+      di.fields["RAB"]    = 0;
+      di.fields["TST"]    = 1;   // non-zero → octet 2 is emitted
+      di.fields["DS1DS2"] = 3;
+      di.fields["ME"]     = 0;
+      di.fields["MI"]     = 1;
+      src.items["020"] = std::move(di); }
+
+    // I001/161 – Fixed
+    { DecodedItem di; di.item_id = "161"; di.type = ItemType::Fixed;
+      di.fields["TRKNO"] = 1234;
+      src.items["161"] = std::move(di); }
+
+    // I001/040 – Fixed (RHO/THETA unsigned quantities)
+    { DecodedItem di; di.item_id = "040"; di.type = ItemType::Fixed;
+      di.fields["RHO"]   = 15000;
+      di.fields["THETA"] = 30000;
+      src.items["040"] = std::move(di); }
+
+    // I001/200 – Fixed (GSP/HDG unsigned quantities)
+    { DecodedItem di; di.item_id = "200"; di.type = ItemType::Fixed;
+      di.fields["GSP"] = 5000;
+      di.fields["HDG"] = 50000;
+      src.items["200"] = std::move(di); }
+
+    // I001/070 – Fixed (MODE3A as string_octal raw bits)
+    { DecodedItem di; di.item_id = "070"; di.type = ItemType::Fixed;
+      di.fields["V"]      = 0;
+      di.fields["G"]      = 1;
+      di.fields["L"]      = 0;
+      di.fields["MODE3A"] = 0x246;
+      src.items["070"] = std::move(di); }
+
+    // I001/090 – Fixed (HGT is 14-bit signed_quantity; use a positive value so
+    //            the raw bit pattern is the same before and after round-trip)
+    { DecodedItem di; di.item_id = "090"; di.type = ItemType::Fixed;
+      di.fields["V"]   = 0;
+      di.fields["G"]   = 0;
+      di.fields["HGT"] = 600;   // 600 * 0.25 = 150 FL
+      src.items["090"] = std::move(di); }
+
+    // I001/170 – Extended: one octet (octet-2 fields absent → FX=0)
+    { DecodedItem di; di.item_id = "170"; di.type = ItemType::Extended;
+      di.fields["CON"]  = 1;
+      di.fields["RAD"]  = 1;
+      di.fields["MAN"]  = 0;
+      di.fields["DOU"]  = 1;
+      di.fields["RDPC"] = 1;
+      di.fields["GHO"]  = 0;
+      src.items["170"] = std::move(di); }
+
+    // I001/030 – Repetitive FX: three warning/error codes
+    { DecodedItem di; di.item_id = "030"; di.type = ItemType::Repetitive;
+      di.repetitions = {3, 15, 63};
+      src.items["030"] = std::move(di); }
+
+    // SP – Special Purpose Field (raw payload)
+    { DecodedItem di; di.item_id = "SP"; di.type = ItemType::SP;
+      di.raw_bytes = {0x01, 0x02, 0x03};
+      src.items["SP"] = std::move(di); }
+
+    // ── Encode ────────────────────────────────────────────────────────────────
+    auto encoded = codec.encode(1, {src});
+    hexdump(encoded, "CAT01 full RT encoded");
+    CHECK(encoded.size() >= 3, "full RT: encoded non-empty");
+
+    // ── Decode ────────────────────────────────────────────────────────────────
+    auto block = codec.decode(encoded);
+    CHECK(block.valid,               "full RT: block valid");
+    CHECK(block.cat == 1,            "full RT: cat == 1");
+    CHECK(block.records.size() == 1, "full RT: one record");
+    if (block.records.empty()) return;
+
+    const auto& rec = block.records[0];
+    CHECK(rec.valid,                    "full RT: record valid");
+    CHECK(rec.uap_variation == "track", "full RT: UAP = track");
+
+    // ── Deep field comparison ─────────────────────────────────────────────────
+    checkItemsMatch(rec.items, src.items, "CAT01");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  main
 // ─────────────────────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
@@ -739,6 +936,7 @@ int main(int argc, char* argv[]) {
         testSPField(codec);
         testMultiRecord(codec);
         testRealMessage(codec);
+        testFullRoundTrip(codec);
     }
 
     std::cout << "\n──────────────────────────────────\n";

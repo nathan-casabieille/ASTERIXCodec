@@ -39,6 +39,88 @@ static int failures = 0;
         }                                                                  \
     } while(0)
 
+// ─── Deep comparison helper ──────────────────────────────────────────────────
+static void checkItemsMatch(const std::map<std::string, DecodedItem>& got,
+                             const std::map<std::string, DecodedItem>& expected,
+                             const std::string& label) {
+    for (const auto& [id, src] : expected) {
+        auto it = got.find(id);
+        if (it == got.end()) {
+            std::cerr << "FAIL [RT] " << label << " I" << id << " missing\n";
+            ++failures;
+            continue;
+        }
+        const auto& dst = it->second;
+        const std::string p = label + "/I" + id;
+
+        for (const auto& [name, val] : src.fields) {
+            auto fit = dst.fields.find(name);
+            if (fit == dst.fields.end()) {
+                std::cerr << "FAIL [RT] " << p << "." << name << " missing\n";
+                ++failures;
+            } else {
+                CHECK(fit->second == val, p + "." + name);
+            }
+        }
+
+        if (dst.repetitions != src.repetitions) {
+            std::cerr << "FAIL [RT] " << p << " repetitions mismatch ("
+                      << src.repetitions.size() << " vs "
+                      << dst.repetitions.size() << " entries)\n";
+            ++failures;
+        } else if (!src.repetitions.empty()) {
+            std::cout << "OK   " << p << ".repetitions["
+                      << src.repetitions.size() << "]\n";
+        }
+
+        if (dst.group_repetitions.size() != src.group_repetitions.size()) {
+            std::cerr << "FAIL [RT] " << p << " group_repetitions count mismatch\n";
+            ++failures;
+        } else {
+            for (size_t gi = 0; gi < src.group_repetitions.size(); ++gi) {
+                for (const auto& [gname, gval] : src.group_repetitions[gi]) {
+                    auto git = dst.group_repetitions[gi].find(gname);
+                    if (git == dst.group_repetitions[gi].end()) {
+                        std::cerr << "FAIL [RT] " << p << "[" << gi << "]."
+                                  << gname << " missing\n";
+                        ++failures;
+                    } else {
+                        CHECK(git->second == gval,
+                              p + "[" + std::to_string(gi) + "]." + gname);
+                    }
+                }
+            }
+        }
+
+        if (dst.raw_bytes != src.raw_bytes) {
+            std::cerr << "FAIL [RT] " << p << " raw_bytes mismatch\n";
+            ++failures;
+        } else if (!src.raw_bytes.empty()) {
+            std::cout << "OK   " << p << ".raw_bytes["
+                      << src.raw_bytes.size() << "]\n";
+        }
+
+        for (const auto& [sname, sfields] : src.compound_sub_fields) {
+            auto sit = dst.compound_sub_fields.find(sname);
+            if (sit == dst.compound_sub_fields.end()) {
+                std::cerr << "FAIL [RT] " << p << "/" << sname << " missing\n";
+                ++failures;
+                continue;
+            }
+            for (const auto& [fname, fval] : sfields) {
+                auto sfit = sit->second.find(fname);
+                if (sfit == sit->second.end()) {
+                    std::cerr << "FAIL [RT] " << p << "/" << sname << "."
+                              << fname << " missing\n";
+                    ++failures;
+                } else {
+                    CHECK(sfit->second == fval, p + "/" + sname + "." + fname);
+                }
+            }
+        }
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Test 1: XML spec loads and item types / UAP are correct
 // ─────────────────────────────────────────────────────────────────────────────
@@ -660,6 +742,151 @@ static void testMultiRecord(Codec& codec) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  Test 11: Full encode-decode round-trip – verifies every field value is
+//           preserved exactly after encode → decode.
+//
+//  Exercises all item types present in CAT62:
+//    • Fixed items           (I010, I040, I070, I060, I130, I185, I200, I210, I220)
+//    • Extended items        (I080 – 3 octets; I270 – 3 octets)
+//    • Compound items        (I290, I340)
+//    • RepetitiveGroupFX     (I510)
+//    • SP                    (raw payload)
+// ─────────────────────────────────────────────────────────────────────────────
+static void testFullRoundTrip(Codec& codec) {
+    std::cout << "\n=== Test: CAT62 full encode-decode round-trip ===\n";
+
+    DecodedRecord src;
+    src.uap_variation = "default";
+
+    // I062/010 – Fixed
+    { DecodedItem di; di.item_id = "010"; di.type = ItemType::Fixed;
+      di.fields["SAC"] = 0xAB; di.fields["SIC"] = 0xCD;
+      src.items["010"] = std::move(di); }
+
+    // I062/040 – Fixed (Track Number)
+    { DecodedItem di; di.item_id = "040"; di.type = ItemType::Fixed;
+      di.fields["TN"] = 0x5678;
+      src.items["040"] = std::move(di); }
+
+    // I062/070 – Fixed (Time of Track Information)
+    { DecodedItem di; di.item_id = "070"; di.type = ItemType::Fixed;
+      di.fields["TOT"] = 0x001000;
+      src.items["070"] = std::move(di); }
+
+    // I062/080 – Extended: AMA=1 in octet 3 forces all three octets to be emitted
+    { DecodedItem di; di.item_id = "080"; di.type = ItemType::Extended;
+      di.fields["MON"] = 1;
+      di.fields["SPI"] = 0;
+      di.fields["MRH"] = 1;
+      di.fields["SRC"] = 3;
+      di.fields["CNF"] = 0;
+      di.fields["SIM"] = 0;
+      di.fields["TSE"] = 0;
+      di.fields["TSB"] = 1;
+      di.fields["FPC"] = 1;
+      di.fields["AFF"] = 0;
+      di.fields["STP"] = 0;
+      di.fields["KOS"] = 0;
+      di.fields["AMA"] = 1;   // non-zero → octet 3 emitted
+      di.fields["MD4"] = 0;
+      di.fields["ME"]  = 0;
+      di.fields["MI"]  = 0;
+      di.fields["MD5"] = 0;
+      src.items["080"] = std::move(di); }
+
+    // I062/060 – Fixed (Mode-3/A Code)
+    { DecodedItem di; di.item_id = "060"; di.type = ItemType::Fixed;
+      di.fields["V"]      = 0;
+      di.fields["G"]      = 0;
+      di.fields["CH"]     = 1;
+      di.fields["MODE3A"] = 0x1FF;
+      src.items["060"] = std::move(di); }
+
+    // I062/130 – Fixed (Calculated Track Geometric Altitude)
+    { DecodedItem di; di.item_id = "130"; di.type = ItemType::Fixed;
+      di.fields["ALT"] = 800;
+      src.items["130"] = std::move(di); }
+
+    // I062/185 – Fixed (Calculated Track Velocity, Cartesian; positive values)
+    { DecodedItem di; di.item_id = "185"; di.type = ItemType::Fixed;
+      di.fields["VX"] = 200;
+      di.fields["VY"] = 300;
+      src.items["185"] = std::move(di); }
+
+    // I062/200 – Fixed (Mode of Movement)
+    { DecodedItem di; di.item_id = "200"; di.type = ItemType::Fixed;
+      di.fields["TRANS"] = 1;
+      di.fields["LONG"]  = 2;
+      di.fields["VERT"]  = 1;
+      di.fields["ADF"]   = 0;
+      src.items["200"] = std::move(di); }
+
+    // I062/210 – Fixed (Calculated Acceleration; positive values)
+    { DecodedItem di; di.item_id = "210"; di.type = ItemType::Fixed;
+      di.fields["AX"] = 4;
+      di.fields["AY"] = 6;
+      src.items["210"] = std::move(di); }
+
+    // I062/220 – Fixed (Calculated Rate Of Climb/Descent; positive value)
+    { DecodedItem di; di.item_id = "220"; di.type = ItemType::Fixed;
+      di.fields["ROCD"] = 320;
+      src.items["220"] = std::move(di); }
+
+    // I062/270 – Extended: WIDTH in octet 3 forces all three octets to emit
+    { DecodedItem di; di.item_id = "270"; di.type = ItemType::Extended;
+      di.fields["LENGTH"]      = 30;
+      di.fields["ORIENTATION"] = 8;
+      di.fields["WIDTH"]       = 15;
+      src.items["270"] = std::move(di); }
+
+    // I062/290 – Compound (System Track Update Ages): TRK + PSR + MLT
+    { DecodedItem di; di.item_id = "290"; di.type = ItemType::Compound;
+      di.compound_sub_fields["TRK"] = {{"TRK", 10}};
+      di.compound_sub_fields["PSR"] = {{"PSR", 20}};
+      di.compound_sub_fields["MLT"] = {{"MLT", 5}};
+      src.items["290"] = std::move(di); }
+
+    // I062/340 – Compound (Measured Information): SID + POS + MDA
+    { DecodedItem di; di.item_id = "340"; di.type = ItemType::Compound;
+      di.compound_sub_fields["SID"] = {{"SAC", 1}, {"SIC", 5}};
+      di.compound_sub_fields["POS"] = {{"RHO", 12800}, {"THETA", 16384}};
+      { std::map<std::string,uint64_t> m;
+        m["V"] = 0; m["G"] = 0; m["L"] = 0; m["MODE3A"] = 0x0234;
+        di.compound_sub_fields["MDA"] = std::move(m); }
+      src.items["340"] = std::move(di); }
+
+    // I062/510 – RepetitiveGroupFX (Composed Track Number)
+    { DecodedItem di; di.item_id = "510"; di.type = ItemType::RepetitiveGroupFX;
+      di.group_repetitions.push_back({{"IDENT", 0x01}, {"TRACK", 0x0ABC}});
+      di.group_repetitions.push_back({{"IDENT", 0x02}, {"TRACK", 0x7654}});
+      src.items["510"] = std::move(di); }
+
+    // SP – Special Purpose Field
+    { DecodedItem di; di.item_id = "SP"; di.type = ItemType::SP;
+      di.raw_bytes = {0xFF};
+      src.items["SP"] = std::move(di); }
+
+    // ── Encode ────────────────────────────────────────────────────────────────
+    auto encoded = codec.encode(62, {src});
+    hexdump(encoded, "CAT62 full RT encoded");
+    CHECK(encoded.size() >= 3, "full RT: encoded non-empty");
+
+    // ── Decode ────────────────────────────────────────────────────────────────
+    DecodedBlock block = codec.decode(encoded);
+    CHECK(block.valid,               "full RT: block valid");
+    CHECK(block.cat == 62,           "full RT: cat == 62");
+    CHECK(block.records.size() == 1, "full RT: one record");
+    if (block.records.empty()) return;
+
+    const auto& rec = block.records[0];
+    CHECK(rec.valid,                       "full RT: record valid");
+    CHECK(rec.uap_variation == "default",  "full RT: UAP = default");
+
+    // ── Deep field comparison ─────────────────────────────────────────────────
+    checkItemsMatch(rec.items, src.items, "CAT62");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  main
 // ─────────────────────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
@@ -681,6 +908,7 @@ int main(int argc, char* argv[]) {
     testRoundTripI270(codec);
     testRoundTripI340(codec);
     testMultiRecord(codec);
+    testFullRoundTrip(codec);
 
     std::cout << "\n=== Summary: " << failures << " failure(s) ===\n";
     return failures == 0 ? 0 : 1;
