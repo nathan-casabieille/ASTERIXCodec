@@ -619,7 +619,7 @@
         <SubItem name="SRL">
           <Fixed>
             <Element name="SRL" bits="8" encoding="unsigned_quantity"
-                     scale="0.043945312" unit="deg"/>
+                     scale="0.0439453125" unit="deg"/>
           </Fixed>
         </SubItem>
         <!-- slot 1: PSF bit6 – SRR (Number of Received Replies for MSSR) -->
@@ -639,7 +639,7 @@
         <SubItem name="PRL">
           <Fixed>
             <Element name="PRL" bits="8" encoding="unsigned_quantity"
-                     scale="0.043945312" unit="deg"/>
+                     scale="0.0439453125" unit="deg"/>
           </Fixed>
         </SubItem>
         <!-- slot 4: PSF bit3 – PAM (Amplitude of Primary Plot, LSB = 1 dBm) -->
