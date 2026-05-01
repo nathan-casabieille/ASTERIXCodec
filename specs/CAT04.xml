@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="4" name="Safety Net Messages" edition="1.13" date="2024-06-04">
+
+  <DataItems>
+
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1"  meaning="Alive Message (AM)"/>
+          <Entry value="2"  meaning="Route Adherence Monitor Longitudinal Deviation (RAMLD)"/>
+          <Entry value="3"  meaning="Route Adherence Monitor Heading Deviation (RAMHD)"/>
+          <Entry value="4"  meaning="Minimum Safe Altitude Warning (MSAW)"/>
+          <Entry value="5"  meaning="Area Proximity Warning (APW)"/>
+          <Entry value="6"  meaning="Clearance Level Adherence Monitor (CLAM)"/>
+          <Entry value="7"  meaning="Short Term Conflict Alert (STCA)"/>
+          <Entry value="8"  meaning="Approach Path Monitor (APM)"/>
+          <Entry value="9"  meaning="RIMCAS Arrival / Landing Monitor (ALM)"/>
+          <Entry value="10" meaning="RIMCAS Arrival / Departure Wrong Runway Alert (WRA)"/>
+          <Entry value="11" meaning="RIMCAS Arrival / Departure Opposite Traffic Alert (OTA)"/>
+          <Entry value="12" meaning="RIMCAS Departure Monitor (RDM)"/>
+          <Entry value="13" meaning="RIMCAS Runway / Taxiway Crossing Monitor (RCM)"/>
+          <Entry value="14" meaning="RIMCAS Taxiway Separation Monitor (TSM)"/>
+          <Entry value="15" meaning="RIMCAS Unauthorized Taxiway Movement Monitor (UTMM)"/>
+          <Entry value="16" meaning="RIMCAS Stop Bar Overrun Alert (SBOA)"/>
+          <Entry value="17" meaning="End Of Conflict (EOC)"/>
+          <Entry value="18" meaning="ACAS Resolution Advisory (ACASRA)"/>
+          <Entry value="19" meaning="Near Term Conflict Alert (NTCA)"/>
+          <Entry value="20" meaning="Downlinked Barometric Pressure Setting Monitor (DBPSM)"/>
+          <Entry value="21" meaning="Speed Adherence Monitor (SAM)"/>
+          <Entry value="22" meaning="Outside Controlled Airspace Tool (OCAT)"/>
+          <Entry value="23" meaning="Vertical Conflict Detection (VCD)"/>
+          <Entry value="24" meaning="Vertical Rate Adherence Monitor (VRAM)"/>
+          <Entry value="25" meaning="Cleared Heading Adherence Monitor (CHAM)"/>
+          <Entry value="26" meaning="Downlinked Selected Altitude Monitor (DSAM)"/>
+          <Entry value="27" meaning="Holding Adherence Monitor (HAM)"/>
+          <Entry value="28" meaning="Vertical Path Monitor (VPM)"/>
+          <Entry value="29" meaning="RIMCAS Taxiway Traffic Alert (TTA)"/>
+          <Entry value="30" meaning="RIMCAS Arrival/Departure Close Runway Alert (CRA)"/>
+          <Entry value="31" meaning="RIMCAS Arrival/Departure Aircraft Separation Monitor (ASM)"/>
+          <Entry value="32" meaning="RIMCAS ILS Area Violation Monitor (IAVM)"/>
+          <Entry value="33" meaning="Final Target Distance Indicator (FTD)"/>
+          <Entry value="34" meaning="Initial Target Distance Indicator (ITD)"/>
+          <Entry value="35" meaning="Wake Vortex Indicator Infringement Alert (IIA)"/>
+          <Entry value="36" meaning="Sequence Warning (SQW)"/>
+          <Entry value="37" meaning="Catch Up Warning (CUW)"/>
+          <Entry value="38" meaning="Conflicting ATC Clearances (CATC)"/>
+          <Entry value="39" meaning="No ATC Clearance (NOCLR)"/>
+          <Entry value="40" meaning="Aircraft Not Moving despite ATC Clearance (NOMOV)"/>
+          <Entry value="41" meaning="Aircraft leaving/entering aerodrome area without proper handover (NOH)"/>
+          <Entry value="42" meaning="Wrong Runway or Taxiway Type (WRTY)"/>
+          <Entry value="43" meaning="Stand Occupied (STOCC)"/>
+          <Entry value="44" meaning="Ongoing Alert (ONGOING)"/>
+          <Entry value="45" meaning="Non-Transgression Zone Violation (NTZ)"/>
+          <Entry value="97" meaning="Lost Track Warning (LTW)"/>
+          <Entry value="98" meaning="Holding Volume Infringement (HVI)"/>
+          <Entry value="99" meaning="Airspace Infringement Warning (AIW)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      SDPS Identifier: 1-byte REP count; each entry SAC(8)+SIC(8) = 2 bytes.
+    -->
+    <DataItem id="015" name="SDPS Identifier">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="SAC" bits="8" encoding="raw"/>
+          <Element name="SIC" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="020" name="Time of Message">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="030" name="Track Number 1">
+      <Fixed>
+        <Element name="TN1" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="035" name="Track Number 2">
+      <Fixed>
+        <Element name="TN2" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="040" name="Alert Identifier">
+      <Fixed>
+        <Element name="AID" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 1 byte: EP(1)+VAL(3)+STAT(3)+spare(1) -->
+    <DataItem id="045" name="Area and Alert Status">
+      <Fixed>
+        <Element name="EP" bits="1" encoding="table">
+          <Entry value="0" meaning="Element not populated"/>
+          <Entry value="1" meaning="Element populated"/>
+        </Element>
+        <Element name="VAL" bits="3" encoding="table">
+          <Entry value="0" meaning="Inactive"/>
+          <Entry value="1" meaning="Active"/>
+          <Entry value="2" meaning="Pre-active"/>
+        </Element>
+        <Element name="STAT" bits="3" encoding="raw"/>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Safety Net Function and System Status.
+      Extended item, up to 8 octets (each 7 data bits + FX bit).
+    -->
+    <DataItem id="060" name="Safety Net Function and System Status">
+      <Extended>
+        <!-- Octet 1: MRVA+RAMLD+RAMHD+MSAW+APW+CLAM+STCA -->
+        <Octet>
+          <Element name="MRVA"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="MRVA function"/>
+          </Element>
+          <Element name="RAMLD" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="RAMLD function"/>
+          </Element>
+          <Element name="RAMHD" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="RAMHD function"/>
+          </Element>
+          <Element name="MSAW"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="MSAW function"/>
+          </Element>
+          <Element name="APW"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="APW function"/>
+          </Element>
+          <Element name="CLAM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="CLAM function"/>
+          </Element>
+          <Element name="STCA"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="STCA function"/>
+          </Element>
+        </Octet>
+        <!-- Octet 2: APM+RIMCA+ACASRA+NTCA+DG+OF+OL -->
+        <Octet>
+          <Element name="APM"    bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="APM function"/>
+          </Element>
+          <Element name="RIMCA"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="RIMCA function"/>
+          </Element>
+          <Element name="ACASRA" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="ACAS RA function"/>
+          </Element>
+          <Element name="NTCA"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="NTCA function"/>
+          </Element>
+          <Element name="DG"     bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="System degraded"/>
+          </Element>
+          <Element name="OF"     bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="Overflow error"/>
+          </Element>
+          <Element name="OL"     bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="Overload error"/>
+          </Element>
+        </Octet>
+        <!-- Octet 3: AIW+PAIW+OCAT+SAM+VCD+CHAM+DSAM -->
+        <Octet>
+          <Element name="AIW"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="AIW function"/>
+          </Element>
+          <Element name="PAIW"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="PAIW function"/>
+          </Element>
+          <Element name="OCAT"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="OCAT function"/>
+          </Element>
+          <Element name="SAM"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="SAM function"/>
+          </Element>
+          <Element name="VCD"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="VCD function"/>
+          </Element>
+          <Element name="CHAM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="CHAM function"/>
+          </Element>
+          <Element name="DSAM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="DSAM function"/>
+          </Element>
+        </Octet>
+        <!-- Octet 4: DBPSMARR+DBPSMDEP+DBPSMTL+VRAMCRM+VRAMVTM+VRAMVRM+HAMHD -->
+        <Octet>
+          <Element name="DBPSMARR" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="DBPSM ARR sub-function"/>
+          </Element>
+          <Element name="DBPSMDEP" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="DBPSM DEP sub-function"/>
+          </Element>
+          <Element name="DBPSMTL"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="DBPSM TL sub-function"/>
+          </Element>
+          <Element name="VRAMCRM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="VRAM CRM sub-function"/>
+          </Element>
+          <Element name="VRAMVTM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="VRAM VTM sub-function"/>
+          </Element>
+          <Element name="VRAMVRM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="VRAM VRM sub-function"/>
+          </Element>
+          <Element name="HAMHD"    bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="HAM HD sub-function"/>
+          </Element>
+        </Octet>
+        <!-- Octet 5: HAMRD+HAMVD+HVI+LTW+VPM+TTA+CRA -->
+        <Octet>
+          <Element name="HAMRD" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="HAM RD sub-function"/>
+          </Element>
+          <Element name="HAMVD" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="HAM VD sub-function"/>
+          </Element>
+          <Element name="HVI"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="HVI function"/>
+          </Element>
+          <Element name="LTW"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="LTW function"/>
+          </Element>
+          <Element name="VPM"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="VPM function"/>
+          </Element>
+          <Element name="TTA"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="TTA function"/>
+          </Element>
+          <Element name="CRA"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="CRA function"/>
+          </Element>
+        </Octet>
+        <!-- Octet 6: ASM+IAVM+FTD+ITD+IIA+SQW+CUW -->
+        <Octet>
+          <Element name="ASM"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="ASM sub-function"/>
+          </Element>
+          <Element name="IAVM" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="IAVM sub-function"/>
+          </Element>
+          <Element name="FTD"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="FTD function"/>
+          </Element>
+          <Element name="ITD"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="ITD function"/>
+          </Element>
+          <Element name="IIA"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="IIA function"/>
+          </Element>
+          <Element name="SQW"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="SQW function"/>
+          </Element>
+          <Element name="CUW"  bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="CUW function"/>
+          </Element>
+        </Octet>
+        <!-- Octet 7: CATC+NOCLR+NOMOV+NOH+WRTY+STOCC+ONGOING -->
+        <Octet>
+          <Element name="CATC"    bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="CATC function"/>
+          </Element>
+          <Element name="NOCLR"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="NOCLR sub-function"/>
+          </Element>
+          <Element name="NOMOV"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="NOMOV function"/>
+          </Element>
+          <Element name="NOH"     bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="NOH function"/>
+          </Element>
+          <Element name="WRTY"    bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="WRTY function"/>
+          </Element>
+          <Element name="STOCC"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="STOCC function"/>
+          </Element>
+          <Element name="ONGOING" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/><Entry value="1" meaning="ONGOING function"/>
+          </Element>
+        </Octet>
+        <!-- Octet 8: NTZ+spare(6) -->
+        <Octet>
+          <Element name="NTZ" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Non-Transgression Zone function"/>
+          </Element>
+          <Spare bits="6"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!--
+      Conflict Timing and Separation.
+      Compound with 6 optional sub-items.
+    -->
+    <DataItem id="070" name="Conflict Timing and Separation">
+      <Compound>
+        <SubItem name="TC">
+          <Fixed>
+            <Element name="TC" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="TCA">
+          <Fixed>
+            <Element name="TCA" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CHS">
+          <Fixed>
+            <Element name="CHS" bits="24" encoding="unsigned_quantity" scale="0.5" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="MHS">
+          <Fixed>
+            <Element name="MHS" bits="16" encoding="unsigned_quantity" scale="0.5" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CVS">
+          <Fixed>
+            <Element name="CVS" bits="16" encoding="unsigned_quantity" scale="25.0" unit="ft"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="MVS">
+          <Fixed>
+            <Element name="MVS" bits="16" encoding="unsigned_quantity" scale="25.0" unit="ft"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- Longitudinal Deviation: 16-bit signed, LSB = 32 m -->
+    <DataItem id="074" name="Longitudinal Deviation">
+      <Fixed>
+        <Element name="LD" bits="16" encoding="signed_quantity" scale="32.0" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Transversal Distance Deviation: 24-bit signed, LSB = 0.5 m -->
+    <DataItem id="075" name="Transversal Distance Deviation">
+      <Fixed>
+        <Element name="TDD" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Vertical Deviation: 16-bit signed, LSB = 25 ft -->
+    <DataItem id="076" name="Vertical Deviation">
+      <Fixed>
+        <Element name="VD" bits="16" encoding="signed_quantity" scale="25.0" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Area Definition.
+      Compound with 6 sub-items; wide string fields stored as raw uint64_t.
+      AN = 48-bit ICAO 6-bit encoded (8 chars).
+      CAN/RT1/RT2/SB/G = 56-bit ASCII (7 chars).
+    -->
+    <DataItem id="100" name="Area Definition">
+      <Compound>
+        <SubItem name="AN">
+          <Fixed>
+            <Element name="AN" bits="48" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CAN">
+          <Fixed>
+            <Element name="CAN" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="RT1">
+          <Fixed>
+            <Element name="RT1" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="RT2">
+          <Fixed>
+            <Element name="RT2" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="SB">
+          <Fixed>
+            <Element name="SB" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="G">
+          <Fixed>
+            <Element name="G" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!--
+      FDPS Sector Control Identification.
+      Repetitive (1-byte count); each entry: CEN(8)+POS(8) = 2 bytes.
+    -->
+    <DataItem id="110" name="FDPS Sector Control Identification">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="CEN" bits="8" encoding="raw"/>
+          <Element name="POS" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!--
+      Conflict Characteristics.
+      Compound with 4 sub-items:
+        CN: Conflict Nature, flattened from Extended to Fixed 3B.
+        CC: Conflict Classification — TID(4)+CPC(3)+CS(1) = 1B.
+        CP: Conflict Probability — 8-bit, LSB = 0.5 %.
+        CD: Conflict Duration — 24-bit, LSB = 1/128 s.
+    -->
+    <DataItem id="120" name="Conflict Characteristics">
+      <Compound>
+        <SubItem name="CN">
+          <Fixed>
+            <!-- Byte 1: MAS+CAS+FLD+FVD+TYPE+CROSS+DIV+spare -->
+            <Element name="MAS"   bits="1" encoding="table">
+              <Entry value="0" meaning="Conflict not in military airspace"/>
+              <Entry value="1" meaning="Conflict in military airspace"/>
+            </Element>
+            <Element name="CAS"   bits="1" encoding="table">
+              <Entry value="0" meaning="Conflict not in civil airspace"/>
+              <Entry value="1" meaning="Conflict in civil airspace"/>
+            </Element>
+            <Element name="FLD"   bits="1" encoding="table">
+              <Entry value="0" meaning="Not fast diverging laterally"/>
+              <Entry value="1" meaning="Fast diverging laterally"/>
+            </Element>
+            <Element name="FVD"   bits="1" encoding="table">
+              <Entry value="0" meaning="Not fast diverging vertically"/>
+              <Entry value="1" meaning="Fast diverging vertically"/>
+            </Element>
+            <Element name="TYPE"  bits="1" encoding="table">
+              <Entry value="0" meaning="Minor separation infringement"/>
+              <Entry value="1" meaning="Major separation infringement"/>
+            </Element>
+            <Element name="CROSS" bits="1" encoding="table">
+              <Entry value="0" meaning="Not crossed at start"/>
+              <Entry value="1" meaning="Crossed at start"/>
+            </Element>
+            <Element name="DIV"   bits="1" encoding="table">
+              <Entry value="0" meaning="Not diverging at start"/>
+              <Entry value="1" meaning="Diverging at start"/>
+            </Element>
+            <Spare bits="1"/>
+            <!-- Byte 2: RRC+RTC+MRVA+VRAMCRM+VRAMVRM+VRAMVTM+HAMHD+spare -->
+            <Element name="RRC"     bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="Runway/Runway Crossing"/>
+            </Element>
+            <Element name="RTC"     bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="Runway/Taxiway Crossing"/>
+            </Element>
+            <Element name="CN_MRVA"    bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="MSAW indicates MRVA"/>
+            </Element>
+            <Element name="CN_VRAMCRM" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="VRAM indicates CRM"/>
+            </Element>
+            <Element name="CN_VRAMVRM" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="VRAM indicates VRM"/>
+            </Element>
+            <Element name="CN_VRAMVTM" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="VRAM indicates VTM"/>
+            </Element>
+            <Element name="CN_HAMHD"   bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="HAM indicates HD"/>
+            </Element>
+            <Spare bits="1"/>
+            <!-- Byte 3: HAMRD+HAMVD+DBPSMARR+DBPSMDEP+DBPSMTL+AIW+spare(2) -->
+            <Element name="CN_HAMRD"    bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="HAM indicates RD"/>
+            </Element>
+            <Element name="CN_HAMVD"    bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="HAM indicates VD"/>
+            </Element>
+            <Element name="CN_DBPSMARR" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="DBPSM indicates ARR"/>
+            </Element>
+            <Element name="CN_DBPSMDEP" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="DBPSM indicates DEP"/>
+            </Element>
+            <Element name="CN_DBPSMTL"  bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="DBPSM above TL"/>
+            </Element>
+            <Element name="CN_AIW"      bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/><Entry value="1" meaning="AIW indicates pAIW"/>
+            </Element>
+            <Spare bits="2"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CC">
+          <Fixed>
+            <Element name="TID" bits="4" encoding="raw"/>
+            <Element name="CPC" bits="3" encoding="raw"/>
+            <Element name="CS"  bits="1" encoding="table">
+              <Entry value="0" meaning="LOW"/>
+              <Entry value="1" meaning="HIGH"/>
+            </Element>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CP">
+          <Fixed>
+            <Element name="CP" bits="8" encoding="unsigned_quantity" scale="0.5" unit="%"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CD">
+          <Fixed>
+            <Element name="CD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!--
+      Aircraft Identification and Characteristics 1.
+      Compound with 10 sub-items; AC1 is Extended flattened to Fixed 2B.
+      scale for WGS-84 lat/lon: 180/2^25 = 5.364418029785156e-06 °
+    -->
+    <DataItem id="170" name="Aircraft Identification and Characteristics 1">
+      <Compound>
+        <SubItem name="AI1">
+          <Fixed>
+            <Element name="AI1" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="M31">
+          <Fixed>
+            <Spare bits="4"/>
+            <Element name="MODE3A" bits="12" encoding="string_octal"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CPW">
+          <Fixed>
+            <Element name="LAT" bits="32" encoding="signed_quantity" scale="5.364418029785156e-06" unit="°"/>
+            <Element name="LON" bits="32" encoding="signed_quantity" scale="5.364418029785156e-06" unit="°"/>
+            <Element name="ALT" bits="16" encoding="signed_quantity" scale="25.0" unit="ft"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CPC">
+          <Fixed>
+            <Element name="X" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+            <Element name="Y" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+            <Element name="Z" bits="16" encoding="signed_quantity" scale="25.0" unit="ft"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="TT1">
+          <Fixed>
+            <Element name="TT1" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="DT1">
+          <Fixed>
+            <Element name="DT1" bits="16" encoding="unsigned_quantity" scale="0.5" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- AC1 is Extended in the spec; flattened here to Fixed 2B -->
+        <SubItem name="AC1">
+          <Fixed>
+            <Element name="GATOAT" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="General Air Traffic"/>
+              <Entry value="2" meaning="Operational Air Traffic"/>
+              <Entry value="3" meaning="Not applicable"/>
+            </Element>
+            <Element name="FR1FR2" bits="2" encoding="table">
+              <Entry value="0" meaning="Instrument Flight Rules"/>
+              <Entry value="1" meaning="Visual Flight Rules"/>
+              <Entry value="2" meaning="Not applicable"/>
+              <Entry value="3" meaning="Controlled Visual Flight Rules"/>
+            </Element>
+            <Element name="RVSM" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="Approved"/>
+              <Entry value="2" meaning="Exempt"/>
+              <Entry value="3" meaning="Not Approved"/>
+            </Element>
+            <Element name="HPR" bits="1" encoding="table">
+              <Entry value="0" meaning="Normal Priority Flight"/>
+              <Entry value="1" meaning="High Priority Flight"/>
+            </Element>
+            <Spare bits="1"/>
+            <Element name="CDM" bits="2" encoding="table">
+              <Entry value="0" meaning="Maintaining"/>
+              <Entry value="1" meaning="Climbing"/>
+              <Entry value="2" meaning="Descending"/>
+              <Entry value="3" meaning="Invalid"/>
+            </Element>
+            <Element name="PRI" bits="1" encoding="table">
+              <Entry value="0" meaning="Non primary target"/>
+              <Entry value="1" meaning="Primary target"/>
+            </Element>
+            <Element name="GV" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/>
+              <Entry value="1" meaning="Ground Vehicle"/>
+            </Element>
+            <Spare bits="4"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="MS1">
+          <Fixed>
+            <Element name="MS1" bits="48" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="FP1">
+          <Fixed>
+            <Spare bits="5"/>
+            <Element name="NBR" bits="27" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CF1">
+          <Fixed>
+            <Element name="CF1" bits="16" encoding="unsigned_quantity" scale="0.25" unit="FL"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!--
+      Aircraft Identification and Characteristics 2.
+      Same structure as I170 but for aircraft 2; CPL replaces CPC.
+    -->
+    <DataItem id="171" name="Aircraft Identification and Characteristics 2">
+      <Compound>
+        <SubItem name="AI2">
+          <Fixed>
+            <Element name="AI2" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="M32">
+          <Fixed>
+            <Spare bits="4"/>
+            <Element name="MODE3A" bits="12" encoding="string_octal"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CPW">
+          <Fixed>
+            <Element name="LAT" bits="32" encoding="signed_quantity" scale="5.364418029785156e-06" unit="°"/>
+            <Element name="LON" bits="32" encoding="signed_quantity" scale="5.364418029785156e-06" unit="°"/>
+            <Element name="ALT" bits="16" encoding="signed_quantity" scale="25.0" unit="ft"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CPL">
+          <Fixed>
+            <Element name="X" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+            <Element name="Y" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+            <Element name="Z" bits="16" encoding="signed_quantity" scale="25.0" unit="ft"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="TT2">
+          <Fixed>
+            <Element name="TT2" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="DT2">
+          <Fixed>
+            <Element name="DT2" bits="16" encoding="unsigned_quantity" scale="0.5" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- AC2 is Extended in the spec; flattened here to Fixed 2B -->
+        <SubItem name="AC2">
+          <Fixed>
+            <Element name="GATOAT" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="General Air Traffic"/>
+              <Entry value="2" meaning="Operational Air Traffic"/>
+              <Entry value="3" meaning="Not applicable"/>
+            </Element>
+            <Element name="FR1FR2" bits="2" encoding="table">
+              <Entry value="0" meaning="Instrument Flight Rules"/>
+              <Entry value="1" meaning="Visual Flight Rules"/>
+              <Entry value="2" meaning="Not applicable"/>
+              <Entry value="3" meaning="Controlled Visual Flight Rules"/>
+            </Element>
+            <Element name="RVSM" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="Approved"/>
+              <Entry value="2" meaning="Exempt"/>
+              <Entry value="3" meaning="Not Approved"/>
+            </Element>
+            <Element name="HPR" bits="1" encoding="table">
+              <Entry value="0" meaning="Normal Priority Flight"/>
+              <Entry value="1" meaning="High Priority Flight"/>
+            </Element>
+            <Spare bits="1"/>
+            <Element name="CDM" bits="2" encoding="table">
+              <Entry value="0" meaning="Maintaining"/>
+              <Entry value="1" meaning="Climbing"/>
+              <Entry value="2" meaning="Descending"/>
+              <Entry value="3" meaning="Invalid"/>
+            </Element>
+            <Element name="PRI" bits="1" encoding="table">
+              <Entry value="0" meaning="Non primary target"/>
+              <Entry value="1" meaning="Primary target"/>
+            </Element>
+            <Element name="GV" bits="1" encoding="table">
+              <Entry value="0" meaning="Default"/>
+              <Entry value="1" meaning="Ground Vehicle"/>
+            </Element>
+            <Spare bits="4"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="MS2">
+          <Fixed>
+            <Element name="MS2" bits="48" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="FP2">
+          <Fixed>
+            <Spare bits="5"/>
+            <Element name="NBR" bits="27" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="CF2">
+          <Fixed>
+            <Element name="CF2" bits="16" encoding="unsigned_quantity" scale="0.25" unit="FL"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 21 slots → 3 FSPEC bytes
+    Byte 1: 010 000 015 020 040 045 060
+    Byte 2: 030 170 120 070 076 074 075
+    Byte 3: 100 035 171 110  -  RE  SP
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="000"/>
+      <Item ref="015"/>
+      <Item ref="020"/>
+      <Item ref="040"/>
+      <Item ref="045"/>
+      <Item ref="060"/>
+      <Item ref="030"/>
+      <Item ref="170"/>
+      <Item ref="120"/>
+      <Item ref="070"/>
+      <Item ref="076"/>
+      <Item ref="074"/>
+      <Item ref="075"/>
+      <Item ref="100"/>
+      <Item ref="035"/>
+      <Item ref="171"/>
+      <Item ref="110"/>
+      <Item ref="-"/>
+      <Item ref="RE"/>
+      <Item ref="SP"/>
+    </Variation>
+  </UAPs>
+
+</Category>
