@@ -93,61 +93,9 @@ ASTERIXCodec/
 │   ├── SpecLoader.cpp               # pugixml → CategoryDef parser
 │   └── Codec.cpp                    # FSPEC + item decode/encode engine
 ├── specs/
-│   ├── CAT01.xml                    # XML spec consumed by the library
-│   ├── CAT02.xml                    # XML spec consumed by the library
-│   ├── CAT04.xml                    # XML spec consumed by the library
-│   ├── CAT07.xml                    # XML spec consumed by the library
-│   ├── CAT08.xml                    # XML spec consumed by the library
-│   ├── CAT09.xml                    # XML spec consumed by the library
-│   ├── CAT10.xml                    # XML spec consumed by the library
-│   ├── CAT11.xml                    # XML spec consumed by the library
-│   ├── CAT15.xml                    # XML spec consumed by the library
-│   ├── CAT16.xml                    # XML spec consumed by the library
-│   ├── CAT17.xml                    # XML spec consumed by the library
-│   ├── CAT18.xml                    # XML spec consumed by the library
-│   ├── CAT19.xml                    # XML spec consumed by the library
-│   ├── CAT20.xml                    # XML spec consumed by the library
-│   ├── CAT25.xml                    # XML spec consumed by the library
-│   ├── CAT21.xml                    # XML spec consumed by the library
-│   ├── CAT23.xml                    # XML spec consumed by the library
-│   ├── CAT32.xml                    # XML spec consumed by the library
-│   ├── CAT34.xml                    # XML spec consumed by the library
-│   ├── CAT48.xml                    # XML spec consumed by the library
-│   ├── CAT62.xml                    # XML spec consumed by the library
-│   ├── CAT63.xml                    # XML spec consumed by the library
-│   ├── CAT65.xml                    # XML spec consumed by the library
-│   ├── CAT150.xml                   # XML spec consumed by the library
-│   ├── CAT205.xml                   # XML spec consumed by the library
-│   ├── CAT240.xml                   # XML spec consumed by the library
-│   └── CAT247.xml                   # XML spec consumed by the library
+│   └── CAT*.xml                     # 27 XML category definitions (one per supported category)
 └── tests/
-    ├── test_cat01.cpp               # 7 test cases, 87+ assertions
-    ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
-    ├── test_cat04.cpp               # 10 test cases covering all CAT04 item types incl. I060 Extended (8 octets), Compounds I070/I120/I170/I171
-    ├── test_cat07.cpp               # 10 test cases covering all CAT07 item types incl. I020 Extended (6 octets), dual UAP (downlink/uplink), Compounds I085/I130/I415/I450
-    ├── test_cat08.cpp               # 10 test cases covering all CAT08 item types incl. RepetitiveGroup
-    ├── test_cat09.cpp               # 9 test cases covering all CAT09 item types incl. spare in RepGroup
-    ├── test_cat10.cpp               # 10 test cases covering all CAT10 item types incl. I020/I170/I270 Extended (3 octets each), I250/I280 RepetitiveGroup, WGS-84 32-bit coords
-    ├── test_cat11.cpp               # 10 test cases covering all CAT11 item types incl. I170 Extended (4 octets), I290/I380/I390/I500 Compound (2 PSF bytes each), I605/I610 RepetitiveGroup
-    ├── test_cat15.cpp               # 10 test cases covering all CAT15 item types incl. I020/I170 Extended (1 octet), I030 Repetitive FX, I270/I600 Compound, I625/I626 Compound (2 PSF bytes), I300/I480/I631 RepetitiveGroup
-    ├── test_cat16.cpp               # 11 test cases covering all CAT16 item types incl. Compound I240 (2 PSF bytes)
-    ├── test_cat17.cpp               # 9 test cases covering all CAT17 item types incl. signed WGS-84 and RepetitiveGroup
-    ├── test_cat18.cpp               # 10 test cases covering all CAT18 item types incl. I008/I009 Extended (2 octets each), I006/I017 RepetitiveGroup, 56-bit GICB raw fields
-    ├── test_cat19.cpp               # 8 test cases covering all CAT19 item types incl. Extended I553 and 32-bit WGS-84
-    ├── test_cat20.cpp               # 10 test cases covering all CAT20 item types incl. I020 Extended (3 octets), I170 Extended (2 octets), I030 Repetitive FX, I250/I400 RepetitiveGroup, I500 Compound
-    ├── test_cat25.cpp               # 7 test cases covering all CAT25 item types incl. I100 Extended (2 octets), I105/I120/I140 RepetitiveGroup (8/24/48-bit entries), signed WGS-84 I600/I610
-    ├── test_cat21.cpp               # 9 test cases covering all CAT21 item types incl. 9-octet Extended
-    ├── test_cat23.cpp               # 8 test cases covering all CAT23 item types incl. Extended I100, RepetitiveGroup I120
-    ├── test_cat32.cpp               # 8 test cases covering all CAT32 item types incl. Fixed I050 (23-bit), RepetitiveGroup I460, Compound I500
-    ├── test_cat34.cpp               # 10 test cases covering all CAT34 item types incl. Compound
-    ├── test_cat48.cpp               # 10 test cases covering all CAT48 item types
-    ├── test_cat62.cpp               # 10 test cases, 100 assertions incl. RepetitiveGroupFX
-    ├── test_cat63.cpp               # 9 test cases covering all CAT63 item types incl. Extended I060
-    ├── test_cat65.cpp               # 7 test cases covering all CAT65 item types incl. all 16 I050 SR values
-    ├── test_cat150.cpp              # 8 test cases covering all CAT150 item types incl. 56-bit ASCII callsign, 11 RepetitiveGroups (Cartesian/WGS-84 route points, correlations, free text)
-    ├── test_cat205.cpp              # 8 test cases covering all CAT205 item types incl. 32-bit WGS-84, 24-bit Cartesian, RepetitiveGroup I120
-    ├── test_cat240.cpp              # 9 test cases covering all CAT240 item types incl. I051 (8×64-bit blocks), I052 (32×64-bit blocks), RepetitiveGroup I030/I050
-    └── test_cat247.cpp              # 6 test cases covering all CAT247 item types incl. I550 version report RepetitiveGroup (multi-entry)
+    └── test_cat*.cpp                # One test file per category (27 total)
 ```
 
 ---
