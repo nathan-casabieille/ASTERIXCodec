@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="23" name="CNS/ATM Ground Station and Service Status Reports" edition="1.3" date="2021-09-27">
+
+  <DataItems>
+
+    <DataItem id="000" name="Report Type">
+      <Fixed>
+        <Element name="RTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="Ground station status report"/>
+          <Entry value="2" meaning="Service status report"/>
+          <Entry value="3" meaning="Service statistics report"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- SID(4)+STYP(4) = 1 byte -->
+    <DataItem id="015" name="Service Type and Identification">
+      <Fixed>
+        <Element name="SID"  bits="4" encoding="raw"/>
+        <Element name="STYP" bits="4" encoding="table">
+          <Entry value="1" meaning="ADS-B VDL4"/>
+          <Entry value="2" meaning="ADS-B Ext Squitter"/>
+          <Entry value="3" meaning="ADS-B UAT"/>
+          <Entry value="4" meaning="TIS-B VDL4"/>
+          <Entry value="5" meaning="TIS-B Ext Squitter"/>
+          <Entry value="6" meaning="TIS-B UAT"/>
+          <Entry value="7" meaning="FIS-B VDL4"/>
+          <Entry value="8" meaning="GRAS VDL4"/>
+          <Entry value="9" meaning="MLT"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="070" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Extended; 2 octets max (each = 7 data bits + FX):
+        Octet 1: NOGO(1)+ODP(1)+OXT(1)+MSC(1)+TSV(1)+SPO(1)+RN(1)
+        Octet 2: GSSP(7) unsigned quantity 1 s
+    -->
+    <DataItem id="100" name="Ground Station Status">
+      <Extended>
+        <Octet>
+          <Element name="NOGO" bits="1" encoding="table">
+            <Entry value="0" meaning="Data is released for operational use"/>
+            <Entry value="1" meaning="Data must not be used operationally"/>
+          </Element>
+          <Element name="ODP"  bits="1" encoding="table">
+            <Entry value="0" meaning="No overload"/>
+            <Entry value="1" meaning="Overload in DP"/>
+          </Element>
+          <Element name="OXT"  bits="1" encoding="table">
+            <Entry value="0" meaning="No overload"/>
+            <Entry value="1" meaning="Overload in transmission subsystem"/>
+          </Element>
+          <Element name="MSC"  bits="1" encoding="table">
+            <Entry value="0" meaning="Monitoring system not connected or unknown"/>
+            <Entry value="1" meaning="Monitoring system connected"/>
+          </Element>
+          <Element name="TSV"  bits="1" encoding="table">
+            <Entry value="0" meaning="Valid"/>
+            <Entry value="1" meaning="Invalid"/>
+          </Element>
+          <Element name="SPO"  bits="1" encoding="table">
+            <Entry value="0" meaning="No spoofing detected"/>
+            <Entry value="1" meaning="Potential spoofing attack"/>
+          </Element>
+          <Element name="RN"   bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Track numbering has restarted"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="GSSP" bits="7" encoding="unsigned_quantity" scale="1.0" unit="s"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!--
+      I101 primary subfield: RP(8 bits) + SC(3) + spare(4) = 15 data bits.
+      The zoranbosnjak spec uses a 2-byte primary subfield where byte 1 carries RP
+      as a full byte (no FX) and byte 2 carries SC+spare+FX. Our codec models this
+      as Fixed 2B (RP+SC+spare). The optional SSRP extension (7-bit, 2nd extension
+      octet) is not supported.
+    -->
+    <DataItem id="101" name="Service Configuration">
+      <Fixed>
+        <Element name="RP"   bits="8" encoding="unsigned_quantity" scale="0.5"  unit="s"/>
+        <Element name="SC"   bits="3" encoding="table">
+          <Entry value="0" meaning="No information"/>
+          <Entry value="1" meaning="NRA class"/>
+          <Entry value="2" meaning="Reserved for future use"/>
+          <Entry value="3" meaning="Reserved for future use"/>
+          <Entry value="4" meaning="Reserved for future use"/>
+          <Entry value="5" meaning="Reserved for future use"/>
+          <Entry value="6" meaning="Reserved for future use"/>
+          <Entry value="7" meaning="Reserved for future use"/>
+        </Element>
+        <Spare bits="5"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Extended; 1 octet (spare(4)+STAT(3)):
+        spare(4) + STAT(3) = 7 bits
+    -->
+    <DataItem id="110" name="Service Status">
+      <Extended>
+        <Octet>
+          <Spare bits="4"/>
+          <Element name="STAT" bits="3" encoding="table">
+            <Entry value="0" meaning="Unknown"/>
+            <Entry value="1" meaning="Failed"/>
+            <Entry value="2" meaning="Disabled"/>
+            <Entry value="3" meaning="Degraded"/>
+            <Entry value="4" meaning="Normal"/>
+            <Entry value="5" meaning="Initialisation"/>
+          </Element>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!--
+      Repetitive (1-byte count); per entry:
+        TYPE(8) + REF(1) + spare(7) + CV(32) = 48 bits = 6B
+    -->
+    <DataItem id="120" name="Service Statistics">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="TYPE" bits="8" encoding="table">
+            <Entry value="0"  meaning="Number of unknown messages received"/>
+            <Entry value="1"  meaning="Number of too old messages received"/>
+            <Entry value="2"  meaning="Number of failed message conversions"/>
+            <Entry value="3"  meaning="Total number of messages received"/>
+            <Entry value="4"  meaning="Total number of messages transmitted"/>
+            <Entry value="20" meaning="Number of TIS-B management messages received"/>
+            <Entry value="21" meaning="Number of Basic messages received"/>
+            <Entry value="22" meaning="Number of High Dynamic messages received"/>
+            <Entry value="23" meaning="Number of Full Position messages received"/>
+            <Entry value="24" meaning="Number of Basic Ground messages received"/>
+            <Entry value="25" meaning="Number of TCP messages received"/>
+            <Entry value="26" meaning="Number of UTC time messages received"/>
+            <Entry value="27" meaning="Number of Data messages received"/>
+            <Entry value="28" meaning="Number of High Resolution messages received"/>
+            <Entry value="29" meaning="Number of Aircraft Target Airborne messages received"/>
+            <Entry value="30" meaning="Number of Aircraft Target Ground messages received"/>
+            <Entry value="31" meaning="Number of Ground Vehicle Target messages received"/>
+            <Entry value="32" meaning="Number of 2 slots TCP messages received"/>
+          </Element>
+          <Element name="REF" bits="1" encoding="table">
+            <Entry value="0" meaning="From midnight"/>
+            <Entry value="1" meaning="From the last report"/>
+          </Element>
+          <Spare bits="7"/>
+          <Element name="CV"  bits="32" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- 8-bit unsigned, LSB = 1 NM -->
+    <DataItem id="200" name="Operational Range">
+      <Fixed>
+        <Element name="RANGE" bits="8" encoding="unsigned_quantity" scale="1.0" unit="NM"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 14 slots → 2 FSPEC bytes
+    Byte 1: 010 000 015 070 100 101 200
+    Byte 2: 110 120  -   -   -  RE  SP
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="000"/>
+      <Item ref="015"/>
+      <Item ref="070"/>
+      <Item ref="100"/>
+      <Item ref="101"/>
+      <Item ref="200"/>
+      <Item ref="110"/>
+      <Item ref="120"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="RE"/>
+      <Item ref="SP"/>
+    </Variation>
+  </UAPs>
+
+</Category>
