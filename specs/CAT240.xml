@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="240" name="Radar Video Transmission" edition="1.3" date="2015-05-13">
+
+  <DataItems>
+
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="Video Summary message"/>
+          <Entry value="2" meaning="Video message"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Message Sequence Identifier: 32-bit unsigned counter for lost-message detection -->
+    <DataItem id="020" name="Video Record Header">
+      <Fixed>
+        <Element name="MSI" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Video Summary: count-prefixed byte array carrying an ASCII free-text string.
+      Each repetition is one ASCII character byte.
+    -->
+    <DataItem id="030" name="Video Summary">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="CHAR" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!--
+      Video Header Nano: defines a group of cells on a radial.
+      STARTAZ/ENDAZ: 16-bit unsigned, LSB = 360/2^16 °
+      STARTRG: 32-bit unsigned integer (number of cells)
+      CELLDUR: 32-bit unsigned, LSB = 1 ns
+    -->
+    <DataItem id="040" name="Video Header Nano">
+      <Fixed>
+        <Element name="STARTAZ" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="°"/>
+        <Element name="ENDAZ"   bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="°"/>
+        <Element name="STARTRG" bits="32" encoding="raw"/>
+        <Element name="CELLDUR" bits="32" encoding="unsigned_quantity" scale="1.0" unit="ns"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Video Header Femto: same structure as I040 but CELLDUR in femtoseconds.
+    -->
+    <DataItem id="041" name="Video Header Femto">
+      <Fixed>
+        <Element name="STARTAZ" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="°"/>
+        <Element name="ENDAZ"   bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="°"/>
+        <Element name="STARTRG" bits="32" encoding="raw"/>
+        <Element name="CELLDUR" bits="32" encoding="unsigned_quantity" scale="1.0" unit="fs"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- C(1)+spare(7)+RES(8) = 2 bytes -->
+    <DataItem id="048" name="Video Cells Resolution and Data Compression Indicator">
+      <Fixed>
+        <Element name="C" bits="1" encoding="table">
+          <Entry value="0" meaning="No compression applied"/>
+          <Entry value="1" meaning="Compression applied"/>
+        </Element>
+        <Spare bits="7"/>
+        <Element name="RES" bits="8" encoding="table">
+          <Entry value="1" meaning="Monobit Resolution (1 bit)"/>
+          <Entry value="2" meaning="Low Resolution (2 bits)"/>
+          <Entry value="3" meaning="Medium Resolution (4 bits)"/>
+          <Entry value="4" meaning="High Resolution (8 bits)"/>
+          <Entry value="5" meaning="Very High Resolution (16 bits)"/>
+          <Entry value="6" meaning="Ultra High Resolution (32 bits)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- NBVB(16)+NBCELLS(24) = 5 bytes -->
+    <DataItem id="049" name="Video Octets and Video Cells Counters">
+      <Fixed>
+        <Element name="NBVB"   bits="16" encoding="raw"/>
+        <Element name="NBCELLS" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Video Block Low Data Volume.
+      Repetitive (1-byte count); each entry: 32-bit raw video block.
+      Count = number of 4-byte blocks; max payload = 255 × 4 = 1020 bytes.
+    -->
+    <DataItem id="050" name="Video Block Low Data Volume">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="BLOCK" bits="32" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!--
+      Video Block Medium Data Volume.
+      Repetitive (1-byte count); each entry: 512-bit (64-byte) raw video block.
+      Modelled as 8 × 64-bit elements per group entry to stay within the codec's
+      64-bit element limit while preserving the spec-correct count semantics.
+      Count = number of 512-bit (64-byte) blocks; max payload = 255 × 64 = 16320 bytes.
+    -->
+    <DataItem id="051" name="Video Block Medium Data Volume">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="B0" bits="64" encoding="raw"/>
+          <Element name="B1" bits="64" encoding="raw"/>
+          <Element name="B2" bits="64" encoding="raw"/>
+          <Element name="B3" bits="64" encoding="raw"/>
+          <Element name="B4" bits="64" encoding="raw"/>
+          <Element name="B5" bits="64" encoding="raw"/>
+          <Element name="B6" bits="64" encoding="raw"/>
+          <Element name="B7" bits="64" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!--
+      Video Block High Data Volume.
+      Repetitive (1-byte count); each entry: 2048-bit (256-byte) raw video block.
+      Modelled as 32 × 64-bit elements per group entry to stay within the codec's
+      64-bit element limit while preserving the spec-correct count semantics.
+      Count = number of 2048-bit (256-byte) blocks; max payload ≈ 254 × 256 = 65024 bytes.
+    -->
+    <DataItem id="052" name="Video Block High Data Volume">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="B00" bits="64" encoding="raw"/>
+          <Element name="B01" bits="64" encoding="raw"/>
+          <Element name="B02" bits="64" encoding="raw"/>
+          <Element name="B03" bits="64" encoding="raw"/>
+          <Element name="B04" bits="64" encoding="raw"/>
+          <Element name="B05" bits="64" encoding="raw"/>
+          <Element name="B06" bits="64" encoding="raw"/>
+          <Element name="B07" bits="64" encoding="raw"/>
+          <Element name="B08" bits="64" encoding="raw"/>
+          <Element name="B09" bits="64" encoding="raw"/>
+          <Element name="B10" bits="64" encoding="raw"/>
+          <Element name="B11" bits="64" encoding="raw"/>
+          <Element name="B12" bits="64" encoding="raw"/>
+          <Element name="B13" bits="64" encoding="raw"/>
+          <Element name="B14" bits="64" encoding="raw"/>
+          <Element name="B15" bits="64" encoding="raw"/>
+          <Element name="B16" bits="64" encoding="raw"/>
+          <Element name="B17" bits="64" encoding="raw"/>
+          <Element name="B18" bits="64" encoding="raw"/>
+          <Element name="B19" bits="64" encoding="raw"/>
+          <Element name="B20" bits="64" encoding="raw"/>
+          <Element name="B21" bits="64" encoding="raw"/>
+          <Element name="B22" bits="64" encoding="raw"/>
+          <Element name="B23" bits="64" encoding="raw"/>
+          <Element name="B24" bits="64" encoding="raw"/>
+          <Element name="B25" bits="64" encoding="raw"/>
+          <Element name="B26" bits="64" encoding="raw"/>
+          <Element name="B27" bits="64" encoding="raw"/>
+          <Element name="B28" bits="64" encoding="raw"/>
+          <Element name="B29" bits="64" encoding="raw"/>
+          <Element name="B30" bits="64" encoding="raw"/>
+          <Element name="B31" bits="64" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="140" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 14 slots → 2 FSPEC bytes
+    Byte 1: 010 000 020 030 040 041 048
+    Byte 2: 049 050 051 052 140  RE  SP
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="000"/>
+      <Item ref="020"/>
+      <Item ref="030"/>
+      <Item ref="040"/>
+      <Item ref="041"/>
+      <Item ref="048"/>
+      <Item ref="049"/>
+      <Item ref="050"/>
+      <Item ref="051"/>
+      <Item ref="052"/>
+      <Item ref="140"/>
+      <Item ref="RE"/>
+      <Item ref="SP"/>
+    </Variation>
+  </UAPs>
+
+</Category>
