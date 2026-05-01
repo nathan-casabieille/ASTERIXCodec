@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT08.xml – ASTERIX Category 008 "Monoradar Derived Weather Information"
+  Edition 1.3, 2021-04-01.
+-->
+<Category cat="8"
+          name="Monoradar Derived Weather Information"
+          edition="1.3"
+          date="2021-04-01">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1"   meaning="Polar vector"/>
+          <Entry value="2"   meaning="Cartesian vector of start point/length"/>
+          <Entry value="3"   meaning="Contour record"/>
+          <Entry value="4"   meaning="Cartesian start point and end point vector"/>
+          <Entry value="254" meaning="SOP message"/>
+          <Entry value="255" meaning="EOP message"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/020 – Vector Qualifier  (Extended, up to 2 octets)
+         Octet 1 (7 bits): ORG(1)+I(3)+S(3)
+         Octet 2 (7 bits): spare(5)+TST(1)+ER(1)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Vector Qualifier">
+      <Extended>
+        <Octet>
+          <Element name="ORG" bits="1" encoding="table">
+            <Entry value="0" meaning="Local Coordinates"/>
+            <Entry value="1" meaning="System Coordinates"/>
+          </Element>
+          <Element name="I" bits="3" encoding="raw"/>
+          <Element name="S" bits="3" encoding="table">
+            <Entry value="0" meaning="0 deg"/>
+            <Entry value="1" meaning="22.5 deg"/>
+            <Entry value="2" meaning="45 deg"/>
+            <Entry value="3" meaning="67.5 deg"/>
+            <Entry value="4" meaning="90 deg"/>
+            <Entry value="5" meaning="112.5 deg"/>
+            <Entry value="6" meaning="135 deg"/>
+            <Entry value="7" meaning="157.5 deg"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Spare bits="5"/>
+          <Element name="TST" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Test vector"/>
+          </Element>
+          <Element name="ER" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Error condition encountered"/>
+          </Element>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/034 – Sequence of Polar Vectors in SPF Notation
+         count-prefixed RepetitiveGroup; 4 bytes per entry:
+           STR(8) + ENDR(8) + AZ(16, LSB=360/2^16 °)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="034" name="Sequence of Polar Vectors in SPF Notation">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="STR"  bits="8"  encoding="raw"/>
+          <Element name="ENDR" bits="8"  encoding="raw"/>
+          <Element name="AZ"   bits="16" encoding="unsigned_quantity"
+                   scale="0.0054931640625" unit="deg"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/036 – Sequence of Cartesian Vectors in SPF Notation (start/length)
+         count-prefixed RepetitiveGroup; 3 bytes per entry:
+           X(8) + Y(8) + LENGTH(8)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="036" name="Sequence of Cartesian Vectors in SPF Notation">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="X"      bits="8" encoding="raw"/>
+          <Element name="Y"      bits="8" encoding="raw"/>
+          <Element name="LENGTH" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/038 – Sequence of Weather Vectors in SPF Notation (start/end)
+         count-prefixed RepetitiveGroup; 4 bytes per entry:
+           X1(8) + Y1(8) + X2(8) + Y2(8)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="038" name="Sequence of Weather Vectors in SPF Notation">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="X1" bits="8" encoding="raw"/>
+          <Element name="Y1" bits="8" encoding="raw"/>
+          <Element name="X2" bits="8" encoding="raw"/>
+          <Element name="Y2" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/040 – Contour Identifier  (Fixed, 2 bytes)
+         ORG(1)+I(3)+spare(2)+FSTLST(2) | CSN(8)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="040" name="Contour Identifier">
+      <Fixed>
+        <Element name="ORG" bits="1" encoding="table">
+          <Entry value="0" meaning="Local Coordinates"/>
+          <Entry value="1" meaning="System Coordinates"/>
+        </Element>
+        <Element name="I" bits="3" encoding="raw"/>
+        <Spare bits="2"/>
+        <Element name="FSTLST" bits="2" encoding="table">
+          <Entry value="0" meaning="Intermediate record of a contour"/>
+          <Entry value="1" meaning="Last record of a contour of at least two records"/>
+          <Entry value="2" meaning="First record of a contour of at least two records"/>
+          <Entry value="3" meaning="First and only record, fully defining a contour"/>
+        </Element>
+        <Element name="CSN" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/050 – Sequence of Contour Points in SPF Notation
+         count-prefixed RepetitiveGroup; 2 bytes per entry:
+           X1(8) + Y1(8)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="050" name="Sequence of Contour Points in SPF Notation">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="X1" bits="8" encoding="raw"/>
+          <Element name="Y1" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/090 – Time of Day  (Fixed, 3 bytes)
+         unsigned, LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/100 – Processing Status  (Fixed, 3 bytes)
+         F(5 signed)+R(3)+Q(15)+spare(1) = 24 bits
+         Note: the standard defines this as Extended but F(5)+R(3) spans a
+         full byte; modelled here as Fixed to stay within the 7-bit-per-octet
+         Extended model used by the codec.
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="100" name="Processing Status">
+      <Fixed>
+        <Element name="F" bits="5" encoding="signed_quantity" scale="1.0" unit=""/>
+        <Element name="R" bits="3" encoding="raw"/>
+        <Element name="Q" bits="15" encoding="raw"/>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/110 – Station Configuration Status  (Repetitive FX)
+         Each entry: 7 raw bits + FX bit = 1 byte
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="110" name="Station Configuration Status">
+      <Repetitive type="fx">
+        <Element name="SCS" bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I008/120 – Total Number of Items  (Fixed, 2 bytes)
+         unsigned 16-bit count
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="120" name="Total Number of Items Constituting One Weather Picture">
+      <Fixed>
+        <Element name="TOTAL" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 14 slots across 2 FSPEC bytes
+       Slot 14 (RFS – Random Field Sequencing) is not supported; mapped to "-".
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+
+    <Variation name="default">
+      <!-- FSPEC byte 1: slots 1–7 -->
+      <Item ref="010"/>  <!-- slot  1 -->
+      <Item ref="000"/>  <!-- slot  2 -->
+      <Item ref="020"/>  <!-- slot  3 -->
+      <Item ref="036"/>  <!-- slot  4 -->
+      <Item ref="034"/>  <!-- slot  5 -->
+      <Item ref="040"/>  <!-- slot  6 -->
+      <Item ref="050"/>  <!-- slot  7 -->
+      <!-- FSPEC byte 2: slots 8–14 -->
+      <Item ref="090"/>  <!-- slot  8 -->
+      <Item ref="100"/>  <!-- slot  9 -->
+      <Item ref="110"/>  <!-- slot 10 -->
+      <Item ref="120"/>  <!-- slot 11 -->
+      <Item ref="038"/>  <!-- slot 12 -->
+      <Item ref="SP"/>   <!-- slot 13 -->
+      <Item ref="-"/>    <!-- slot 14 (RFS – not supported) -->
+    </Variation>
+
+  </UAPs>
+
+</Category>
