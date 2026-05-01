@@ -37,6 +37,7 @@
 | CAT007   | [![CAT07 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat07.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat07.yml) |
 | CAT010   | [![CAT10 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat10.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat10.yml) |
 | CAT011   | [![CAT11 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat11.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat11.yml) |
+| CAT015   | [![CAT15 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat15.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat15.yml) |
 
 ---
 
@@ -84,6 +85,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT007   | Transmission of Directed Interrogation Messages | 1.12 |
 | CAT010   | Transmission of Monosensor Surface Movement Data | 1.1 |
 | CAT011   | Transmission of A-SMGCS Data | 1.3 |
+| CAT015   | Independent Non-Cooperative Surveillance System Target Reports | 1.2 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -124,7 +126,8 @@ ASTERIXCodec/
 │   ├── CAT04.xml                    # XML spec consumed by the library
 │   ├── CAT07.xml                    # XML spec consumed by the library
 │   ├── CAT10.xml                    # XML spec consumed by the library
-│   └── CAT11.xml                    # XML spec consumed by the library
+│   ├── CAT11.xml                    # XML spec consumed by the library
+│   └── CAT15.xml                    # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
     ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
@@ -147,7 +150,8 @@ ASTERIXCodec/
     ├── test_cat04.cpp               # 10 test cases covering all CAT04 item types incl. I060 Extended (8 octets), Compounds I070/I120/I170/I171
     ├── test_cat07.cpp               # 10 test cases covering all CAT07 item types incl. I020 Extended (6 octets), dual UAP (downlink/uplink), Compounds I085/I130/I415/I450
     ├── test_cat10.cpp               # 10 test cases covering all CAT10 item types incl. I020/I170/I270 Extended (3 octets each), I250/I280 RepetitiveGroup, WGS-84 32-bit coords
-    └── test_cat11.cpp               # 10 test cases covering all CAT11 item types incl. I170 Extended (4 octets), I290/I380/I390/I500 Compound (2 PSF bytes each), I605/I610 RepetitiveGroup
+    ├── test_cat11.cpp               # 10 test cases covering all CAT11 item types incl. I170 Extended (4 octets), I290/I380/I390/I500 Compound (2 PSF bytes each), I605/I610 RepetitiveGroup
+    └── test_cat15.cpp               # 10 test cases covering all CAT15 item types incl. I020/I170 Extended (1 octet), I030 Repetitive FX, I270/I600 Compound, I625/I626 Compound (2 PSF bytes), I300/I480/I631 RepetitiveGroup
 ```
 
 ---
@@ -212,6 +216,8 @@ cmake --build build -j$(nproc)
 ./build/test_cat240 /path/to/specs/CAT240.xml
 ./build/test_cat247 /path/to/specs/CAT247.xml
 ./build/test_cat04 /path/to/specs/CAT04.xml
+./build/test_cat11 /path/to/specs/CAT11.xml
+./build/test_cat15 /path/to/specs/CAT15.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.

@@ -1,0 +1,890 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ASTERIX Category 015 – Independent Non-Cooperative Surveillance System Target Reports
+     Edition 1.2  |  2024-05-01
+
+     Codec notes:
+       - I020: Extended 1 defined octet (MOMU(2)+TTAX(2)+SCD(2)+spare(1))
+       - I030: Repetitive FX, 7-bit raw
+       - I170: Extended 1 defined octet (BIZ+BAZ+TUR+spare+CSTP+CSTH+CNF)
+       - I270: Compound 4 sub-items (LEN WDT HGT ORT), 1 PSF byte
+       - I300: RepetitiveGroup count, REP×{CLS(9)+PRB(7)} = 2B
+       - I480: RepetitiveGroup count, REP×{ASSOC(40)} = 5B
+       - I600: Compound 3 sub-items (P84 HPR HPP), 1 PSF byte
+       - I601: Compound 8 sub-items (GH RSGH SDGH CI6 CI9 COGHHP COGHHV | COGHHA), 2 PSF bytes
+       - I602: Compound 4 sub-items (HV RSHV SDHV COHVHP), 1 PSF byte
+       - I603: Compound 4 sub-items (HA SDHA COHAHP COHAHV), 1 PSF byte
+       - I604: Compound 6 sub-items (VV RSVV SDVV COVVHP COVVHV COVVHA), 1 PSF byte
+       - I605: Compound 5 sub-items (VA RSVA COVAHP COVAHV COVAHA), 1 PSF byte
+       - I625: Compound 8 sub-items (R RSR SDR RR RSRR SDRR RA | SDRA), 2 PSF bytes
+       - I626: Compound 10 sub-items (DV SDDV DA SDDA CODVR CODVRR CODVRA | CODAR CODARR CODARA), 2 PSF bytes
+       - I627: Compound 6 sub-items (AZ RSAZ SDASZ AZR SDAZR AZEX), 1 PSF byte
+       - I628: Compound 6 sub-items (EL RSEL SDEL ER SDER ELEX), 1 PSF byte
+       - I630: Compound 4 sub-items (DPP DPS RPP RPS), 1 PSF byte
+       - I631: RepetitiveGroup count, REP×{AZCON(16u)+ELCON(16s)+RGCONSTOP(16u)+RGCONSTART(16u)} = 8B
+       - UAP: 26 slots (4 FSPEC bytes):
+           B1: 010 000 015 020 030 145 161
+           B2: 170 050 270 300 400 600 601
+           B3: 602 603 604 605 480 625 626
+           B4: 627 628 630 631 SP
+-->
+<Category cat="15" name="Independent Non-Cooperative Surveillance System Target Reports" edition="1.2" date="2024-05-01">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/000 – Message Type  (Fixed, 1 byte)
+         MT(7, table) + RG(1, table)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MT" bits="7" encoding="table">
+          <Entry value="1" meaning="Measurement Plot"/>
+          <Entry value="2" meaning="Measurement Track"/>
+          <Entry value="3" meaning="Sensor Centric Plot"/>
+          <Entry value="4" meaning="Sensor Centric Track"/>
+          <Entry value="5" meaning="Track End Message"/>
+        </Element>
+        <Element name="RG" bits="1" encoding="table">
+          <Entry value="0" meaning="Periodic Report"/>
+          <Entry value="1" meaning="Event Driven Report"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/015 – Service Identification  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="015" name="Service Identification">
+      <Fixed>
+        <Element name="SID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/020 – Target Report Descriptor  (Extended, 1 defined octet)
+         Octet 1 (7 bits): MOMU(2) TTAX(2) SCD(2) spare(1)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Target Report Descriptor">
+      <Extended>
+        <Octet>
+          <Element name="MOMU" bits="2" encoding="table">
+            <Entry value="0" meaning="Mono-Static Sensor"/>
+            <Entry value="1" meaning="Multi-Static Sensor"/>
+            <Entry value="2" meaning="Other"/>
+            <Entry value="3" meaning="Unknown"/>
+          </Element>
+          <Element name="TTAX" bits="2" encoding="table">
+            <Entry value="0" meaning="Actual Target Report"/>
+            <Entry value="1" meaning="Reference Target"/>
+            <Entry value="2" meaning="Synthetic Target"/>
+            <Entry value="3" meaning="Simulated / Replayed Target"/>
+          </Element>
+          <Element name="SCD" bits="2" encoding="table">
+            <Entry value="0" meaning="Unknown"/>
+            <Entry value="1" meaning="Forward"/>
+            <Entry value="2" meaning="Backward"/>
+            <Entry value="3" meaning="Static"/>
+          </Element>
+          <Spare bits="1"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/030 – Warning/Error Conditions  (Repetitive FX, 7-bit raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="Warning/Error Conditions">
+      <Repetitive type="fx">
+        <Element bits="7" encoding="raw"/>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/050 – Update Period  (Fixed, 2 bytes)
+         spare(2) + UPD(14, 1/128 s/LSB)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="050" name="Update Period">
+      <Fixed>
+        <Spare bits="2"/>
+        <Element name="UPD" bits="14" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/145 – Time of Applicability  (Fixed, 3 bytes)
+         24-bit unsigned, 1/128 s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="145" name="Time of Applicability">
+      <Fixed>
+        <Element name="TOA" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/161 – Track/Plot Number  (Fixed, 2 bytes)
+         16-bit unsigned integer
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="161" name="Track/Plot Number">
+      <Fixed>
+        <Element name="TPN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/170 – Track/Plot Status  (Extended, 1 defined octet)
+         Octet 1 (7 bits): BIZ BAZ TUR spare CSTP CSTH CNF
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="170" name="Track/Plot Status">
+      <Extended>
+        <Octet>
+          <Element name="BIZ" bits="1" encoding="table">
+            <Entry value="0" meaning="Target not in Blind Zone"/>
+            <Entry value="1" meaning="Target in Blind Zone"/>
+          </Element>
+          <Element name="BAZ" bits="1" encoding="table">
+            <Entry value="0" meaning="Target not in Blanked Zone"/>
+            <Entry value="1" meaning="Target in Blanked Zone"/>
+          </Element>
+          <Element name="TUR" bits="1" encoding="table">
+            <Entry value="0" meaning="Track Alive"/>
+            <Entry value="1" meaning="Track Terminated by User Request"/>
+          </Element>
+          <Spare bits="1"/>
+          <Element name="CSTP" bits="1" encoding="table">
+            <Entry value="0" meaning="Not extrapolated"/>
+            <Entry value="1" meaning="Extrapolated"/>
+          </Element>
+          <Element name="CSTH" bits="1" encoding="table">
+            <Entry value="0" meaning="Not extrapolated"/>
+            <Entry value="1" meaning="Extrapolated"/>
+          </Element>
+          <Element name="CNF" bits="1" encoding="table">
+            <Entry value="0" meaning="Confirmed Track"/>
+            <Entry value="1" meaning="Tentative Track"/>
+          </Element>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/270 – Target Size & Orientation  (Compound, 4 sub-items, 1 PSF byte)
+         slot 0: LEN (2B, unsigned, 0.01 m)
+         slot 1: WDT (2B, unsigned, 0.01 m)
+         slot 2: HGT (2B, unsigned, 0.01 m)
+         slot 3: ORT (2B, unsigned, 360/2^16 °)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="270" name="Target Size and Orientation">
+      <Compound>
+        <!-- slot 0: LEN – Target length -->
+        <SubItem name="LEN">
+          <Fixed>
+            <Element name="LEN" bits="16" encoding="unsigned_quantity" scale="0.01" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: WDT – Target width -->
+        <SubItem name="WDT">
+          <Fixed>
+            <Element name="WDT" bits="16" encoding="unsigned_quantity" scale="0.01" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: HGT – Target height -->
+        <SubItem name="HGT">
+          <Fixed>
+            <Element name="HGT" bits="16" encoding="unsigned_quantity" scale="0.01" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: ORT – Target orientation -->
+        <SubItem name="ORT">
+          <Fixed>
+            <Element name="ORT" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/300 – Object Classification  (RepetitiveGroup count-prefixed)
+         REP(1B) + REP × { CLS(9) + PRB(7) } = 2B per entry
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="300" name="Object Classification">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="CLS" bits="9" encoding="raw"/>
+          <Element name="PRB" bits="7" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/400 – Measurement Identifier  (Fixed, 5 bytes)
+         PID(16) + ON(24)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="400" name="Measurement Identifier">
+      <Fixed>
+        <Element name="PID" bits="16" encoding="raw"/>
+        <Element name="ON"  bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/480 – Associations  (RepetitiveGroup count-prefixed)
+         REP(1B) + REP × { ASSOC(40 raw) } = 5B per entry
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="480" name="Associations">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="ASSOC" bits="40" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/600 – Horizontal Position Information  (Compound, 3 sub-items, 1 PSF byte)
+         slot 0: P84  – WGS-84 position (8B: LAT(32s)+LON(32s), 180/2^31 °)
+         slot 1: HPR  – Position resolution (5B: RSHPX(16u)+RSHPY(16u)+CORSHPXY(8s))
+         slot 2: HPP  – Position precision  (5B: SDHPX(16u)+SDHPY(16u)+COSDHPXY(8s))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="600" name="Horizontal Position Information">
+      <Compound>
+        <!-- slot 0: P84 – WGS-84 Lat/Lon (8 bytes) -->
+        <SubItem name="P84">
+          <Fixed>
+            <Element name="LATITUDE"  bits="32" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+            <Element name="LONGITUDE" bits="32" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: HPR – Horizontal Position Resolution (5 bytes) -->
+        <SubItem name="HPR">
+          <Fixed>
+            <Element name="RSHPX"    bits="16" encoding="unsigned_quantity" scale="0.5"       unit="m"/>
+            <Element name="RSHPY"    bits="16" encoding="unsigned_quantity" scale="0.5"       unit="m"/>
+            <Element name="CORSHPXY" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: HPP – Horizontal Position Precision (5 bytes) -->
+        <SubItem name="HPP">
+          <Fixed>
+            <Element name="SDHPX"    bits="16" encoding="unsigned_quantity" scale="0.25"      unit="m"/>
+            <Element name="SDHPY"    bits="16" encoding="unsigned_quantity" scale="0.25"      unit="m"/>
+            <Element name="COSDHPXY" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/601 – Geometric Height Information  (Compound, 8 sub-items, 2 PSF bytes)
+         slot 0: GH     (3B: signed 24, 0.01 m)
+         slot 1: RSGH   (3B: unsigned 24, 0.01 m)
+         slot 2: SDGH   (3B: unsigned 24, 0.01 m)
+         slot 3: CI6    (3B: UCI6(12u,16m)+LCI6(12u,16m))
+         slot 4: CI9    (3B: UCI9(12u,16m)+LCI9(12u,16m))
+         slot 5: COGHHP (2B: X(8s)+Y(8s), 1/128)
+         slot 6: COGHHV (2B: X(8s)+Y(8s), 1/128)
+         slot 7: COGHHA (2B: X(8s)+Y(8s), 1/128)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="601" name="Geometric Height Information">
+      <Compound>
+        <!-- slot 0: GH – Geometric Height WGS-84 (3B) -->
+        <SubItem name="GH">
+          <Fixed>
+            <Element name="GH" bits="24" encoding="signed_quantity" scale="0.01" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSGH – Geometric Height Resolution (3B) -->
+        <SubItem name="RSGH">
+          <Fixed>
+            <Element name="RSGH" bits="24" encoding="unsigned_quantity" scale="0.01" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: SDGH – Geometric Height Precision (3B) -->
+        <SubItem name="SDGH">
+          <Fixed>
+            <Element name="SDGH" bits="24" encoding="unsigned_quantity" scale="0.01" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: CI6 – Confidence Interval 67% (3B) -->
+        <SubItem name="CI6">
+          <Fixed>
+            <Element name="UCI6" bits="12" encoding="unsigned_quantity" scale="16" unit="m"/>
+            <Element name="LCI6" bits="12" encoding="unsigned_quantity" scale="16" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: CI9 – Confidence Interval 95% (3B) -->
+        <SubItem name="CI9">
+          <Fixed>
+            <Element name="UCI9" bits="12" encoding="unsigned_quantity" scale="16" unit="m"/>
+            <Element name="LCI9" bits="12" encoding="unsigned_quantity" scale="16" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: COGHHP – Correlation of GH and Horiz. Position (2B) -->
+        <SubItem name="COGHHP">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 6: COGHHV – Correlation of GH and Horiz. Velocity (2B) -->
+        <SubItem name="COGHHV">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 7: COGHHA – Correlation of GH and Horiz. Acceleration (2B) -->
+        <SubItem name="COGHHA">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/602 – Horizontal Velocity Information  (Compound, 4 sub-items, 1 PSF byte)
+         slot 0: HV     (5B: X(20s)+Y(20s), 0.01 m/s)
+         slot 1: RSHV   (5B: X(16u)+Y(16u)+CORSHVXY(8s))
+         slot 2: SDHV   (5B: X(16u)+Y(16u)+COHVXY(8s))
+         slot 3: COHVHP (4B: COHVXHPX(8s)+COHVXHPY(8s)+COHVYHPX(8s)+COHVYHPY(8s))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="602" name="Horizontal Velocity Information">
+      <Compound>
+        <!-- slot 0: HV – Horizontal Velocity Vector (5B, 20-bit components) -->
+        <SubItem name="HV">
+          <Fixed>
+            <Element name="X" bits="20" encoding="signed_quantity" scale="0.01" unit="m/s"/>
+            <Element name="Y" bits="20" encoding="signed_quantity" scale="0.01" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSHV – Horizontal Velocity Resolution (5B) -->
+        <SubItem name="RSHV">
+          <Fixed>
+            <Element name="X"        bits="16" encoding="unsigned_quantity" scale="0.01"      unit="m/s"/>
+            <Element name="Y"        bits="16" encoding="unsigned_quantity" scale="0.01"      unit="m/s"/>
+            <Element name="CORSHVXY" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: SDHV – Horizontal Velocity Precision (5B) -->
+        <SubItem name="SDHV">
+          <Fixed>
+            <Element name="X"      bits="16" encoding="unsigned_quantity" scale="0.01"      unit="m/s"/>
+            <Element name="Y"      bits="16" encoding="unsigned_quantity" scale="0.01"      unit="m/s"/>
+            <Element name="COHVXY" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: COHVHP – Correlation of HV and HP (4B) -->
+        <SubItem name="COHVHP">
+          <Fixed>
+            <Element name="COHVXHPX" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHVXHPY" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHVYHPX" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHVYHPY" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/603 – Horizontal Acceleration Information  (Compound, 4 sub-items, 1 PSF byte)
+         slot 0: HA     (3B: X(12s)+Y(12s), 1/16 m/s²)
+         slot 1: SDHA   (4B: X(12u)+Y(12u)+COHAXY(8s))
+         slot 2: COHAHP (4B: COHAXHPX(8s)+COHAXHPY(8s)+COHAYHPX(8s)+COAYHPY(8s))
+         slot 3: COHAHV (4B: COHAXHVX(8s)+COHAXHVY(8s)+COHAYHVX(8s)+COHAYHVY(8s))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="603" name="Horizontal Acceleration Information">
+      <Compound>
+        <!-- slot 0: HA – Horizontal Acceleration Vector (3B, 12-bit components) -->
+        <SubItem name="HA">
+          <Fixed>
+            <Element name="X" bits="12" encoding="signed_quantity" scale="0.0625" unit="m/s2"/>
+            <Element name="Y" bits="12" encoding="signed_quantity" scale="0.0625" unit="m/s2"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: SDHA – Horizontal Acceleration Precision (4B) -->
+        <SubItem name="SDHA">
+          <Fixed>
+            <Element name="X"      bits="12" encoding="unsigned_quantity" scale="0.0625"     unit="m/s2"/>
+            <Element name="Y"      bits="12" encoding="unsigned_quantity" scale="0.0625"     unit="m/s2"/>
+            <Element name="COHAXY" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: COHAHP – Correlation of HA and HP (4B) -->
+        <SubItem name="COHAHP">
+          <Fixed>
+            <Element name="COHAXHPX" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHAXHPY" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHAYHPX" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COAYHPY"  bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: COHAHV – Correlation of HA and HV (4B) -->
+        <SubItem name="COHAHV">
+          <Fixed>
+            <Element name="COHAXHVX" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHAXHVY" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHAYHVX" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="COHAYHVY" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/604 – Vertical Velocity Information  (Compound, 6 sub-items, 1 PSF byte)
+         slot 0: VV     (3B: signed 24, 0.01 m/s)
+         slot 1: RSVV   (2B: unsigned 16, 0.01 m/s)
+         slot 2: SDVV   (3B: SDVV(16u)+COVVGH(8s))
+         slot 3: COVVHP (2B: X(8s)+Y(8s))
+         slot 4: COVVHV (2B: X(8s)+Y(8s))
+         slot 5: COVVHA (2B: X(8s)+Y(8s))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="604" name="Vertical Velocity Information">
+      <Compound>
+        <!-- slot 0: VV – Vertical Velocity (3B) -->
+        <SubItem name="VV">
+          <Fixed>
+            <Element name="VV" bits="24" encoding="signed_quantity" scale="0.01" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSVV – Vertical Velocity Resolution (2B) -->
+        <SubItem name="RSVV">
+          <Fixed>
+            <Element name="RSVV" bits="16" encoding="unsigned_quantity" scale="0.01" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: SDVV – Vertical Velocity Precision (3B) -->
+        <SubItem name="SDVV">
+          <Fixed>
+            <Element name="SDVV"   bits="16" encoding="unsigned_quantity" scale="0.01"      unit="m/s"/>
+            <Element name="COVVGH" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: COVVHP – Correlation of VV and HP (2B) -->
+        <SubItem name="COVVHP">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: COVVHV – Correlation of VV and HV (2B) -->
+        <SubItem name="COVVHV">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: COVVHA – Correlation of VV and HA (2B) -->
+        <SubItem name="COVVHA">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/605 – Vertical Acceleration Information  (Compound, 5 sub-items, 1 PSF byte)
+         slot 0: VA     (2B: signed 16, 0.01 m/s²)
+         slot 1: RSVA   (4B: SDVA(16u)+COVAGH(8s)+COVAVV(8s))
+         slot 2: COVAHP (2B: X(8s)+Y(8s))
+         slot 3: COVAHV (2B: X(8s)+Y(8s))
+         slot 4: COVAHA (2B: X(8s)+Y(8s))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="605" name="Vertical Acceleration Information">
+      <Compound>
+        <!-- slot 0: VA – Vertical Acceleration (2B) -->
+        <SubItem name="VA">
+          <Fixed>
+            <Element name="VA" bits="16" encoding="signed_quantity" scale="0.01" unit="m/s2"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSVA – Vertical Acceleration Precision (4B) -->
+        <SubItem name="RSVA">
+          <Fixed>
+            <Element name="SDVA"   bits="16" encoding="unsigned_quantity" scale="0.01"      unit="m/s2"/>
+            <Element name="COVAGH" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+            <Element name="COVAVV" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: COVAHP – Correlation of VA and HP (2B) -->
+        <SubItem name="COVAHP">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: COVAHV – Correlation of VA and HV (2B) -->
+        <SubItem name="COVAHV">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: COVAHA – Correlation of VA and HA (2B) -->
+        <SubItem name="COVAHA">
+          <Fixed>
+            <Element name="X" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+            <Element name="Y" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/625 – Range Information  (Compound, 8 sub-items, 2 PSF bytes)
+         slot 0: R    (3B: signed 24, 0.1 m)
+         slot 1: RSR  (3B: unsigned 24, 0.1 m)
+         slot 2: SDR  (3B: unsigned 24, 0.1 m)
+         slot 3: RR   (3B: signed 24, 0.1 m/s)
+         slot 4: RSRR (3B: unsigned 24, 0.1 m/s)
+         slot 5: SDRR (4B: SDRR(24u,0.1)+CORRR(8s,1/128))
+         slot 6: RA   (2B: signed 16, 1/64 m/s²)
+         slot 7: SDRA (4B: SDRA(16u,1/128)+CORAR(8s,1/128)+CORARR(8s,1/128))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="625" name="Range Information">
+      <Compound>
+        <!-- slot 0: R – Range (3B) -->
+        <SubItem name="R">
+          <Fixed>
+            <Element name="R" bits="24" encoding="signed_quantity" scale="0.1" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSR – Range Resolution (3B) -->
+        <SubItem name="RSR">
+          <Fixed>
+            <Element name="RSR" bits="24" encoding="unsigned_quantity" scale="0.1" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: SDR – Range Precision (3B) -->
+        <SubItem name="SDR">
+          <Fixed>
+            <Element name="SDR" bits="24" encoding="unsigned_quantity" scale="0.1" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: RR – Range Rate (3B) -->
+        <SubItem name="RR">
+          <Fixed>
+            <Element name="RR" bits="24" encoding="signed_quantity" scale="0.1" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: RSRR – Range Rate Resolution (3B) -->
+        <SubItem name="RSRR">
+          <Fixed>
+            <Element name="RSRR" bits="24" encoding="unsigned_quantity" scale="0.1" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: SDRR – Range Rate Precision (4B) -->
+        <SubItem name="SDRR">
+          <Fixed>
+            <Element name="SDRR"  bits="24" encoding="unsigned_quantity" scale="0.1"       unit="m/s"/>
+            <Element name="CORRR" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 6: RA – Range Acceleration (2B) -->
+        <SubItem name="RA">
+          <Fixed>
+            <Element name="RA" bits="16" encoding="signed_quantity" scale="0.015625" unit="m/s2"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 7: SDRA – Range Acceleration Precision (4B) -->
+        <SubItem name="SDRA">
+          <Fixed>
+            <Element name="SDRA"   bits="16" encoding="unsigned_quantity" scale="0.0078125" unit="m/s2"/>
+            <Element name="CORAR"  bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+            <Element name="CORARR" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/626 – Doppler Information  (Compound, 10 sub-items, 2 PSF bytes)
+         slot 0: DV     (3B: signed 24, 0.01 m/s)
+         slot 1: SDDV   (2B: unsigned 16, 1/64 m/s)
+         slot 2: DA     (2B: signed 16, 1/64 m/s²)
+         slot 3: SDDA   (3B: SDDA(16u,1/64)+CODADV(8s,1/128))
+         slot 4: CODVR  (1B: signed 8, 1/128)
+         slot 5: CODVRR (1B: signed 8, 1/128)
+         slot 6: CODVRA (1B: signed 8, 1/128)
+         slot 7: CODAR  (1B: signed 8, 1/128)
+         slot 8: CODARR (1B: signed 8, 1/128)
+         slot 9: CODARA (1B: signed 8, 1/128)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="626" name="Doppler Information">
+      <Compound>
+        <!-- slot 0: DV – Doppler Velocity (3B) -->
+        <SubItem name="DV">
+          <Fixed>
+            <Element name="DV" bits="24" encoding="signed_quantity" scale="0.01" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: SDDV – Precision of Doppler Velocity (2B) -->
+        <SubItem name="SDDV">
+          <Fixed>
+            <Element name="SDDV" bits="16" encoding="unsigned_quantity" scale="0.015625" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: DA – Doppler Acceleration (2B) -->
+        <SubItem name="DA">
+          <Fixed>
+            <Element name="DA" bits="16" encoding="signed_quantity" scale="0.015625" unit="m/s2"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: SDDA – Precision of Doppler Acceleration (3B) -->
+        <SubItem name="SDDA">
+          <Fixed>
+            <Element name="SDDA"   bits="16" encoding="unsigned_quantity" scale="0.015625"  unit="m/s2"/>
+            <Element name="CODADV" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: CODVR – Correlation of Doppler Velocity and Range (1B) -->
+        <SubItem name="CODVR">
+          <Fixed>
+            <Element name="CODVR" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: CODVRR – Correlation of DV and Range Rate (1B) -->
+        <SubItem name="CODVRR">
+          <Fixed>
+            <Element name="CODVRR" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 6: CODVRA – Correlation of DV and Range Acceleration (1B) -->
+        <SubItem name="CODVRA">
+          <Fixed>
+            <Element name="CODVRA" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 7: CODAR – Correlation of Doppler Acceleration and Range (1B) -->
+        <SubItem name="CODAR">
+          <Fixed>
+            <Element name="CODAR" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 8: CODARR – Correlation of DA and Range Rate (1B) -->
+        <SubItem name="CODARR">
+          <Fixed>
+            <Element name="CODARR" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 9: CODARA – Correlation of DA and Range Acceleration (1B) -->
+        <SubItem name="CODARA">
+          <Fixed>
+            <Element name="CODARA" bits="8" encoding="signed_quantity" scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/627 – Azimuth Information  (Compound, 6 sub-items, 1 PSF byte)
+         slot 0: AZ    (2B: unsigned 16, 360/2^16 °)
+         slot 1: RSAZ  (2B: unsigned 16, 45/2^16 °)
+         slot 2: SDASZ (2B: unsigned 16, 45/2^16 °)
+         slot 3: AZR   (2B: signed 16, 180/2^16 °/s)
+         slot 4: SDAZR (3B: SDAZR(16u,45/2^16)+COAZRAZ(8s,1/128))
+         slot 5: AZEX  (4B: S(16u)+E(16u), 360/2^16 °)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="627" name="Azimuth Information">
+      <Compound>
+        <!-- slot 0: AZ – Azimuth (2B) -->
+        <SubItem name="AZ">
+          <Fixed>
+            <Element name="AZ" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSAZ – Azimuth Resolution (2B) -->
+        <SubItem name="RSAZ">
+          <Fixed>
+            <Element name="RSAZ" bits="16" encoding="unsigned_quantity" scale="0.000686645508" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: SDASZ – Standard Deviation of Azimuth (2B) -->
+        <SubItem name="SDASZ">
+          <Fixed>
+            <Element name="SDASZ" bits="16" encoding="unsigned_quantity" scale="0.000686645508" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: AZR – Azimuth Rate (2B) -->
+        <SubItem name="AZR">
+          <Fixed>
+            <Element name="AZR" bits="16" encoding="signed_quantity" scale="0.00274658203125" unit="deg/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: SDAZR – Standard Deviation of Azimuth Rate (3B) -->
+        <SubItem name="SDAZR">
+          <Fixed>
+            <Element name="SDAZR"   bits="16" encoding="unsigned_quantity" scale="0.000686645508"  unit="deg/s"/>
+            <Element name="COAZRAZ" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: AZEX – Azimuth Extent (4B) -->
+        <SubItem name="AZEX">
+          <Fixed>
+            <Element name="S" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+            <Element name="E" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/628 – Elevation Information  (Compound, 6 sub-items, 1 PSF byte)
+         slot 0: EL   (2B: signed 16, 180/2^16 °)
+         slot 1: RSEL (2B: unsigned 16, 45/2^16 °)
+         slot 2: SDEL (2B: unsigned 16, 45/2^16 °)
+         slot 3: ER   (2B: signed 16, 180/2^16 °/s)
+         slot 4: SDER (3B: SDELR(16u,45/2^16)+COELREL(8s,1/128))
+         slot 5: ELEX (4B: S(16s)+E(16s), 180/2^16 °)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="628" name="Elevation Information">
+      <Compound>
+        <!-- slot 0: EL – Elevation (2B) -->
+        <SubItem name="EL">
+          <Fixed>
+            <Element name="EL" bits="16" encoding="signed_quantity" scale="0.00274658203125" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: RSEL – Elevation Resolution (2B) -->
+        <SubItem name="RSEL">
+          <Fixed>
+            <Element name="RSEL" bits="16" encoding="unsigned_quantity" scale="0.000686645508" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: SDEL – Standard Deviation of Elevation (2B) -->
+        <SubItem name="SDEL">
+          <Fixed>
+            <Element name="SDEL" bits="16" encoding="unsigned_quantity" scale="0.000686645508" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: ER – Elevation Rate (2B) -->
+        <SubItem name="ER">
+          <Fixed>
+            <Element name="ER" bits="16" encoding="signed_quantity" scale="0.00274658203125" unit="deg/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: SDER – Standard Deviation of Elevation Rate (3B) -->
+        <SubItem name="SDER">
+          <Fixed>
+            <Element name="SDELR"   bits="16" encoding="unsigned_quantity" scale="0.000686645508"  unit="deg/s"/>
+            <Element name="COELREL" bits="8"  encoding="signed_quantity"   scale="0.0078125"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: ELEX – Elevation Extent (4B, signed) -->
+        <SubItem name="ELEX">
+          <Fixed>
+            <Element name="S" bits="16" encoding="signed_quantity" scale="0.00274658203125" unit="deg"/>
+            <Element name="E" bits="16" encoding="signed_quantity" scale="0.00274658203125" unit="deg"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/630 – Path Quality  (Compound, 4 sub-items, 1 PSF byte)
+         slot 0: DPP (1B: signed 8, 1 dB)
+         slot 1: DPS (1B: signed 8, 1 dB)
+         slot 2: RPP (2B: spare(7)+RPP(9s, 1 dB))
+         slot 3: RPS (1B: signed 8, 1 dB)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="630" name="Path Quality">
+      <Compound>
+        <!-- slot 0: DPP – Direct Path Power (1B) -->
+        <SubItem name="DPP">
+          <Fixed>
+            <Element name="DPP" bits="8" encoding="signed_quantity" scale="1" unit="dB"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: DPS – Direct Path SNR (1B) -->
+        <SubItem name="DPS">
+          <Fixed>
+            <Element name="DPS" bits="8" encoding="signed_quantity" scale="1" unit="dB"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: RPP – Reflected Path Power (2B: spare(7)+RPP(9s)) -->
+        <SubItem name="RPP">
+          <Fixed>
+            <Spare bits="7"/>
+            <Element name="RPP" bits="9" encoding="signed_quantity" scale="1" unit="dB"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: RPS – Reflected Path SNR (1B) -->
+        <SubItem name="RPS">
+          <Fixed>
+            <Element name="RPS" bits="8" encoding="signed_quantity" scale="1" unit="dB"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I015/631 – Contour  (RepetitiveGroup count-prefixed)
+         REP(1B) + REP × { AZCON(16u)+ELCON(16s)+RGCONSTOP(16u)+RGCONSTART(16u) } = 8B
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="631" name="Contour">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="AZCON"      bits="16" encoding="unsigned_quantity" scale="0.0054931640625"  unit="deg"/>
+          <Element name="ELCON"      bits="16" encoding="signed_quantity"   scale="0.00274658203125" unit="deg"/>
+          <Element name="RGCONSTOP"  bits="16" encoding="unsigned_quantity" scale="0.152587890625"   unit="m"/>
+          <Element name="RGCONSTART" bits="16" encoding="unsigned_quantity" scale="0.152587890625"   unit="m"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 26 slots across 4 FSPEC bytes
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>  <!-- FSPEC byte 1, bit 1 -->
+      <Item ref="000"/>  <!-- FSPEC byte 1, bit 2 -->
+      <Item ref="015"/>  <!-- FSPEC byte 1, bit 3 -->
+      <Item ref="020"/>  <!-- FSPEC byte 1, bit 4 -->
+      <Item ref="030"/>  <!-- FSPEC byte 1, bit 5 -->
+      <Item ref="145"/>  <!-- FSPEC byte 1, bit 6 -->
+      <Item ref="161"/>  <!-- FSPEC byte 1, bit 7 -->
+      <Item ref="170"/>  <!-- FSPEC byte 2, bit 1 -->
+      <Item ref="050"/>  <!-- FSPEC byte 2, bit 2 -->
+      <Item ref="270"/>  <!-- FSPEC byte 2, bit 3 -->
+      <Item ref="300"/>  <!-- FSPEC byte 2, bit 4 -->
+      <Item ref="400"/>  <!-- FSPEC byte 2, bit 5 -->
+      <Item ref="600"/>  <!-- FSPEC byte 2, bit 6 -->
+      <Item ref="601"/>  <!-- FSPEC byte 2, bit 7 -->
+      <Item ref="602"/>  <!-- FSPEC byte 3, bit 1 -->
+      <Item ref="603"/>  <!-- FSPEC byte 3, bit 2 -->
+      <Item ref="604"/>  <!-- FSPEC byte 3, bit 3 -->
+      <Item ref="605"/>  <!-- FSPEC byte 3, bit 4 -->
+      <Item ref="480"/>  <!-- FSPEC byte 3, bit 5 -->
+      <Item ref="625"/>  <!-- FSPEC byte 3, bit 6 -->
+      <Item ref="626"/>  <!-- FSPEC byte 3, bit 7 -->
+      <Item ref="627"/>  <!-- FSPEC byte 4, bit 1 -->
+      <Item ref="628"/>  <!-- FSPEC byte 4, bit 2 -->
+      <Item ref="630"/>  <!-- FSPEC byte 4, bit 3 -->
+      <Item ref="631"/>  <!-- FSPEC byte 4, bit 4 -->
+      <Item ref="SP"/>   <!-- FSPEC byte 4, bit 5 -->
+    </Variation>
+  </UAPs>
+
+</Category>
