@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="17" name="Mode S Surveillance Coordination Function Messages" edition="1.3" date="2009-01-01">
+
+  <DataItems>
+
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="0"   meaning="Network information"/>
+          <Entry value="10"  meaning="Track data"/>
+          <Entry value="20"  meaning="Track data request"/>
+          <Entry value="21"  meaning="Track data stop"/>
+          <Entry value="22"  meaning="Cancel track data request"/>
+          <Entry value="23"  meaning="Track data stop acknowledgement"/>
+          <Entry value="30"  meaning="New Node / Change-over Initial or intermediate message segment"/>
+          <Entry value="31"  meaning="New Node / Change-over Final or only message segment"/>
+          <Entry value="32"  meaning="New Node / Change-over Initial or intermediate message segment reply"/>
+          <Entry value="33"  meaning="New Node / Change-over Final or only message segment reply"/>
+          <Entry value="110" meaning="Move node to new cluster state"/>
+          <Entry value="111" meaning="Move node to new cluster state acknowledgement"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="012" name="Data Destination Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- LAT/LON: signed quantity, LSB = 180/2^25 deg -->
+    <DataItem id="045" name="Calculated Position in WGS-84 Coordinates">
+      <Fixed>
+        <Element name="LAT" bits="24" encoding="signed_quantity" scale="0.000005364418029785156" unit="deg"/>
+        <Element name="LON" bits="24" encoding="signed_quantity" scale="0.000005364418029785156" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- V(1)+G(1)+ALT(14); LSB = 1/4 FL -->
+    <DataItem id="050" name="Flight Level in Binary Representation">
+      <Fixed>
+        <Element name="V"   bits="1"  encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G"   bits="1"  encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code / Error correction applied"/>
+        </Element>
+        <Element name="ALT" bits="14" encoding="unsigned_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- V(1)+G(1)+L(1)+spare(1)+MODE3A(12) -->
+    <DataItem id="070" name="Mode 3/A Code in Octal Representation">
+      <Fixed>
+        <Element name="V"      bits="1"  encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G"      bits="1"  encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L"      bits="1"  encoding="table">
+          <Entry value="0" meaning="Mode-3/A code derived from the reply of the transponder"/>
+          <Entry value="1" meaning="Smoothed Mode-3/A code not extracted during the last scan"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MODE3A" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="140" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- GSP: 16-bit, LSB = 1/2^14 NM/s; HDG: 16-bit, LSB = 360/2^16 deg -->
+    <DataItem id="200" name="Track Velocity in Polar Co-ordinates">
+      <Fixed>
+        <Element name="GSP" bits="16" encoding="unsigned_quantity" scale="0.00006103515625" unit="NM/s"/>
+        <Element name="HDG" bits="16" encoding="unsigned_quantity" scale="0.0054931640625"  unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Repetitive (1-byte count) list of 24-bit Mode S addresses -->
+    <DataItem id="210" name="Mode S Address List">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="ADR" bits="24" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <DataItem id="220" name="Aircraft Address">
+      <Fixed>
+        <Element name="ADR" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="221" name="Duplicate Address Reference Number">
+      <Fixed>
+        <Element name="DRN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- CA(3)+SI(1)+spare(4) -->
+    <DataItem id="230" name="Transponder Capability">
+      <Fixed>
+        <Element name="CA" bits="3" encoding="table">
+          <Entry value="0" meaning="No communications capability (surveillance only)"/>
+          <Entry value="1" meaning="Reserved"/>
+          <Entry value="2" meaning="Reserved"/>
+          <Entry value="3" meaning="Reserved"/>
+          <Entry value="4" meaning="Comm. A and B, CA code 7, on the ground"/>
+          <Entry value="5" meaning="Comm. A and B, CA code 7, airborne"/>
+          <Entry value="6" meaning="Comm. A and B, CA code 7, airborne or on the ground"/>
+          <Entry value="7" meaning="DR field != 0 or FS field = 2,3,4,5"/>
+        </Element>
+        <Element name="SI" bits="1" encoding="table">
+          <Entry value="0" meaning="Transponder SI capable"/>
+          <Entry value="1" meaning="Transponder not SI capable"/>
+        </Element>
+        <Spare bits="4"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- CST(1)+FLT(1)+spare(6) -->
+    <DataItem id="240" name="Track Status">
+      <Fixed>
+        <Element name="CST" bits="1" encoding="table">
+          <Entry value="0" meaning="Measured position"/>
+          <Entry value="1" meaning="No measured position (coasted)"/>
+        </Element>
+        <Element name="FLT" bits="1" encoding="table">
+          <Entry value="0" meaning="Last Measured Flight Level"/>
+          <Entry value="1" meaning="Predicted Flight Level"/>
+        </Element>
+        <Spare bits="6"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Repetitive (1-byte count) list of SAC/SIC pairs (2B each) -->
+    <DataItem id="350" name="Cluster Station/Node List">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="SAC" bits="8" encoding="raw"/>
+          <Element name="SIC" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <DataItem id="360" name="Cluster Controller Command State">
+      <Fixed>
+        <Element name="STATE" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 21 slots → 3 FSPEC bytes
+    Byte 1: 010 012 000 350 220 221 140
+    Byte 2: 045 070 050 200 230 240 210
+    Byte 3: 360  -   -   -   -   -  SP
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="012"/>
+      <Item ref="000"/>
+      <Item ref="350"/>
+      <Item ref="220"/>
+      <Item ref="221"/>
+      <Item ref="140"/>
+      <Item ref="045"/>
+      <Item ref="070"/>
+      <Item ref="050"/>
+      <Item ref="200"/>
+      <Item ref="230"/>
+      <Item ref="240"/>
+      <Item ref="210"/>
+      <Item ref="360"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="SP"/>
+    </Variation>
+  </UAPs>
+
+</Category>
