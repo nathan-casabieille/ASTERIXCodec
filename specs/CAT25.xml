@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="25" name="CNS/ATM Ground System Status Reports" edition="1.6" date="2025-10-22">
+
+  <DataItems>
+
+    <!-- I000: Report Type (1 byte) -->
+    <DataItem id="000" name="Report Type" presence="mandatory">
+      <Fixed>
+        <Element name="RTYP" bits="7" encoding="raw"/>
+        <Element name="RG"   bits="1" encoding="table">
+          <Entry value="0" meaning="Periodic Report"/>
+          <Entry value="1" meaning="Event Driven Report"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- I010: Data Source Identifier (2 bytes) -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I015: Service Identification (1 byte) -->
+    <DataItem id="015" name="Service Identification" presence="optional">
+      <Fixed>
+        <Element name="SID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020: Service Designator (6 bytes, 8×6-bit ICAO chars) -->
+    <DataItem id="020" name="Service Designator" presence="optional">
+      <Fixed>
+        <Element name="DES" bits="48" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I070: Time of Day (3 bytes, 1/128 s) -->
+    <DataItem id="070" name="Time of Day" presence="mandatory">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I100: System and Service Status (Extended, 2 octets) -->
+    <!-- Octet 1: NOGO(1)+OPS(2)+SSTAT(4) = 7 bits                -->
+    <!-- Octet 2: spare(1)+SYSTAT(3)+SESTAT(3) = 7 bits            -->
+    <DataItem id="100" name="System and Service Status" presence="optional">
+      <Extended>
+        <Octet>
+          <Element name="NOGO"  bits="1" encoding="table">
+            <Entry value="0" meaning="Data is released for operational use"/>
+            <Entry value="1" meaning="Data must not be used operationally"/>
+          </Element>
+          <Element name="OPS"   bits="2" encoding="table">
+            <Entry value="0" meaning="Operational"/>
+            <Entry value="1" meaning="Operational but in Standby"/>
+            <Entry value="2" meaning="Maintenance"/>
+            <Entry value="3" meaning="Reserved for future use"/>
+          </Element>
+          <Element name="SSTAT" bits="4" encoding="table">
+            <Entry value="0" meaning="Running"/>
+            <Entry value="1" meaning="Failed"/>
+            <Entry value="2" meaning="Degraded"/>
+            <Entry value="3" meaning="Undefined"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Spare bits="1"/>
+          <Element name="SYSTAT" bits="3" encoding="table">
+            <Entry value="0" meaning="Running / OK"/>
+            <Entry value="1" meaning="Failed"/>
+            <Entry value="2" meaning="Degraded"/>
+            <Entry value="3" meaning="Undefined"/>
+          </Element>
+          <Element name="SESTAT" bits="3" encoding="table">
+            <Entry value="0" meaning="OK"/>
+            <Entry value="1" meaning="Failed"/>
+            <Entry value="2" meaning="Degraded"/>
+            <Entry value="3" meaning="Undefined"/>
+          </Element>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- I105: System and Service Error Codes (count-prefixed repetitive, each 8 bits) -->
+    <DataItem id="105" name="System and Service Error Codes" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="8">
+          <Element name="EC" bits="8" encoding="table">
+            <Entry value="0" meaning="No error detected"/>
+            <Entry value="1" meaning="Error Code Undefined"/>
+            <Entry value="2" meaning="Time Source Invalid"/>
+            <Entry value="3" meaning="Time Source Coasting"/>
+            <Entry value="4" meaning="Track ID numbering has restarted"/>
+            <Entry value="5" meaning="Data Processor Overload"/>
+            <Entry value="6" meaning="Ground Interface Data Communications Overload"/>
+            <Entry value="7" meaning="System stopped by operator"/>
+            <Entry value="8" meaning="CBIT failed"/>
+            <Entry value="9" meaning="Test Target Failure"/>
+          </Element>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I120: Component Status (count-prefixed repetitive, each 24 bits) -->
+    <!-- CID(16)+ERRC(6)+CS(2) = 24 bits                                   -->
+    <DataItem id="120" name="Component Status" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="24">
+          <Element name="CID"  bits="16" encoding="raw"/>
+          <Element name="ERRC" bits="6"  encoding="table">
+            <Entry value="0" meaning="No Error Detected"/>
+            <Entry value="1" meaning="Error Code Undefined"/>
+            <Entry value="2" meaning="Alert"/>
+            <Entry value="3" meaning="Alarm"/>
+          </Element>
+          <Element name="CS"   bits="2"  encoding="table">
+            <Entry value="0" meaning="Running"/>
+            <Entry value="1" meaning="Failed"/>
+            <Entry value="2" meaning="Maintenance"/>
+            <Entry value="3" meaning="Reserved"/>
+          </Element>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I140: Service Statistics (count-prefixed repetitive, each 48 bits) -->
+    <!-- TYPE(8)+REF(1)+spare(7)+COUNT(32) = 48 bits                         -->
+    <DataItem id="140" name="Service Statistics" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="48">
+          <Element name="TYPE"  bits="8"  encoding="table">
+            <Entry value="0" meaning="Number of unknown messages received"/>
+            <Entry value="1" meaning="Number of too old messages received"/>
+            <Entry value="2" meaning="Number of failed message conversions"/>
+            <Entry value="3" meaning="Total Number of messages received"/>
+            <Entry value="4" meaning="Total number of messages transmitted"/>
+          </Element>
+          <Element name="REF"   bits="1"  encoding="table">
+            <Entry value="0" meaning="From UTC midnight"/>
+            <Entry value="1" meaning="From the previous report"/>
+          </Element>
+          <Spare bits="7"/>
+          <Element name="COUNT" bits="32" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I200: Message Identification (3 bytes, 24-bit unsigned counter) -->
+    <DataItem id="200" name="Message Identification" presence="optional">
+      <Fixed>
+        <Element name="MID" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I600: Position of the System Reference Point (8 bytes, WGS-84)   -->
+    <!-- LAT/LON: signed 32-bit, scale = 180/2^32 ≈ 4.19095e-8 deg/LSB   -->
+    <DataItem id="600" name="Position of the System Reference Point" presence="optional">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="0.000000041909515857696533" unit="deg"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="0.000000041909515857696533" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I610: Height of the System Reference Point (2 bytes, 0.25 m/LSB) -->
+    <DataItem id="610" name="Height of the System Reference Point" presence="optional">
+      <Fixed>
+        <Element name="HGT" bits="16" encoding="signed_quantity" scale="0.25" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- SP: Special Purpose Field -->
+    <DataItem id="SP" name="Special Purpose Field" presence="optional">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP (13 slots, 2 FSPEC bytes):
+    Byte 1: 010 | 000 | 200 | 015 | 020 | 070 | 100
+    Byte 2: 105 | 120 | 140 | SP  | 600 | 610 | -
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="000"/>
+      <Item ref="200"/>
+      <Item ref="015"/>
+      <Item ref="020"/>
+      <Item ref="070"/>
+      <Item ref="100"/>
+      <Item ref="105"/>
+      <Item ref="120"/>
+      <Item ref="140"/>
+      <Item ref="SP"/>
+      <Item ref="600"/>
+      <Item ref="610"/>
+    </Variation>
+  </UAPs>
+
+</Category>
