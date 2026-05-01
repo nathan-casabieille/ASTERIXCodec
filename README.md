@@ -34,6 +34,7 @@
 | CAT240   | [![CAT240 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml) |
 | CAT247   | [![CAT247 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml) |
 | CAT004   | [![CAT04 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat04.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat04.yml) |
+| CAT007   | [![CAT07 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat07.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat07.yml) |
 
 ---
 
@@ -78,6 +79,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT240   | Radar Video Transmission | 1.3 |
 | CAT247   | Version Number Exchange | 1.3 |
 | CAT004   | Safety Net Messages | 1.13 |
+| CAT007   | Transmission of Directed Interrogation Messages | 1.12 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -115,7 +117,8 @@ ASTERIXCodec/
 │   ├── CAT205.xml                   # XML spec consumed by the library
 │   ├── CAT240.xml                   # XML spec consumed by the library
 │   ├── CAT247.xml                   # XML spec consumed by the library
-│   └── CAT04.xml                    # XML spec consumed by the library
+│   ├── CAT04.xml                    # XML spec consumed by the library
+│   └── CAT07.xml                    # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
     ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
@@ -135,7 +138,8 @@ ASTERIXCodec/
     ├── test_cat205.cpp              # 8 test cases covering all CAT205 item types incl. 32-bit WGS-84, 24-bit Cartesian, RepetitiveGroup I120
     ├── test_cat240.cpp              # 9 test cases covering all CAT240 item types incl. I051 (8×64-bit blocks), I052 (32×64-bit blocks), RepetitiveGroup I030/I050
     ├── test_cat247.cpp              # 6 test cases covering all CAT247 item types incl. I550 version report RepetitiveGroup (multi-entry)
-    └── test_cat04.cpp               # 10 test cases covering all CAT04 item types incl. I060 Extended (8 octets), Compounds I070/I120/I170/I171
+    ├── test_cat04.cpp               # 10 test cases covering all CAT04 item types incl. I060 Extended (8 octets), Compounds I070/I120/I170/I171
+    └── test_cat07.cpp               # 10 test cases covering all CAT07 item types incl. I020 Extended (6 octets), dual UAP (downlink/uplink), Compounds I085/I130/I415/I450
 ```
 
 ---
