@@ -1,0 +1,1034 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT21.xml – ASTERIX Category 021 "ADS-B Target Reports"
+  Edition 2.7, 2025-07-02.
+
+  Schema conventions (same as other categories):
+    <Fixed>              – byte-aligned, fixed-length group.
+    <Extended>           – variable octets, each <Octet> = 7 data bits + implicit FX LSB.
+    <Repetitive type="count"> – 1-byte REP count, then REP × <Group>.
+    <Compound>           – PSF-driven sub-items, each sub-item a <Fixed> group.
+    <Explicit type="re/sp">   – first byte is total length (incl. itself).
+
+  Notes on limitations:
+    - I021/110 TID sub-item is a count-prefixed RepetitiveGroup inside a Compound,
+      which is not supported by the codec; that PSF slot is marked "-".
+    - I021/150 AS field uses case-based encoding (IAS or Mach depending on IM bit);
+      AS is encoded as raw – the IM flag signals how to interpret the raw value.
+    - I021/170 Target Identification uses string_icao (6-bit ICAO chars) which is
+      not supported; encoded as raw 48 bits.
+-->
+<Category cat="21"
+          name="ADS-B Target Reports"
+          edition="2.7"
+          date="2025-07-02">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/008 – Aircraft Operational Status  (Fixed, 1 byte)
+         RA(1)+TC(2)+TS(1)+ARV(1)+CDTIA(1)+NOTTCAS(1)+SA(1) = 8 bits
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="008" name="Aircraft Operational Status">
+      <Fixed>
+        <Element name="RA" bits="1" encoding="table">
+          <Entry value="0" meaning="TCAS II or ACAS RA not active"/>
+          <Entry value="1" meaning="TCAS RA active"/>
+        </Element>
+        <Element name="TC" bits="2" encoding="table">
+          <Entry value="0" meaning="No capability for Trajectory Change Reports"/>
+          <Entry value="1" meaning="Support for TC+0 reports only"/>
+          <Entry value="2" meaning="Support for multiple TC reports"/>
+          <Entry value="3" meaning="Reserved"/>
+        </Element>
+        <Element name="TS" bits="1" encoding="table">
+          <Entry value="0" meaning="No capability to support Target State Reports"/>
+          <Entry value="1" meaning="Capable of supporting Target State Reports"/>
+        </Element>
+        <Element name="ARV" bits="1" encoding="table">
+          <Entry value="0" meaning="No capability to generate ARV-reports"/>
+          <Entry value="1" meaning="Capable of generating ARV-reports"/>
+        </Element>
+        <Element name="CDTIA" bits="1" encoding="table">
+          <Entry value="0" meaning="CDTI not operational"/>
+          <Entry value="1" meaning="CDTI operational"/>
+        </Element>
+        <Element name="NOTTCAS" bits="1" encoding="table">
+          <Entry value="0" meaning="TCAS operational"/>
+          <Entry value="1" meaning="TCAS not operational"/>
+        </Element>
+        <Element name="SA" bits="1" encoding="table">
+          <Entry value="0" meaning="Antenna Diversity"/>
+          <Entry value="1" meaning="Single Antenna only"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/010 – Data Source Identification  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identification" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/015 – Service Identification  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="015" name="Service Identification">
+      <Fixed>
+        <Element name="SID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/016 – Service Management  (Fixed, 1 byte)
+         LSB = 0.5 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="016" name="Service Management">
+      <Fixed>
+        <Element name="RP" bits="8" encoding="unsigned_quantity"
+                 scale="0.5" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/020 – Emitter Category  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Emitter Category">
+      <Fixed>
+        <Element name="ECAT" bits="8" encoding="table">
+          <Entry value="0"  meaning="No ADS-B Emitter Category Information"/>
+          <Entry value="1"  meaning="Light aircraft &lt;= 15500 lbs"/>
+          <Entry value="2"  meaning="15500 lbs &lt; small aircraft &lt; 75000 lbs"/>
+          <Entry value="3"  meaning="75000 lbs &lt; medium a/c &lt; 300000 lbs"/>
+          <Entry value="4"  meaning="High Vortex Large"/>
+          <Entry value="5"  meaning="300000 lbs &lt;= heavy aircraft"/>
+          <Entry value="6"  meaning="Highly manoeuvrable (5g) and high speed (&gt;400 kts)"/>
+          <Entry value="7"  meaning="Reserved"/>
+          <Entry value="8"  meaning="Reserved"/>
+          <Entry value="9"  meaning="Reserved"/>
+          <Entry value="10" meaning="Rotocraft"/>
+          <Entry value="11" meaning="Glider / sailplane"/>
+          <Entry value="12" meaning="Lighter-than-air"/>
+          <Entry value="13" meaning="Unmanned aerial vehicle"/>
+          <Entry value="14" meaning="Space / transatmospheric vehicle"/>
+          <Entry value="15" meaning="Ultralight / handglider / paraglider"/>
+          <Entry value="16" meaning="Parachutist / skydiver"/>
+          <Entry value="17" meaning="Reserved"/>
+          <Entry value="18" meaning="Reserved"/>
+          <Entry value="19" meaning="Reserved"/>
+          <Entry value="20" meaning="Surface emergency vehicle"/>
+          <Entry value="21" meaning="Surface service vehicle"/>
+          <Entry value="22" meaning="Fixed ground or tethered obstruction"/>
+          <Entry value="23" meaning="Cluster obstacle"/>
+          <Entry value="24" meaning="Line obstacle"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/040 – Target Report Descriptor  (Extended, up to 5 octets)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="040" name="Target Report Descriptor">
+      <Extended>
+        <!-- Octet 1 (7 bits): ATP(3)+ARC(2)+RC(1)+RAB(1) -->
+        <Octet>
+          <Element name="ATP" bits="3" encoding="table">
+            <Entry value="0" meaning="24-Bit ICAO address"/>
+            <Entry value="1" meaning="Duplicate address"/>
+            <Entry value="2" meaning="Surface vehicle address"/>
+            <Entry value="3" meaning="Anonymous address"/>
+            <Entry value="4" meaning="Reserved for future use"/>
+            <Entry value="5" meaning="Reserved for future use"/>
+            <Entry value="6" meaning="Reserved for future use"/>
+            <Entry value="7" meaning="Reserved for future use"/>
+          </Element>
+          <Element name="ARC" bits="2" encoding="table">
+            <Entry value="0" meaning="25 ft"/>
+            <Entry value="1" meaning="100 ft"/>
+            <Entry value="2" meaning="Unknown"/>
+            <Entry value="3" meaning="Invalid"/>
+          </Element>
+          <Element name="RC" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Range Check passed, CPR Validation pending"/>
+          </Element>
+          <Element name="RAB" bits="1" encoding="table">
+            <Entry value="0" meaning="Report from target transponder"/>
+            <Entry value="1" meaning="Report from field monitor (fixed transponder)"/>
+          </Element>
+        </Octet>
+        <!-- Octet 2 (7 bits): DCR(1)+GBS(1)+SIM(1)+TST(1)+SAA(1)+CL(2) -->
+        <Octet>
+          <Element name="DCR" bits="1" encoding="table">
+            <Entry value="0" meaning="No differential correction (ADS-B)"/>
+            <Entry value="1" meaning="Differential correction (ADS-B)"/>
+          </Element>
+          <Element name="GBS" bits="1" encoding="table">
+            <Entry value="0" meaning="Ground Bit not set"/>
+            <Entry value="1" meaning="Ground Bit set"/>
+          </Element>
+          <Element name="SIM" bits="1" encoding="table">
+            <Entry value="0" meaning="Actual target report"/>
+            <Entry value="1" meaning="Simulated target report"/>
+          </Element>
+          <Element name="TST" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Test Target"/>
+          </Element>
+          <Element name="SAA" bits="1" encoding="table">
+            <Entry value="0" meaning="Equipment capable to provide Selected Altitude"/>
+            <Entry value="1" meaning="Equipment not capable to provide Selected Altitude"/>
+          </Element>
+          <Element name="CL" bits="2" encoding="table">
+            <Entry value="0" meaning="Report valid"/>
+            <Entry value="1" meaning="Report suspect"/>
+            <Entry value="2" meaning="No information"/>
+            <Entry value="3" meaning="Reserved for future use"/>
+          </Element>
+        </Octet>
+        <!-- Octet 3 (7 bits): spare(1)+LLC(1)+IPC(1)+NOGO(1)+CPR(1)+LDPJ(1)+RCF(1) -->
+        <Octet>
+          <Spare bits="1"/>
+          <Element name="LLC" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="List Lookup failed"/>
+          </Element>
+          <Element name="IPC" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Independent Position Check failed"/>
+          </Element>
+          <Element name="NOGO" bits="1" encoding="table">
+            <Entry value="0" meaning="NOGO-bit not set"/>
+            <Entry value="1" meaning="NOGO-bit set"/>
+          </Element>
+          <Element name="CPR" bits="1" encoding="table">
+            <Entry value="0" meaning="CPR Validation correct"/>
+            <Entry value="1" meaning="CPR Validation failed"/>
+          </Element>
+          <Element name="LDPJ" bits="1" encoding="table">
+            <Entry value="0" meaning="LDPJ not detected"/>
+            <Entry value="1" meaning="LDPJ detected"/>
+          </Element>
+          <Element name="RCF" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Range Check failed"/>
+          </Element>
+        </Octet>
+        <!-- Octet 4 (7 bits): TBC_EP(1)+TBC_VAL(6) -->
+        <Octet>
+          <Element name="TBC_EP" bits="1" encoding="table">
+            <Entry value="0" meaning="Element not populated"/>
+            <Entry value="1" meaning="Element populated"/>
+          </Element>
+          <Element name="TBC_VAL" bits="6" encoding="raw"/>
+        </Octet>
+        <!-- Octet 5 (7 bits): MBC_EP(1)+MBC_VAL(6) -->
+        <Octet>
+          <Element name="MBC_EP" bits="1" encoding="table">
+            <Entry value="0" meaning="Element not populated"/>
+            <Entry value="1" meaning="Element populated"/>
+          </Element>
+          <Element name="MBC_VAL" bits="6" encoding="raw"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/070 – Mode 3/A Code in Octal Representation  (Fixed, 2 bytes)
+         spare(4)+MODE3A(12)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="070" name="Mode 3/A Code in Octal Representation">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="MODE3A" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/071 – Time of Applicability for Position  (Fixed, 3 bytes)
+         LSB = 1/2^7 s = 0.0078125 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="071" name="Time of Applicability for Position">
+      <Fixed>
+        <Element name="TOAP" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/072 – Time of Applicability for Velocity  (Fixed, 3 bytes)
+         LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="072" name="Time of Applicability for Velocity">
+      <Fixed>
+        <Element name="TOAV" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/073 – Time of Message Reception for Position  (Fixed, 3 bytes)
+         LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="073" name="Time of Message Reception for Position">
+      <Fixed>
+        <Element name="TOMRP" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/074 – Time of Message Reception of Position-High Precision (Fixed, 4 bytes)
+         FSI(2)+TOMRP(30); TOMRP LSB = 1/2^30 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="074" name="Time of Message Reception of Position-High Precision">
+      <Fixed>
+        <Element name="FSI" bits="2" encoding="table">
+          <Entry value="0" meaning="TOMRp whole seconds = I021/073 Whole seconds"/>
+          <Entry value="1" meaning="TOMRp whole seconds = I021/073 Whole seconds + 1"/>
+          <Entry value="2" meaning="TOMRp whole seconds = I021/073 Whole seconds - 1"/>
+          <Entry value="3" meaning="Reserved"/>
+        </Element>
+        <Element name="TOMRP" bits="30" encoding="unsigned_quantity"
+                 scale="0.000000000931322575" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/075 – Time of Message Reception for Velocity  (Fixed, 3 bytes)
+         LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="075" name="Time of Message Reception for Velocity">
+      <Fixed>
+        <Element name="TOMRV" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/076 – Time of Message Reception of Velocity-High Precision  (Fixed, 4 bytes)
+         FSI(2)+TOMRV(30); TOMRV LSB = 1/2^30 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="076" name="Time of Message Reception of Velocity-High Precision">
+      <Fixed>
+        <Element name="FSI" bits="2" encoding="table">
+          <Entry value="0" meaning="TOMRv whole seconds = I021/075 Whole seconds"/>
+          <Entry value="1" meaning="TOMRv whole seconds = I021/075 Whole seconds + 1"/>
+          <Entry value="2" meaning="TOMRv whole seconds = I021/075 Whole seconds - 1"/>
+          <Entry value="3" meaning="Reserved"/>
+        </Element>
+        <Element name="TOMRV" bits="30" encoding="unsigned_quantity"
+                 scale="0.000000000931322575" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/077 – Time of ASTERIX Report Transmission  (Fixed, 3 bytes)
+         LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="077" name="Time of ASTERIX Report Transmission">
+      <Fixed>
+        <Element name="TART" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/080 – Target Address  (Fixed, 3 bytes)
+         24-bit ICAO address
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="080" name="Target Address">
+      <Fixed>
+        <Element name="ADR" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/090 – Quality Indicators  (Extended, up to 9 octets)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Quality Indicators">
+      <Extended>
+        <!-- Octet 1 (7 bits): NUCRNACV(3)+NUCPNIC(4) -->
+        <Octet>
+          <Element name="NUCRNACV" bits="3" encoding="raw"/>
+          <Element name="NUCPNIC"  bits="4" encoding="raw"/>
+        </Octet>
+        <!-- Octet 2 (7 bits): NICBARO(1)+SIL(2)+NACP(4) -->
+        <Octet>
+          <Element name="NICBARO" bits="1" encoding="raw"/>
+          <Element name="SIL"     bits="2" encoding="raw"/>
+          <Element name="NACP"    bits="4" encoding="raw"/>
+        </Octet>
+        <!-- Octet 3 (7 bits): spare(2)+SILS(1)+SDA(2)+GVA(2) -->
+        <Octet>
+          <Spare bits="2"/>
+          <Element name="SILS" bits="1" encoding="table">
+            <Entry value="0" meaning="Measured per flight-hour"/>
+            <Entry value="1" meaning="Measured per sample"/>
+          </Element>
+          <Element name="SDA" bits="2" encoding="raw"/>
+          <Element name="GVA" bits="2" encoding="raw"/>
+        </Octet>
+        <!-- Octet 4 (7 bits): PIC(4)+SRC(1)+spare(2) -->
+        <Octet>
+          <Element name="PIC" bits="4" encoding="raw"/>
+          <Element name="SRC" bits="1" encoding="table">
+            <Entry value="0" meaning="PIC mapped from FTC and NIC Supplements"/>
+            <Entry value="1" meaning="PIC directly received in HVA or Phase Overlay"/>
+          </Element>
+          <Spare bits="2"/>
+        </Octet>
+        <!-- Octet 5 (7 bits): spare(2)+VALSTATE_EP(1)+VALSTATE_VAL(2)+VD(1)+VQ(1) -->
+        <Octet>
+          <Spare bits="2"/>
+          <Element name="VALSTATE_EP" bits="1" encoding="table">
+            <Entry value="0" meaning="Element not populated"/>
+            <Entry value="1" meaning="Element populated"/>
+          </Element>
+          <Element name="VALSTATE_VAL" bits="2" encoding="table">
+            <Entry value="0" meaning="Validation not performed"/>
+            <Entry value="1" meaning="Validation performed without Pass/Fail"/>
+            <Entry value="2" meaning="Validation Pass"/>
+            <Entry value="3" meaning="Validation Fail"/>
+          </Element>
+          <Element name="VD" bits="1" encoding="table">
+            <Entry value="0" meaning="Validation Distance not available"/>
+            <Entry value="1" meaning="Validation Distance available"/>
+          </Element>
+          <Element name="VQ" bits="1" encoding="table">
+            <Entry value="0" meaning="Validation Distance Quality not available"/>
+            <Entry value="1" meaning="Validation Distance Quality available"/>
+          </Element>
+        </Octet>
+        <!-- Octet 6 (7 bits): VALDISTP1(7) – LSB = 128 m -->
+        <Octet>
+          <Element name="VALDISTP1" bits="7" encoding="unsigned_quantity"
+                   scale="128.0" unit="m"/>
+        </Octet>
+        <!-- Octet 7 (7 bits): VALDISTP2(7) – LSB = 1 m -->
+        <Octet>
+          <Element name="VALDISTP2" bits="7" encoding="unsigned_quantity"
+                   scale="1.0" unit="m"/>
+        </Octet>
+        <!-- Octet 8 (7 bits): VALDISTQUALP1(7) – LSB = 128 m -->
+        <Octet>
+          <Element name="VALDISTQUALP1" bits="7" encoding="unsigned_quantity"
+                   scale="128.0" unit="m"/>
+        </Octet>
+        <!-- Octet 9 (7 bits): VALDISTQUALP2(7) – LSB = 1 m -->
+        <Octet>
+          <Element name="VALDISTQUALP2" bits="7" encoding="unsigned_quantity"
+                   scale="1.0" unit="m"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/110 – Trajectory Intent  (Compound)
+         TIS: Extended (NAV+NVB+spare5+FX) – modeled as Fixed 1 byte (FX=0 assumed)
+         TID: count-prefixed RepetitiveGroup – not supported by codec, marked "-"
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="110" name="Trajectory Intent">
+      <Compound>
+        <!-- slot 0: PSF bit7 – TIS (Trajectory Intent Status, 1 byte) -->
+        <SubItem name="TIS">
+          <Fixed>
+            <Element name="NAV" bits="1" encoding="table">
+              <Entry value="0" meaning="Trajectory Intent Data is available for this aircraft"/>
+              <Entry value="1" meaning="Trajectory Intent Data is not available for this aircraft"/>
+            </Element>
+            <Element name="NVB" bits="1" encoding="table">
+              <Entry value="0" meaning="Trajectory Intent Data is valid"/>
+              <Entry value="1" meaning="Trajectory Intent Data is not valid"/>
+            </Element>
+            <Spare bits="5"/>
+            <Spare bits="1"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: PSF bit6 – TID (RepetitiveGroup; not supported) -->
+        <SubItem name="-"/>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/130 – Position in WGS-84 Co-ordinates  (Fixed, 6 bytes)
+         LAT/LON: signed, LSB = 180/2^23 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="130" name="Position in WGS-84 Co-ordinates">
+      <Fixed>
+        <Element name="LAT" bits="24" encoding="signed_quantity"
+                 scale="0.000021457672119140625" unit="deg"/>
+        <Element name="LON" bits="24" encoding="signed_quantity"
+                 scale="0.000021457672119140625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/131 – High-Resolution Position in WGS-84 Co-ordinates  (Fixed, 8 bytes)
+         LAT/LON: signed, LSB = 180/2^30 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="131" name="High-Resolution Position in WGS-84 Co-ordinates">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity"
+                 scale="0.00000016763806343" unit="deg"/>
+        <Element name="LON" bits="32" encoding="signed_quantity"
+                 scale="0.00000016763806343" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/132 – Message Amplitude  (Fixed, 1 byte)
+         signed, LSB = 1 dBm
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="132" name="Message Amplitude">
+      <Fixed>
+        <Element name="MAM" bits="8" encoding="signed_quantity"
+                 scale="1.0" unit="dBm"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/140 – Geometric Height  (Fixed, 2 bytes)
+         signed, LSB = 25/4 = 6.25 ft
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="140" name="Geometric Height">
+      <Fixed>
+        <Element name="GH" bits="16" encoding="signed_quantity"
+                 scale="6.25" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/145 – Flight Level  (Fixed, 2 bytes)
+         signed, LSB = 1/4 FL
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="145" name="Flight Level">
+      <Fixed>
+        <Element name="FL" bits="16" encoding="signed_quantity"
+                 scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/146 – Selected Altitude  (Fixed, 2 bytes)
+         SAS(1)+S(2)+ALT(13) = 16 bits; ALT signed, LSB = 25 ft
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="146" name="Selected Altitude">
+      <Fixed>
+        <Element name="SAS" bits="1" encoding="table">
+          <Entry value="0" meaning="No source information provided"/>
+          <Entry value="1" meaning="Source Information provided"/>
+        </Element>
+        <Element name="S" bits="2" encoding="table">
+          <Entry value="0" meaning="Unknown"/>
+          <Entry value="1" meaning="Aircraft Altitude (Holding Altitude)"/>
+          <Entry value="2" meaning="MCP/FCU Selected Altitude"/>
+          <Entry value="3" meaning="FMS Selected Altitude"/>
+        </Element>
+        <Element name="ALT" bits="13" encoding="signed_quantity"
+                 scale="25.0" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/148 – Final State Selected Altitude  (Fixed, 2 bytes)
+         MV(1)+AH(1)+AM(1)+ALT(13) = 16 bits; ALT signed, LSB = 25 ft
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="148" name="Final State Selected Altitude">
+      <Fixed>
+        <Element name="MV" bits="1" encoding="table">
+          <Entry value="0" meaning="Not active or unknown"/>
+          <Entry value="1" meaning="Active"/>
+        </Element>
+        <Element name="AH" bits="1" encoding="table">
+          <Entry value="0" meaning="Not active or unknown"/>
+          <Entry value="1" meaning="Active"/>
+        </Element>
+        <Element name="AM" bits="1" encoding="table">
+          <Entry value="0" meaning="Not active or unknown"/>
+          <Entry value="1" meaning="Active"/>
+        </Element>
+        <Element name="ALT" bits="13" encoding="signed_quantity"
+                 scale="25.0" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/150 – Air Speed  (Fixed, 2 bytes)
+         IM(1)+AS(15); AS encoding depends on IM (raw – see IM for interpretation)
+         IM=0: IAS, LSB = 1/2^14 NM/s; IM=1: Mach, LSB = 0.001
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="150" name="Air Speed">
+      <Fixed>
+        <Element name="IM" bits="1" encoding="table">
+          <Entry value="0" meaning="Air Speed = IAS, LSB = 2^-14 NM/s"/>
+          <Entry value="1" meaning="Air Speed = Mach, LSB = 0.001"/>
+        </Element>
+        <Element name="AS" bits="15" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/151 – True Airspeed  (Fixed, 2 bytes)
+         RE(1)+TAS(15); TAS unsigned, LSB = 1 kt
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="151" name="True Airspeed">
+      <Fixed>
+        <Element name="RE" bits="1" encoding="table">
+          <Entry value="0" meaning="Value in defined range"/>
+          <Entry value="1" meaning="Value exceeds defined range"/>
+        </Element>
+        <Element name="TAS" bits="15" encoding="unsigned_quantity"
+                 scale="1.0" unit="kt"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/152 – Magnetic Heading  (Fixed, 2 bytes)
+         unsigned, LSB = 360/2^16 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="152" name="Magnetic Heading">
+      <Fixed>
+        <Element name="MH" bits="16" encoding="unsigned_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/155 – Barometric Vertical Rate  (Fixed, 2 bytes)
+         RE(1)+BVR(15); BVR signed, LSB = 25/4 = 6.25 ft/min
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="155" name="Barometric Vertical Rate">
+      <Fixed>
+        <Element name="RE" bits="1" encoding="table">
+          <Entry value="0" meaning="Value in defined range"/>
+          <Entry value="1" meaning="Value exceeds defined range"/>
+        </Element>
+        <Element name="BVR" bits="15" encoding="signed_quantity"
+                 scale="6.25" unit="ft/min"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/157 – Geometric Vertical Rate  (Fixed, 2 bytes)
+         RE(1)+GVR(15); GVR signed, LSB = 25/4 = 6.25 ft/min
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="157" name="Geometric Vertical Rate">
+      <Fixed>
+        <Element name="RE" bits="1" encoding="table">
+          <Entry value="0" meaning="Value in defined range"/>
+          <Entry value="1" meaning="Value exceeds defined range"/>
+        </Element>
+        <Element name="GVR" bits="15" encoding="signed_quantity"
+                 scale="6.25" unit="ft/min"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/160 – Airborne Ground Vector  (Fixed, 4 bytes)
+         RE(1)+GS(15)+TA(16) = 32 bits
+         GS: unsigned, LSB = 1/2^14 NM/s; TA: unsigned, LSB = 360/2^16 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="160" name="Airborne Ground Vector">
+      <Fixed>
+        <Element name="RE" bits="1" encoding="table">
+          <Entry value="0" meaning="Value in defined range"/>
+          <Entry value="1" meaning="Value exceeds defined range"/>
+        </Element>
+        <Element name="GS" bits="15" encoding="unsigned_quantity"
+                 scale="0.000061035156" unit="NM/s"/>
+        <Element name="TA" bits="16" encoding="unsigned_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/161 – Track Number  (Fixed, 2 bytes)
+         spare(4)+TRNUM(12)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="161" name="Track Number">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="TRNUM" bits="12" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/165 – Track Angle Rate  (Fixed, 2 bytes)
+         spare(6)+TAR(10); TAR signed, LSB = 1/32 °/s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="165" name="Track Angle Rate">
+      <Fixed>
+        <Spare bits="6"/>
+        <Element name="TAR" bits="10" encoding="signed_quantity"
+                 scale="0.03125" unit="deg/s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/170 – Target Identification  (Fixed, 6 bytes)
+         48 bits: 8 × 6-bit ICAO characters (raw; string_icao not supported)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="170" name="Target Identification">
+      <Fixed>
+        <Element name="IDENT" bits="48" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/200 – Target Status  (Fixed, 1 byte)
+         ICF(1)+LNAV(1)+ME(1)+PS(3)+SS(2) = 8 bits
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="200" name="Target Status">
+      <Fixed>
+        <Element name="ICF" bits="1" encoding="table">
+          <Entry value="0" meaning="No intent change active"/>
+          <Entry value="1" meaning="Intent change flag raised"/>
+        </Element>
+        <Element name="LNAV" bits="1" encoding="table">
+          <Entry value="0" meaning="LNAV Mode engaged"/>
+          <Entry value="1" meaning="LNAV Mode not engaged"/>
+        </Element>
+        <Element name="ME" bits="1" encoding="table">
+          <Entry value="0" meaning="No military emergency"/>
+          <Entry value="1" meaning="Military emergency"/>
+        </Element>
+        <Element name="PS" bits="3" encoding="table">
+          <Entry value="0" meaning="No emergency / not reported"/>
+          <Entry value="1" meaning="General emergency"/>
+          <Entry value="2" meaning="Lifeguard / medical emergency"/>
+          <Entry value="3" meaning="Minimum fuel"/>
+          <Entry value="4" meaning="No communications"/>
+          <Entry value="5" meaning="Unlawful interference"/>
+          <Entry value="6" meaning="DOWNED Aircraft"/>
+        </Element>
+        <Element name="SS" bits="2" encoding="table">
+          <Entry value="0" meaning="No condition reported"/>
+          <Entry value="1" meaning="Permanent Alert (Emergency condition)"/>
+          <Entry value="2" meaning="Temporary Alert (change in Mode 3/A Code)"/>
+          <Entry value="3" meaning="SPI set"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/210 – MOPS Version  (Fixed, 1 byte)
+         spare(1)+VNS(1)+VN(3)+LTT(3) = 8 bits
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="210" name="MOPS Version">
+      <Fixed>
+        <Spare bits="1"/>
+        <Element name="VNS" bits="1" encoding="table">
+          <Entry value="0" meaning="The MOPS Version is supported by the GS"/>
+          <Entry value="1" meaning="The MOPS Version is not supported by the GS"/>
+        </Element>
+        <Element name="VN" bits="3" encoding="table">
+          <Entry value="0" meaning="ED102/DO-260"/>
+          <Entry value="1" meaning="DO-260A"/>
+          <Entry value="2" meaning="ED102A/DO-260B"/>
+          <Entry value="3" meaning="ED-102B/DO-260C"/>
+        </Element>
+        <Element name="LTT" bits="3" encoding="table">
+          <Entry value="0" meaning="Other"/>
+          <Entry value="1" meaning="UAT"/>
+          <Entry value="2" meaning="1090 ES"/>
+          <Entry value="3" meaning="VDL 4"/>
+          <Entry value="4" meaning="Not assigned"/>
+          <Entry value="5" meaning="Not assigned"/>
+          <Entry value="6" meaning="Not assigned"/>
+          <Entry value="7" meaning="Not assigned"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/220 – Met Information  (Compound)
+         WS(2B)+WD(2B)+TMP(2B)+TRB(1B)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="220" name="Met Information">
+      <Compound>
+        <!-- slot 0: PSF bit7 – WS (Wind Speed, 2 bytes, LSB = 1 kt) -->
+        <SubItem name="WS">
+          <Fixed>
+            <Element name="WS" bits="16" encoding="unsigned_quantity"
+                     scale="1.0" unit="kt"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: PSF bit6 – WD (Wind Direction, 2 bytes, LSB = 1 °) -->
+        <SubItem name="WD">
+          <Fixed>
+            <Element name="WD" bits="16" encoding="unsigned_quantity"
+                     scale="1.0" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: PSF bit5 – TMP (Temperature, 2 bytes, signed LSB = 1/4 °C) -->
+        <SubItem name="TMP">
+          <Fixed>
+            <Element name="TMP" bits="16" encoding="signed_quantity"
+                     scale="0.25" unit="°C"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: PSF bit4 – TRB (Turbulence, 1 byte, raw) -->
+        <SubItem name="TRB">
+          <Fixed>
+            <Element name="TRB" bits="8" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/230 – Roll Angle  (Fixed, 2 bytes)
+         signed, LSB = 1/100 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="230" name="Roll Angle">
+      <Fixed>
+        <Element name="ROLL" bits="16" encoding="signed_quantity"
+                 scale="0.01" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/250 – Mode S MB Data  (Repetitive count-prefixed)
+         REP(1B) + REP × { BDS register 64 bits raw }
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="250" name="Mode S MB Data">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="MBDATA" bits="64" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/260 – ACAS Resolution Advisory Report  (Fixed, 7 bytes)
+         TYP(5)+STYP(3)+ARA(14)+RAC(4)+RAT(1)+MTE(1)+TTI(2)+TID(26) = 56 bits
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="260" name="ACAS Resolution Advisory Report">
+      <Fixed>
+        <Element name="TYP"  bits="5"  encoding="raw"/>
+        <Element name="STYP" bits="3"  encoding="raw"/>
+        <Element name="ARA"  bits="14" encoding="raw"/>
+        <Element name="RAC"  bits="4"  encoding="raw"/>
+        <Element name="RAT"  bits="1"  encoding="raw"/>
+        <Element name="MTE"  bits="1"  encoding="raw"/>
+        <Element name="TTI"  bits="2"  encoding="raw"/>
+        <Element name="TID"  bits="26" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/271 – Surface Capabilities and Characteristics  (Extended, up to 2 octets)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="271" name="Surface Capabilities and Characteristics">
+      <Extended>
+        <!-- Octet 1 (7 bits): spare(2)+POA(1)+CDTIS(1)+B2LOW(1)+RAS(1)+IDENT(1) -->
+        <Octet>
+          <Spare bits="2"/>
+          <Element name="POA" bits="1" encoding="table">
+            <Entry value="0" meaning="Position transmitted is not ADS-B position reference point"/>
+            <Entry value="1" meaning="Position transmitted is the ADS-B position reference point"/>
+          </Element>
+          <Element name="CDTIS" bits="1" encoding="table">
+            <Entry value="0" meaning="CDTI not operational"/>
+            <Entry value="1" meaning="CDTI operational"/>
+          </Element>
+          <Element name="B2LOW" bits="1" encoding="table">
+            <Entry value="0" meaning=">= 70 Watts"/>
+            <Entry value="1" meaning="&lt; 70 Watts"/>
+          </Element>
+          <Element name="RAS" bits="1" encoding="table">
+            <Entry value="0" meaning="Aircraft not receiving ATC-services"/>
+            <Entry value="1" meaning="Aircraft receiving ATC services"/>
+          </Element>
+          <Element name="IDENT" bits="1" encoding="table">
+            <Entry value="0" meaning="IDENT switch not active"/>
+            <Entry value="1" meaning="IDENT switch active"/>
+          </Element>
+        </Octet>
+        <!-- Octet 2 (7 bits): LW(4)+spare(3) -->
+        <Octet>
+          <Element name="LW" bits="4" encoding="raw"/>
+          <Spare bits="3"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/295 – Data Ages  (Compound, 23 × 1-byte sub-items)
+         Each sub-item: 8 bits unsigned, LSB = 0.1 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="295" name="Data Ages">
+      <Compound>
+        <!-- PSF byte 1: slots 0–6 -->
+        <SubItem name="AOS">
+          <Fixed><Element name="AOS" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="TRD">
+          <Fixed><Element name="TRD" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="M3A">
+          <Fixed><Element name="M3A" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="QI">
+          <Fixed><Element name="QI" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="TI1">
+          <Fixed><Element name="TI1" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="MAM">
+          <Fixed><Element name="MAM" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="GH">
+          <Fixed><Element name="GH" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <!-- PSF byte 2: slots 7–13 -->
+        <SubItem name="FL">
+          <Fixed><Element name="FL" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="SAL">
+          <Fixed><Element name="SAL" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="FSA">
+          <Fixed><Element name="FSA" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="AS">
+          <Fixed><Element name="AS" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="TAS">
+          <Fixed><Element name="TAS" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="MH">
+          <Fixed><Element name="MH" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="BVR">
+          <Fixed><Element name="BVR" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <!-- PSF byte 3: slots 14–20 -->
+        <SubItem name="GVR">
+          <Fixed><Element name="GVR" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="GV">
+          <Fixed><Element name="GV" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="TAR">
+          <Fixed><Element name="TAR" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="TI2">
+          <Fixed><Element name="TI2" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="TS">
+          <Fixed><Element name="TS" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="MET">
+          <Fixed><Element name="MET" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="ROA">
+          <Fixed><Element name="ROA" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <!-- PSF byte 4: slots 21–22 -->
+        <SubItem name="ARA">
+          <Fixed><Element name="ARA" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+        <SubItem name="SCC">
+          <Fixed><Element name="SCC" bits="8" encoding="unsigned_quantity" scale="0.1" unit="s"/></Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I021/400 – Receiver ID  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="400" name="Receiver ID">
+      <Fixed>
+        <Element name="RID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RE – Reserved Expansion Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 49 slots across 7 FSPEC bytes (7 slots each)
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+
+    <Variation name="default">
+      <!-- FSPEC byte 1: slots 1–7 -->
+      <Item ref="010"/>  <!-- slot  1 -->
+      <Item ref="040"/>  <!-- slot  2 -->
+      <Item ref="161"/>  <!-- slot  3 -->
+      <Item ref="015"/>  <!-- slot  4 -->
+      <Item ref="071"/>  <!-- slot  5 -->
+      <Item ref="130"/>  <!-- slot  6 -->
+      <Item ref="131"/>  <!-- slot  7 -->
+      <!-- FSPEC byte 2: slots 8–14 -->
+      <Item ref="072"/>  <!-- slot  8 -->
+      <Item ref="150"/>  <!-- slot  9 -->
+      <Item ref="151"/>  <!-- slot 10 -->
+      <Item ref="080"/>  <!-- slot 11 -->
+      <Item ref="073"/>  <!-- slot 12 -->
+      <Item ref="074"/>  <!-- slot 13 -->
+      <Item ref="075"/>  <!-- slot 14 -->
+      <!-- FSPEC byte 3: slots 15–21 -->
+      <Item ref="076"/>  <!-- slot 15 -->
+      <Item ref="140"/>  <!-- slot 16 -->
+      <Item ref="090"/>  <!-- slot 17 -->
+      <Item ref="210"/>  <!-- slot 18 -->
+      <Item ref="070"/>  <!-- slot 19 -->
+      <Item ref="230"/>  <!-- slot 20 -->
+      <Item ref="145"/>  <!-- slot 21 -->
+      <!-- FSPEC byte 4: slots 22–28 -->
+      <Item ref="152"/>  <!-- slot 22 -->
+      <Item ref="200"/>  <!-- slot 23 -->
+      <Item ref="155"/>  <!-- slot 24 -->
+      <Item ref="157"/>  <!-- slot 25 -->
+      <Item ref="160"/>  <!-- slot 26 -->
+      <Item ref="165"/>  <!-- slot 27 -->
+      <Item ref="077"/>  <!-- slot 28 -->
+      <!-- FSPEC byte 5: slots 29–35 -->
+      <Item ref="170"/>  <!-- slot 29 -->
+      <Item ref="020"/>  <!-- slot 30 -->
+      <Item ref="220"/>  <!-- slot 31 -->
+      <Item ref="146"/>  <!-- slot 32 -->
+      <Item ref="148"/>  <!-- slot 33 -->
+      <Item ref="110"/>  <!-- slot 34 -->
+      <Item ref="016"/>  <!-- slot 35 -->
+      <!-- FSPEC byte 6: slots 36–42 -->
+      <Item ref="008"/>  <!-- slot 36 -->
+      <Item ref="271"/>  <!-- slot 37 -->
+      <Item ref="132"/>  <!-- slot 38 -->
+      <Item ref="250"/>  <!-- slot 39 -->
+      <Item ref="260"/>  <!-- slot 40 -->
+      <Item ref="400"/>  <!-- slot 41 -->
+      <Item ref="295"/>  <!-- slot 42 -->
+      <!-- FSPEC byte 7: slots 43–49 -->
+      <Item ref="-"/>    <!-- slot 43 (unused) -->
+      <Item ref="-"/>    <!-- slot 44 (unused) -->
+      <Item ref="-"/>    <!-- slot 45 (unused) -->
+      <Item ref="-"/>    <!-- slot 46 (unused) -->
+      <Item ref="-"/>    <!-- slot 47 (unused) -->
+      <Item ref="RE"/>   <!-- slot 48 -->
+      <Item ref="SP"/>   <!-- slot 49 -->
+    </Variation>
+
+  </UAPs>
+
+</Category>
