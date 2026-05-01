@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="19" name="Multilateration System Status Messages" edition="1.3" date="2010-12-01">
+
+  <DataItems>
+
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="Start of Update Cycle"/>
+          <Entry value="2" meaning="Periodic Status Message"/>
+          <Entry value="3" meaning="Event-triggered Status Message"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="140" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- NOGO(2)+OVL(1)+TSV(1)+TTF(1)+spare(3) = 8 bits -->
+    <DataItem id="550" name="System Status">
+      <Fixed>
+        <Element name="NOGO" bits="2" encoding="table">
+          <Entry value="0" meaning="Operational"/>
+          <Entry value="1" meaning="Degraded"/>
+          <Entry value="2" meaning="NOGO"/>
+          <Entry value="3" meaning="Undefined"/>
+        </Element>
+        <Element name="OVL" bits="1" encoding="table">
+          <Entry value="0" meaning="No overload"/>
+          <Entry value="1" meaning="Overload"/>
+        </Element>
+        <Element name="TSV" bits="1" encoding="table">
+          <Entry value="0" meaning="Valid"/>
+          <Entry value="1" meaning="Invalid"/>
+        </Element>
+        <Element name="TTF" bits="1" encoding="table">
+          <Entry value="0" meaning="Test Target Operative"/>
+          <Entry value="1" meaning="Test Target Failure"/>
+        </Element>
+        <Spare bits="3"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- TP1A(1)+TP1B(1)+TP2A(1)+TP2B(1)+TP3A(1)+TP3B(1)+TP4A(1)+TP4B(1) = 8 bits -->
+    <DataItem id="551" name="Tracking Processor Detailed Status">
+      <Fixed>
+        <Element name="TP1A" bits="1" encoding="table">
+          <Entry value="0" meaning="Standby"/>
+          <Entry value="1" meaning="Exec"/>
+        </Element>
+        <Element name="TP1B" bits="1" encoding="table">
+          <Entry value="0" meaning="Faulted"/>
+          <Entry value="1" meaning="Good"/>
+        </Element>
+        <Element name="TP2A" bits="1" encoding="table">
+          <Entry value="0" meaning="Standby"/>
+          <Entry value="1" meaning="Exec"/>
+        </Element>
+        <Element name="TP2B" bits="1" encoding="table">
+          <Entry value="0" meaning="Faulted"/>
+          <Entry value="1" meaning="Good"/>
+        </Element>
+        <Element name="TP3A" bits="1" encoding="table">
+          <Entry value="0" meaning="Standby"/>
+          <Entry value="1" meaning="Exec"/>
+        </Element>
+        <Element name="TP3B" bits="1" encoding="table">
+          <Entry value="0" meaning="Faulted"/>
+          <Entry value="1" meaning="Good"/>
+        </Element>
+        <Element name="TP4A" bits="1" encoding="table">
+          <Entry value="0" meaning="Standby"/>
+          <Entry value="1" meaning="Exec"/>
+        </Element>
+        <Element name="TP4B" bits="1" encoding="table">
+          <Entry value="0" meaning="Faulted"/>
+          <Entry value="1" meaning="Good"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- Repetitive (1-byte count); per entry: RSI(8)+spare(1)+RS1090(1)+TX1030(1)+TX1090(1)+RSS(1)+RSO(1)+spare(2) = 16 bits -->
+    <DataItem id="552" name="Remote Sensor Detailed Status">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="RSI"    bits="8" encoding="raw"/>
+          <Spare bits="1"/>
+          <Element name="RS1090" bits="1" encoding="table">
+            <Entry value="0" meaning="Not present"/>
+            <Entry value="1" meaning="Present"/>
+          </Element>
+          <Element name="TX1030" bits="1" encoding="table">
+            <Entry value="0" meaning="Not present"/>
+            <Entry value="1" meaning="Present"/>
+          </Element>
+          <Element name="TX1090" bits="1" encoding="table">
+            <Entry value="0" meaning="Not present"/>
+            <Entry value="1" meaning="Present"/>
+          </Element>
+          <Element name="RSS"    bits="1" encoding="table">
+            <Entry value="0" meaning="Faulted"/>
+            <Entry value="1" meaning="Good"/>
+          </Element>
+          <Element name="RSO"    bits="1" encoding="table">
+            <Entry value="0" meaning="Offline"/>
+            <Entry value="1" meaning="Online"/>
+          </Element>
+          <Spare bits="2"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!--
+      Extended item; 2 octets max (each = 7 data bits + FX):
+        Octet 1: REFTR1(2)+spare(2)+REFTR2(2)+spare(1)
+        Octet 2: REFTR3(2)+spare(2)+REFTR4(2)+spare(1)
+    -->
+    <DataItem id="553" name="Reference Transponder Detailed Status">
+      <Extended>
+        <Octet>
+          <Element name="REFTR1" bits="2" encoding="table">
+            <Entry value="1" meaning="Warning"/>
+            <Entry value="2" meaning="Faulted"/>
+            <Entry value="3" meaning="Good"/>
+          </Element>
+          <Spare bits="2"/>
+          <Element name="REFTR2" bits="2" encoding="table">
+            <Entry value="1" meaning="Warning"/>
+            <Entry value="2" meaning="Faulted"/>
+            <Entry value="3" meaning="Good"/>
+          </Element>
+          <Spare bits="1"/>
+        </Octet>
+        <Octet>
+          <Element name="REFTR3" bits="2" encoding="table">
+            <Entry value="1" meaning="Warning"/>
+            <Entry value="2" meaning="Faulted"/>
+            <Entry value="3" meaning="Good"/>
+          </Element>
+          <Spare bits="2"/>
+          <Element name="REFTR4" bits="2" encoding="table">
+            <Entry value="1" meaning="Warning"/>
+            <Entry value="2" meaning="Faulted"/>
+            <Entry value="3" meaning="Good"/>
+          </Element>
+          <Spare bits="1"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- LAT/LON: 32-bit signed, LSB = 180/2^30 deg -->
+    <DataItem id="600" name="Position of the MLT System Reference Point">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="0.00000016763806343078613" unit="deg"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="0.00000016763806343078613" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit signed, LSB = 0.25 m -->
+    <DataItem id="610" name="Height of the MLT System Reference Point">
+      <Fixed>
+        <Element name="HGT" bits="16" encoding="signed_quantity" scale="0.25" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit signed, LSB = 1 m -->
+    <DataItem id="620" name="WGS-84 Undulation">
+      <Fixed>
+        <Element name="UND" bits="8" encoding="signed_quantity" scale="1.0" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 14 slots → 2 FSPEC bytes
+    Byte 1: 010 000 140 550 551 552 553
+    Byte 2: 600 610 620  -   -  RE  SP
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="000"/>
+      <Item ref="140"/>
+      <Item ref="550"/>
+      <Item ref="551"/>
+      <Item ref="552"/>
+      <Item ref="553"/>
+      <Item ref="600"/>
+      <Item ref="610"/>
+      <Item ref="620"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="RE"/>
+      <Item ref="SP"/>
+    </Variation>
+  </UAPs>
+
+</Category>
