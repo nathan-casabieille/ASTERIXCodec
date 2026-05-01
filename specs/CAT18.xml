@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ASTERIX Category 018 – Mode S Datalink Function Messages
+     Edition 1.8  |  2024-05-14
+
+     Codec notes:
+       - I006: Repetitive count (1B), REP×{ADR(24)} = 3B/entry
+       - I008: Extended 2 octets (UDS+DDS+UCS+DCS+spare(2)+EI | IC+spare(6))
+       - I009: Extended 2 octets (SR+AR+ER+FR+MR+PR+CR | ID+MA+SP+HG+HD+spare(2))
+       - I017: Repetitive count (1B), REP×{PN(32)} = 4B/entry
+       - I019: Explicit (length-prefixed, treated as SP)
+       - UAP: 35 slots (5 FSPEC bytes):
+           B1: 036 037 000 001 005 016 017
+           B2: 018 019 028 030 025 027 029
+           B3: 002 006 007 008 009 010 011
+           B4: 014 015 020 021 022 023 004
+           B5: 031 032 033 034 035 012 013
+-->
+<Category cat="18" name="Mode S Datalink Function Messages" edition="1.8" date="2024-05-14">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MT" bits="8" encoding="table">
+          <Entry value="0"  meaning="Associate_req"/>
+          <Entry value="1"  meaning="Associate_resp"/>
+          <Entry value="2"  meaning="Release_req"/>
+          <Entry value="3"  meaning="Release_resp"/>
+          <Entry value="4"  meaning="Abort_req"/>
+          <Entry value="5"  meaning="Keep_alive"/>
+          <Entry value="16" meaning="Aircraft_report"/>
+          <Entry value="17" meaning="Aircraft_command"/>
+          <Entry value="18" meaning="II_code_change"/>
+          <Entry value="32" meaning="Uplink_packet"/>
+          <Entry value="33" meaning="Cancel_uplink_packet"/>
+          <Entry value="34" meaning="Uplink_packet_ack"/>
+          <Entry value="35" meaning="Downlink_packet"/>
+          <Entry value="38" meaning="Data_XON"/>
+          <Entry value="39" meaning="Data_XOFF"/>
+          <Entry value="48" meaning="Uplink_broadcast"/>
+          <Entry value="49" meaning="Cancel_uplink_broadcast"/>
+          <Entry value="50" meaning="Uplink_broadcast_ack"/>
+          <Entry value="52" meaning="Downlink_broadcast"/>
+          <Entry value="64" meaning="GICB_extraction"/>
+          <Entry value="65" meaning="Cancel_GICB_extraction"/>
+          <Entry value="66" meaning="GICB_extraction_ack"/>
+          <Entry value="67" meaning="GICB_response"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/001 – Result  (Fixed, 1 byte)
+         CAUSE(4 table) + DIAG(4 table)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="001" name="Result">
+      <Fixed>
+        <Element name="CAUSE" bits="4" encoding="table">
+          <Entry value="0" meaning="Accepted"/>
+          <Entry value="1" meaning="Rejected"/>
+          <Entry value="2" meaning="Cancelled"/>
+          <Entry value="3" meaning="Finished"/>
+          <Entry value="4" meaning="Delayed"/>
+          <Entry value="5" meaning="In Progress (processing)"/>
+          <Entry value="6" meaning="In Progress (successful)"/>
+        </Element>
+        <Element name="DIAG" bits="4" encoding="table">
+          <Entry value="0"  meaning="No diagnostic available"/>
+          <Entry value="1"  meaning="Aircraft Exit"/>
+          <Entry value="2"  meaning="Incorrect aircraft address"/>
+          <Entry value="3"  meaning="Impossibility to process the message"/>
+          <Entry value="4"  meaning="Insufficient or change in data link capability"/>
+          <Entry value="5"  meaning="Invalid LV field"/>
+          <Entry value="6"  meaning="Duplicate request number"/>
+          <Entry value="7"  meaning="Unknown request number"/>
+          <Entry value="8"  meaning="Timer T3 expiry"/>
+          <Entry value="9"  meaning="Expiry of I/R delivery timer"/>
+          <Entry value="10" meaning="Uplink flow disabled by UC"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/002 – Time of Day  (Fixed, 3 bytes)
+         24-bit unsigned, 1/128 s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="002" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/004 – II Code  (Fixed, 1 byte)
+         PREVIOUSII(4) + CURRENTII(4)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="004" name="II Code">
+      <Fixed>
+        <Element name="PREVIOUSII" bits="4" encoding="raw"/>
+        <Element name="CURRENTII"  bits="4" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/005 – Mode S Address  (Fixed, 3 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="005" name="Mode S Address">
+      <Fixed>
+        <Element name="ADR" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/006 – Mode S Address List  (Repetitive count, 1B count, 3B/entry)
+         REP(1B) + REP×{ADR(24)}
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="006" name="Mode S Address List">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="ADR" bits="24" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/007 – Aircraft Data Link Command  (Fixed, 1 byte)
+         UM(1) + DM(1) + UC(1) + DC(1) + spare(4)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="007" name="Aircraft Data Link Command">
+      <Fixed>
+        <Element name="UM" bits="1" encoding="table">
+          <Entry value="0" meaning="UC shall be ignored"/>
+          <Entry value="1" meaning="UC shall be taken into account"/>
+        </Element>
+        <Element name="DM" bits="1" encoding="table">
+          <Entry value="0" meaning="DC shall be ignored"/>
+          <Entry value="1" meaning="DC shall be taken into account"/>
+        </Element>
+        <Element name="UC" bits="1" encoding="table">
+          <Entry value="0" meaning="Uplink flow enabled"/>
+          <Entry value="1" meaning="Uplink flow stopped"/>
+        </Element>
+        <Element name="DC" bits="1" encoding="table">
+          <Entry value="0" meaning="Downlink flow enabled"/>
+          <Entry value="1" meaning="Downlink flow stopped"/>
+        </Element>
+        <Spare bits="4"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/008 – Aircraft Data Link Status  (Extended, 2 octets)
+         Octet 1: UDS(1)+DDS(1)+UCS(1)+DCS(1)+spare(2)+EI(1)
+         Octet 2: IC(1)+spare(6)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="008" name="Aircraft Data Link Status">
+      <Extended>
+        <Octet>
+          <Element name="UDS" bits="1" encoding="table">
+            <Entry value="0" meaning="Enabled to uplink frames"/>
+            <Entry value="1" meaning="Disabled to uplink frames"/>
+          </Element>
+          <Element name="DDS" bits="1" encoding="table">
+            <Entry value="0" meaning="Enabled to extract frames"/>
+            <Entry value="1" meaning="Disabled to extract frames"/>
+          </Element>
+          <Element name="UCS" bits="1" encoding="table">
+            <Entry value="0" meaning="Enabled to uplink frames (current)"/>
+            <Entry value="1" meaning="Disabled to uplink frames (current)"/>
+          </Element>
+          <Element name="DCS" bits="1" encoding="table">
+            <Entry value="0" meaning="Enabled to extract frames (current)"/>
+            <Entry value="1" meaning="Disabled to extract frames (current)"/>
+          </Element>
+          <Spare bits="2"/>
+          <Element name="EI" bits="1" encoding="table">
+            <Entry value="0" meaning="Aircraft in Datalink coverage map"/>
+            <Entry value="1" meaning="Aircraft not in Datalink coverage map"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="IC" bits="1" encoding="table">
+            <Entry value="0" meaning="Current status can be changed by D_Data_link_command"/>
+            <Entry value="1" meaning="Current status cannot be changed by D_Data_link_command"/>
+          </Element>
+          <Spare bits="6"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/009 – Aircraft Data Link Report Request  (Extended, 2 octets)
+         Octet 1: SR(1)+AR(1)+ER(1)+FR(1)+MR(1)+PR(1)+CR(1)
+         Octet 2: ID(1)+MA(1)+SP(1)+HG(1)+HD(1)+spare(2)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="009" name="Aircraft Data Link Report Request">
+      <Extended>
+        <Octet>
+          <Element name="SR" bits="1" encoding="table">
+            <Entry value="0" meaning="D_Data_link_status not required"/>
+            <Entry value="1" meaning="D_Data_link_status required"/>
+          </Element>
+          <Element name="AR" bits="1" encoding="table">
+            <Entry value="0" meaning="D_COM not required"/>
+            <Entry value="1" meaning="D_COM required"/>
+          </Element>
+          <Element name="ER" bits="1" encoding="table">
+            <Entry value="0" meaning="D_ECA not required"/>
+            <Entry value="1" meaning="D_ECA required"/>
+          </Element>
+          <Element name="FR" bits="1" encoding="table">
+            <Entry value="0" meaning="D_CQF not required"/>
+            <Entry value="1" meaning="D_CQF required"/>
+          </Element>
+          <Element name="MR" bits="1" encoding="table">
+            <Entry value="0" meaning="D_CQF_method not required"/>
+            <Entry value="1" meaning="D_CQF_method required"/>
+          </Element>
+          <Element name="PR" bits="1" encoding="table">
+            <Entry value="0" meaning="D_Polar_position not required"/>
+            <Entry value="1" meaning="D_Polar_position required"/>
+          </Element>
+          <Element name="CR" bits="1" encoding="table">
+            <Entry value="0" meaning="D_Cartesian_position not required"/>
+            <Entry value="1" meaning="D_Cartesian_position required"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="ID" bits="1" encoding="table">
+            <Entry value="0" meaning="Aircraft_ID not required"/>
+            <Entry value="1" meaning="Aircraft_ID required"/>
+          </Element>
+          <Element name="MA" bits="1" encoding="table">
+            <Entry value="0" meaning="Mode_A not required"/>
+            <Entry value="1" meaning="Mode_A required"/>
+          </Element>
+          <Element name="SP" bits="1" encoding="table">
+            <Entry value="0" meaning="Speed not required"/>
+            <Entry value="1" meaning="Speed required"/>
+          </Element>
+          <Element name="HG" bits="1" encoding="table">
+            <Entry value="0" meaning="Height not required"/>
+            <Entry value="1" meaning="Height required"/>
+          </Element>
+          <Element name="HD" bits="1" encoding="table">
+            <Entry value="0" meaning="Heading not required"/>
+            <Entry value="1" meaning="Heading required"/>
+          </Element>
+          <Spare bits="2"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/010 – Transponder Communications Capability  (Fixed, 1 byte)
+         spare(5) + COM(3 table)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Transponder Communications Capability">
+      <Fixed>
+        <Spare bits="5"/>
+        <Element name="COM" bits="3" encoding="table">
+          <Entry value="0" meaning="No communications capability (surveillance only)"/>
+          <Entry value="1" meaning="Comm. A and Comm. B capability"/>
+          <Entry value="2" meaning="Comm. A, Comm. B and Uplink ELM"/>
+          <Entry value="3" meaning="Comm. A, Comm. B, Uplink ELM and Downlink ELM"/>
+          <Entry value="4" meaning="Level 5 Transponder capability"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/011 – Capability Report  (Fixed, 7 bytes)
+         56-bit raw
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="011" name="Capability Report">
+      <Fixed>
+        <Element name="CAP" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/012 – Aircraft Coverage Quality Factor  (Fixed, 1 byte)
+         FS(1 table) + CQF(7 raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="012" name="Aircraft Coverage Quality Factor">
+      <Fixed>
+        <Element name="FS" bits="1" encoding="table">
+          <Entry value="0" meaning="Aircraft is airborne"/>
+          <Entry value="1" meaning="Aircraft is on the ground"/>
+        </Element>
+        <Element name="CQF" bits="7" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/013 – Aircraft CQF Calculation Method  (Fixed, 1 byte)
+         8-bit raw
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="013" name="Aircraft CQF Calculation Method">
+      <Fixed>
+        <Element name="METHOD" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/014 – Aircraft Position in Polar Co-ordinates  (Fixed, 4 bytes)
+         RHO(16u, 1/256 NM) + THETA(16u, 360/2^16 °)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="014" name="Aircraft Position in Polar Co-ordinates">
+      <Fixed>
+        <Element name="RHO"   bits="16" encoding="unsigned_quantity" scale="0.00390625"       unit="NM"/>
+        <Element name="THETA" bits="16" encoding="unsigned_quantity" scale="0.0054931640625"  unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/015 – Aircraft Position in Cartesian Co-ordinates  (Fixed, 4 bytes)
+         X(16s, 1/128 NM) + Y(16s, 1/128 NM)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="015" name="Aircraft Position in Cartesian Co-ordinates">
+      <Fixed>
+        <Element name="X" bits="16" encoding="signed_quantity" scale="0.0078125" unit="NM"/>
+        <Element name="Y" bits="16" encoding="signed_quantity" scale="0.0078125" unit="NM"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/016 – Packet Number  (Fixed, 4 bytes)
+         32-bit unsigned integer
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="016" name="Packet Number">
+      <Fixed>
+        <Element name="PN" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/017 – Packet Number List  (Repetitive count, 1B count, 4B/entry)
+         REP(1B) + REP×{PN(32)}
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="017" name="Packet Number List">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="PN" bits="32" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/018 – Mode S Packet Properties  (Fixed, 1 byte)
+         spare(1) + PR(5 raw) + PT(2 table)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="018" name="Mode S Packet Properties">
+      <Fixed>
+        <Spare bits="1"/>
+        <Element name="PR" bits="5" encoding="raw"/>
+        <Element name="PT" bits="2" encoding="table">
+          <Entry value="0" meaning="SVC packets"/>
+          <Entry value="1" meaning="MSP packets"/>
+          <Entry value="2" meaning="Route packets"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/019 – Mode S Packet  (Explicit, length-prefixed)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="019" name="Mode S Packet">
+      <Explicit type="sp"/>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/020 – Broadcast Number  (Fixed, 4 bytes)
+         32-bit unsigned integer
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Broadcast Number">
+      <Fixed>
+        <Element name="BN" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/021 – Broadcast Properties  (Fixed, 6 bytes)
+         PRIORITY(4) + POWER(4) + DURATION(8, 1 s) + COVERAGE(32)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="021" name="Broadcast Properties">
+      <Fixed>
+        <Element name="PRIORITY" bits="4"  encoding="raw"/>
+        <Element name="POWER"    bits="4"  encoding="raw"/>
+        <Element name="DURATION" bits="8"  encoding="unsigned_quantity" scale="1" unit="s"/>
+        <Element name="COVERAGE" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/022 – Broadcast Prefix  (Fixed, 4 bytes)
+         spare(5) + PREFIX(27)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="022" name="Broadcast Prefix">
+      <Fixed>
+        <Spare bits="5"/>
+        <Element name="PREFIX" bits="27" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/023 – Uplink or Downlink Broadcast  (Fixed, 7 bytes)
+         56-bit raw (MA/MB field of Comm-A/B frame)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="023" name="Uplink or Downlink Broadcast">
+      <Fixed>
+        <Element name="MSG" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/025 – GICB Number  (Fixed, 4 bytes)
+         32-bit unsigned integer
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="025" name="GICB Number">
+      <Fixed>
+        <Element name="GN" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/027 – BDS Code  (Fixed, 1 byte)
+         8-bit raw
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="027" name="BDS Code">
+      <Fixed>
+        <Element name="BDS" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/028 – GICB Extraction Periodicity  (Fixed, 2 bytes)
+         16-bit unsigned, 1 s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="028" name="GICB Extraction Periodicity">
+      <Fixed>
+        <Element name="PERIOD" bits="16" encoding="unsigned_quantity" scale="1" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/029 – GICB Extracted  (Fixed, 7 bytes)
+         56-bit BDS register content (treated as raw)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="029" name="GICB Extracted">
+      <Fixed>
+        <Element name="GICB" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/030 – GICB Properties  (Fixed, 2 bytes)
+         PRIORITY(5) + spare(3) + PC(1) + AU(1) + NE(1) + RD(2) + spare(3)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="GICB Properties">
+      <Fixed>
+        <Element name="PRIORITY" bits="5" encoding="raw"/>
+        <Spare bits="3"/>
+        <Element name="PC" bits="1" encoding="table">
+          <Entry value="0" meaning="Periodicity may not be strictly respected"/>
+          <Entry value="1" meaning="Periodicity shall be strictly respected"/>
+        </Element>
+        <Element name="AU" bits="1" encoding="table">
+          <Entry value="0" meaning="Update only on periodicity"/>
+          <Entry value="1" meaning="Update also on external conditions"/>
+        </Element>
+        <Element name="NE" bits="1" encoding="table">
+          <Entry value="0" meaning="GICB extraction attempted per periodicity"/>
+          <Entry value="1" meaning="No GICB extraction attempts"/>
+        </Element>
+        <Element name="RD" bits="2" encoding="table">
+          <Entry value="0" meaning="Data Link line only"/>
+          <Entry value="1" meaning="Surveillance line only"/>
+          <Entry value="2" meaning="Both Data Link and Surveillance lines"/>
+        </Element>
+        <Spare bits="3"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/031 – Aircraft Identity  (Fixed, 6 bytes)
+         48-bit raw (BDS 20 identity)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="031" name="Aircraft Identity">
+      <Fixed>
+        <Element name="ID" bits="48" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/032 – Aircraft Mode A  (Fixed, 2 bytes)
+         V(1) + G(1) + L(1) + spare(1) + MOD3A(12 octal)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="032" name="Aircraft Mode A">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-3/A from transponder reply"/>
+          <Entry value="1" meaning="Mode-3/A not extracted during last scan"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MOD3A" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/033 – Aircraft Height  (Fixed, 2 bytes)
+         V(1) + G(1) + FL(14s, 1/4 FL)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="033" name="Aircraft Height">
+      <Fixed>
+        <Element name="V"  bits="1"  encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G"  bits="1"  encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="FL" bits="14" encoding="signed_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/034 – Aircraft Speed  (Fixed, 2 bytes)
+         16-bit unsigned, 1/2^14 NM/s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="034" name="Aircraft Speed">
+      <Fixed>
+        <Element name="GS" bits="16" encoding="unsigned_quantity" scale="0.000061035156" unit="NM/s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/035 – Aircraft Heading  (Fixed, 2 bytes)
+         16-bit unsigned, 360/2^16 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="035" name="Aircraft Heading">
+      <Fixed>
+        <Element name="HDG" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/036 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="036" name="Data Source Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I018/037 – Data Destination Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="037" name="Data Destination Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 35 slots across 5 FSPEC bytes
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="036"/>  <!-- FSPEC byte 1, bit 1 -->
+      <Item ref="037"/>  <!-- FSPEC byte 1, bit 2 -->
+      <Item ref="000"/>  <!-- FSPEC byte 1, bit 3 -->
+      <Item ref="001"/>  <!-- FSPEC byte 1, bit 4 -->
+      <Item ref="005"/>  <!-- FSPEC byte 1, bit 5 -->
+      <Item ref="016"/>  <!-- FSPEC byte 1, bit 6 -->
+      <Item ref="017"/>  <!-- FSPEC byte 1, bit 7 -->
+      <Item ref="018"/>  <!-- FSPEC byte 2, bit 1 -->
+      <Item ref="019"/>  <!-- FSPEC byte 2, bit 2 -->
+      <Item ref="028"/>  <!-- FSPEC byte 2, bit 3 -->
+      <Item ref="030"/>  <!-- FSPEC byte 2, bit 4 -->
+      <Item ref="025"/>  <!-- FSPEC byte 2, bit 5 -->
+      <Item ref="027"/>  <!-- FSPEC byte 2, bit 6 -->
+      <Item ref="029"/>  <!-- FSPEC byte 2, bit 7 -->
+      <Item ref="002"/>  <!-- FSPEC byte 3, bit 1 -->
+      <Item ref="006"/>  <!-- FSPEC byte 3, bit 2 -->
+      <Item ref="007"/>  <!-- FSPEC byte 3, bit 3 -->
+      <Item ref="008"/>  <!-- FSPEC byte 3, bit 4 -->
+      <Item ref="009"/>  <!-- FSPEC byte 3, bit 5 -->
+      <Item ref="010"/>  <!-- FSPEC byte 3, bit 6 -->
+      <Item ref="011"/>  <!-- FSPEC byte 3, bit 7 -->
+      <Item ref="014"/>  <!-- FSPEC byte 4, bit 1 -->
+      <Item ref="015"/>  <!-- FSPEC byte 4, bit 2 -->
+      <Item ref="020"/>  <!-- FSPEC byte 4, bit 3 -->
+      <Item ref="021"/>  <!-- FSPEC byte 4, bit 4 -->
+      <Item ref="022"/>  <!-- FSPEC byte 4, bit 5 -->
+      <Item ref="023"/>  <!-- FSPEC byte 4, bit 6 -->
+      <Item ref="004"/>  <!-- FSPEC byte 4, bit 7 -->
+      <Item ref="031"/>  <!-- FSPEC byte 5, bit 1 -->
+      <Item ref="032"/>  <!-- FSPEC byte 5, bit 2 -->
+      <Item ref="033"/>  <!-- FSPEC byte 5, bit 3 -->
+      <Item ref="034"/>  <!-- FSPEC byte 5, bit 4 -->
+      <Item ref="035"/>  <!-- FSPEC byte 5, bit 5 -->
+      <Item ref="012"/>  <!-- FSPEC byte 5, bit 6 -->
+      <Item ref="013"/>  <!-- FSPEC byte 5, bit 7 -->
+    </Variation>
+  </UAPs>
+
+</Category>
