@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ASTERIX Category 020 – Multilateration Target Reports
+     Edition 1.11  |  2025-07-02
+
+     Codec notes:
+       - I020: Extended 3 octets
+           Octet 1: SSR+MS+HF+VDL4+UAT+DME+OT (7 bits)
+           Octet 2: RAB+SPI+CHN+GBS+CRT+SIM+TST (7 bits)
+           Octet 3: CF(2)+spare(5) (7 bits)
+       - I030: Repetitive FX, 7-bit warning codes
+       - I170: Extended 2 octets
+           Octet 1: CNF+TRE+CST+CDM(2)+MAH+STH (7 bits)
+           Octet 2: GHO+spare(6) (7 bits)
+       - I250: RepetitiveGroup count 1B, group 64 bits (BDSDATA(56)+BDS1(4)+BDS2(4))
+       - I400: RepetitiveGroup count 1B, group 8 bits (BIT1..BIT8)
+       - I500: Compound (DOP/SDP/SDH)
+       - UAP: 28 slots (4 FSPEC bytes):
+           B1: 010 020 140 041 042 161 170
+           B2: 070 202 090 100 220 245 110
+           B3: 105 210 300 310 500 400 250
+           B4: 230 260 030 055 050 RE  SP
+-->
+<Category cat="20" name="Multilateration Target Reports" edition="1.11" date="2025-07-02">
+
+  <DataItems>
+
+    <!-- I020/010 – Data Source Identifier (Fixed, 2 bytes) -->
+    <DataItem id="010" name="Data Source Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/020 – Target Report Descriptor (Extended, 3 octets) -->
+    <DataItem id="020" name="Target Report Descriptor">
+      <Extended>
+        <Octet>
+          <Element name="SSR" bits="1" encoding="table">
+            <Entry value="0" meaning="Non-Mode S 1090MHz multilateration"/>
+            <Entry value="1" meaning="No Non-Mode S 1090MHz multilat"/>
+          </Element>
+          <Element name="MS" bits="1" encoding="table">
+            <Entry value="0" meaning="Mode-S 1090 MHz multilateration"/>
+            <Entry value="1" meaning="No Mode-S 1090 MHz multilateration"/>
+          </Element>
+          <Element name="HF" bits="1" encoding="table">
+            <Entry value="0" meaning="HF multilateration"/>
+            <Entry value="1" meaning="No HF multilateration"/>
+          </Element>
+          <Element name="VDL4" bits="1" encoding="table">
+            <Entry value="0" meaning="VDL Mode 4 multilateration"/>
+            <Entry value="1" meaning="No VDL Mode 4 multilateration"/>
+          </Element>
+          <Element name="UAT" bits="1" encoding="table">
+            <Entry value="0" meaning="UAT multilateration"/>
+            <Entry value="1" meaning="No UAT multilateration"/>
+          </Element>
+          <Element name="DME" bits="1" encoding="table">
+            <Entry value="0" meaning="DME/TACAN multilateration"/>
+            <Entry value="1" meaning="No DME/TACAN multilateration"/>
+          </Element>
+          <Element name="OT" bits="1" encoding="table">
+            <Entry value="0" meaning="Other Technology Multilateration"/>
+            <Entry value="1" meaning="No Other Technology Multilateration"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="RAB" bits="1" encoding="table">
+            <Entry value="0" meaning="Report from target transponder"/>
+            <Entry value="1" meaning="Report from field monitor (element transponder)"/>
+          </Element>
+          <Element name="SPI" bits="1" encoding="table">
+            <Entry value="0" meaning="Absence of SPI"/>
+            <Entry value="1" meaning="Special Position Identification"/>
+          </Element>
+          <Element name="CHN" bits="1" encoding="table">
+            <Entry value="0" meaning="Chain 1"/>
+            <Entry value="1" meaning="Chain 2"/>
+          </Element>
+          <Element name="GBS" bits="1" encoding="table">
+            <Entry value="0" meaning="Transponder Ground bit not set"/>
+            <Entry value="1" meaning="Transponder Ground bit set"/>
+          </Element>
+          <Element name="CRT" bits="1" encoding="table">
+            <Entry value="0" meaning="No Corrupted reply in multilateration"/>
+            <Entry value="1" meaning="Corrupted replies in multilateration"/>
+          </Element>
+          <Element name="SIM" bits="1" encoding="table">
+            <Entry value="0" meaning="Actual target report"/>
+            <Entry value="1" meaning="Simulated target report"/>
+          </Element>
+          <Element name="TST" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Test Target"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="CF" bits="2" encoding="table">
+            <Entry value="0" meaning="Target with 24-bit ICAO address"/>
+            <Entry value="1" meaning="Target with a non-ICAO 24-bit address"/>
+            <Entry value="2" meaning="Non-ADS-B Message"/>
+            <Entry value="3" meaning="Information not available"/>
+          </Element>
+          <Spare bits="5"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- I020/030 – Warning/Error Conditions (Repetitive FX, 7-bit codes) -->
+    <DataItem id="030" name="Warning/Error Conditions">
+      <Repetitive type="fx">
+        <Element name="WE" bits="7" encoding="table">
+          <Entry value="0"  meaning="Not defined; never used"/>
+          <Entry value="1"  meaning="Multipath Reply (Reflection)"/>
+          <Entry value="3"  meaning="Split plot"/>
+          <Entry value="10" meaning="Phantom SSR plot"/>
+          <Entry value="11" meaning="Non-Matching Mode-3/A Code"/>
+          <Entry value="12" meaning="Mode C code / Mode S altitude code abnormal value compared to the track"/>
+          <Entry value="15" meaning="Transponder anomaly detected"/>
+          <Entry value="16" meaning="Duplicated or Illegal Mode S Aircraft Address"/>
+          <Entry value="17" meaning="Mode S error correction applied"/>
+          <Entry value="18" meaning="Undecodable Mode C code / Mode S altitude code"/>
+        </Element>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I020/041 – Position In WGS-84 Coordinates (Fixed, 8 bytes) -->
+    <DataItem id="041" name="Position In WGS-84 Coordinates">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="0.000005364418029785156" unit="deg"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="0.000005364418029785156" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/042 – Position in Cartesian Coordinates (Fixed, 6 bytes)
+         X(24s, 0.5 m) + Y(24s, 0.5 m) -->
+    <DataItem id="042" name="Position in Cartesian Coordinates">
+      <Fixed>
+        <Element name="X" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+        <Element name="Y" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/050 – Mode-2 Code (Fixed, 2 bytes)
+         V(1)+G(1)+L(1)+spare(1)+MODE2(12 string_octal) -->
+    <DataItem id="050" name="Mode-2 Code in Octal Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-2 code derived from the reply of the transponder"/>
+          <Entry value="1" meaning="Smoothed Mode-2 code as provided by a local tracker"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MODE2" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/055 – Mode-1 Code (Fixed, 1 byte)
+         V(1)+G(1)+L(1)+MODE1(5 raw) -->
+    <DataItem id="055" name="Mode-1 Code in Octal Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-1 code derived from the reply of the transponder"/>
+          <Entry value="1" meaning="Smoothed Mode-1 code as provided by a local tracker"/>
+        </Element>
+        <Element name="MODE1" bits="5" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/070 – Mode-3/A Code (Fixed, 2 bytes)
+         V(1)+G(1)+L(1)+spare(1)+MODE3A(12 string_octal) -->
+    <DataItem id="070" name="Mode-3/A Code in Octal Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-3/A code derived from the reply of the transponder"/>
+          <Entry value="1" meaning="Mode-3/A code not extracted during the last update period"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MODE3A" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/090 – Flight Level (Fixed, 2 bytes)
+         V(1)+G(1)+FL(14s, 0.25 FL) -->
+    <DataItem id="090" name="Flight Level in Binary Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="FL" bits="14" encoding="signed_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/100 – Mode C Code (Fixed, 4 bytes)
+         V(1)+G(1)+spare(2)+MODEC(12)+spare(4)+12 quality bits -->
+    <DataItem id="100" name="Mode C Code">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Spare bits="2"/>
+        <Element name="MODEC" bits="12" encoding="raw"/>
+        <Spare bits="4"/>
+        <Element name="QC1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C1"/>
+          <Entry value="1" meaning="Low quality pulse C1"/>
+        </Element>
+        <Element name="QA1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A1"/>
+          <Entry value="1" meaning="Low quality pulse A1"/>
+        </Element>
+        <Element name="QC2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C2"/>
+          <Entry value="1" meaning="Low quality pulse C2"/>
+        </Element>
+        <Element name="QA2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A2"/>
+          <Entry value="1" meaning="Low quality pulse A2"/>
+        </Element>
+        <Element name="QC4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse C4"/>
+          <Entry value="1" meaning="Low quality pulse C4"/>
+        </Element>
+        <Element name="QA4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse A4"/>
+          <Entry value="1" meaning="Low quality pulse A4"/>
+        </Element>
+        <Element name="QB1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B1"/>
+          <Entry value="1" meaning="Low quality pulse B1"/>
+        </Element>
+        <Element name="QD1" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D1"/>
+          <Entry value="1" meaning="Low quality pulse D1"/>
+        </Element>
+        <Element name="QB2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B2"/>
+          <Entry value="1" meaning="Low quality pulse B2"/>
+        </Element>
+        <Element name="QD2" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D2"/>
+          <Entry value="1" meaning="Low quality pulse D2"/>
+        </Element>
+        <Element name="QB4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse B4"/>
+          <Entry value="1" meaning="Low quality pulse B4"/>
+        </Element>
+        <Element name="QD4" bits="1" encoding="table">
+          <Entry value="0" meaning="High quality pulse D4"/>
+          <Entry value="1" meaning="Low quality pulse D4"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/105 – Geometric Height WGS-84 (Fixed, 2 bytes)
+         element 16s, 6.25 ft/LSB (25/4) -->
+    <DataItem id="105" name="Geometric Height (WGS-84)">
+      <Fixed>
+        <Element name="HGT" bits="16" encoding="signed_quantity" scale="6.25" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/110 – Measured Height Local Cartesian (Fixed, 2 bytes)
+         element 16s, 6.25 ft/LSB (25/4) -->
+    <DataItem id="110" name="Measured Height (Local Cartesian Coordinates)">
+      <Fixed>
+        <Element name="HGT" bits="16" encoding="signed_quantity" scale="6.25" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/140 – Time of Day (Fixed, 3 bytes) -->
+    <DataItem id="140" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/161 – Track Number (Fixed, 2 bytes)
+         spare(4)+TRN(12) -->
+    <DataItem id="161" name="Track Number">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="TRN" bits="12" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/170 – Track Status (Extended, 2 octets)
+         Octet 1: CNF+TRE+CST+CDM(2)+MAH+STH
+         Octet 2: GHO+spare(6) -->
+    <DataItem id="170" name="Track Status">
+      <Extended>
+        <Octet>
+          <Element name="CNF" bits="1" encoding="table">
+            <Entry value="0" meaning="Confirmed track"/>
+            <Entry value="1" meaning="Track in initiation phase"/>
+          </Element>
+          <Element name="TRE" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Last report for a track"/>
+          </Element>
+          <Element name="CST" bits="1" encoding="table">
+            <Entry value="0" meaning="Not Coasted"/>
+            <Entry value="1" meaning="Coasted"/>
+          </Element>
+          <Element name="CDM" bits="2" encoding="table">
+            <Entry value="0" meaning="Maintaining"/>
+            <Entry value="1" meaning="Climbing"/>
+            <Entry value="2" meaning="Descending"/>
+            <Entry value="3" meaning="Invalid"/>
+          </Element>
+          <Element name="MAH" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Horizontal manoeuvre"/>
+          </Element>
+          <Element name="STH" bits="1" encoding="table">
+            <Entry value="0" meaning="Measured position"/>
+            <Entry value="1" meaning="Smoothed position"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="GHO" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Ghost track"/>
+          </Element>
+          <Spare bits="6"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- I020/202 – Calculated Track Velocity (Fixed, 4 bytes)
+         VX(16s, 0.25 m/s) + VY(16s, 0.25 m/s) -->
+    <DataItem id="202" name="Calculated Track Velocity in Cartesian Coordinates">
+      <Fixed>
+        <Element name="VX" bits="16" encoding="signed_quantity" scale="0.25" unit="m/s"/>
+        <Element name="VY" bits="16" encoding="signed_quantity" scale="0.25" unit="m/s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/210 – Calculated Acceleration (Fixed, 2 bytes)
+         AX(8s, 0.25 m/s²) + AY(8s, 0.25 m/s²) -->
+    <DataItem id="210" name="Calculated Acceleration">
+      <Fixed>
+        <Element name="AX" bits="8" encoding="signed_quantity" scale="0.25" unit="m/s2"/>
+        <Element name="AY" bits="8" encoding="signed_quantity" scale="0.25" unit="m/s2"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/220 – Target Address (Fixed, 3 bytes) -->
+    <DataItem id="220" name="Target Address">
+      <Fixed>
+        <Element name="TGT" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/230 – Communications/ACAS Capability and Flight Status (Fixed, 2 bytes)
+         COM(3)+STAT(3)+CASEVN(2)+MSSC(1)+ARC(1)+AIC(1)+B1A(1)+B1B(4) -->
+    <DataItem id="230" name="Communications/ACAS Capability and Flight Status">
+      <Fixed>
+        <Element name="COM" bits="3" encoding="table">
+          <Entry value="0" meaning="No communications capability (surveillance only)"/>
+          <Entry value="1" meaning="Comm. A and Comm. B capability"/>
+          <Entry value="2" meaning="Comm. A, Comm. B and Uplink ELM"/>
+          <Entry value="3" meaning="Comm. A, Comm. B, Uplink ELM and Downlink ELM"/>
+          <Entry value="4" meaning="Level 5 Transponder capability"/>
+        </Element>
+        <Element name="STAT" bits="3" encoding="table">
+          <Entry value="0" meaning="No alert, no SPI, aircraft airborne"/>
+          <Entry value="1" meaning="No alert, no SPI, aircraft on ground"/>
+          <Entry value="2" meaning="Alert, no SPI, aircraft airborne"/>
+          <Entry value="3" meaning="Alert, no SPI, aircraft on ground"/>
+          <Entry value="4" meaning="Alert, SPI, aircraft airborne or on ground"/>
+          <Entry value="5" meaning="No alert, SPI, aircraft airborne or on ground"/>
+        </Element>
+        <Element name="CASEVN" bits="2" encoding="table">
+          <Entry value="0" meaning="Non-extended version"/>
+          <Entry value="1" meaning="ACAS Xa Version 1"/>
+          <Entry value="2" meaning="ACAS Xu Version 1"/>
+          <Entry value="3" meaning="Reserved for future use"/>
+        </Element>
+        <Element name="MSSC" bits="1" encoding="table">
+          <Entry value="0" meaning="No"/>
+          <Entry value="1" meaning="Yes"/>
+        </Element>
+        <Element name="ARC" bits="1" encoding="table">
+          <Entry value="0" meaning="100 ft resolution"/>
+          <Entry value="1" meaning="25 ft resolution"/>
+        </Element>
+        <Element name="AIC" bits="1" encoding="table">
+          <Entry value="0" meaning="No"/>
+          <Entry value="1" meaning="Yes"/>
+        </Element>
+        <Element name="B1A" bits="1" encoding="raw"/>
+        <Element name="B1B" bits="4" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/245 – Target Identification (Fixed, 7 bytes)
+         STI(2)+spare(6)+CHR(48 raw) -->
+    <DataItem id="245" name="Target Identification">
+      <Fixed>
+        <Element name="STI" bits="2" encoding="table">
+          <Entry value="0" meaning="Callsign or registration not downlinked from transponder"/>
+          <Entry value="1" meaning="Registration downlinked from transponder"/>
+          <Entry value="2" meaning="Callsign downlinked from transponder"/>
+          <Entry value="3" meaning="Not defined"/>
+        </Element>
+        <Spare bits="6"/>
+        <Element name="CHR" bits="48" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/250 – BDS Register Data (RepetitiveGroup, count 1B, 8B/entry)
+         BDSDATA(56)+BDS1(4)+BDS2(4) -->
+    <DataItem id="250" name="BDS Register Data">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="BDSDATA" bits="56" encoding="raw"/>
+          <Element name="BDS1"    bits="4"  encoding="raw"/>
+          <Element name="BDS2"    bits="4"  encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I020/260 – ACAS Resolution Advisory Report (Fixed, 7 bytes) -->
+    <DataItem id="260" name="ACAS Resolution Advisory Report">
+      <Fixed>
+        <Element name="RA" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/300 – Vehicle Fleet Identification (Fixed, 1 byte) -->
+    <DataItem id="300" name="Vehicle Fleet Identification">
+      <Fixed>
+        <Element name="VFI" bits="8" encoding="table">
+          <Entry value="0"  meaning="Unknown"/>
+          <Entry value="1"  meaning="ATC equipment maintenance"/>
+          <Entry value="2"  meaning="Airport maintenance"/>
+          <Entry value="3"  meaning="Fire"/>
+          <Entry value="4"  meaning="Bird scarer"/>
+          <Entry value="5"  meaning="Snow plough"/>
+          <Entry value="6"  meaning="Runway sweeper"/>
+          <Entry value="7"  meaning="Emergency"/>
+          <Entry value="8"  meaning="Police"/>
+          <Entry value="9"  meaning="Bus"/>
+          <Entry value="10" meaning="Tug (push/tow)"/>
+          <Entry value="11" meaning="Grass cutter"/>
+          <Entry value="12" meaning="Fuel"/>
+          <Entry value="13" meaning="Baggage"/>
+          <Entry value="14" meaning="Catering"/>
+          <Entry value="15" meaning="Aircraft maintenance"/>
+          <Entry value="16" meaning="Flyco (follow me)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/310 – Pre-programmed Message (Fixed, 1 byte)
+         TRB(1)+MSG(7) -->
+    <DataItem id="310" name="Pre-programmed Message">
+      <Fixed>
+        <Element name="TRB" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="In Trouble"/>
+        </Element>
+        <Element name="MSG" bits="7" encoding="table">
+          <Entry value="1" meaning="Towing aircraft"/>
+          <Entry value="2" meaning="FOLLOW-ME operation"/>
+          <Entry value="3" meaning="Runway check"/>
+          <Entry value="4" meaning="Emergency operation (fire, medical...)"/>
+          <Entry value="5" meaning="Work in progress (maintenance, birds scarer, sweepers...)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020/400 – Contributing Devices (RepetitiveGroup, count 1B, 1B/entry)
+         BIT1..BIT8 each 1 bit -->
+    <DataItem id="400" name="Contributing Devices">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="BIT1" bits="1" encoding="table">
+            <Entry value="0" meaning="TU1/RU1 has NOT contributed"/>
+            <Entry value="1" meaning="TU1/RU1 has contributed"/>
+          </Element>
+          <Element name="BIT2" bits="1" encoding="table">
+            <Entry value="0" meaning="TU2/RU2 has NOT contributed"/>
+            <Entry value="1" meaning="TU2/RU2 has contributed"/>
+          </Element>
+          <Element name="BIT3" bits="1" encoding="table">
+            <Entry value="0" meaning="TU3/RU3 has NOT contributed"/>
+            <Entry value="1" meaning="TU3/RU3 has contributed"/>
+          </Element>
+          <Element name="BIT4" bits="1" encoding="table">
+            <Entry value="0" meaning="TU4/RU4 has NOT contributed"/>
+            <Entry value="1" meaning="TU4/RU4 has contributed"/>
+          </Element>
+          <Element name="BIT5" bits="1" encoding="table">
+            <Entry value="0" meaning="TU5/RU5 has NOT contributed"/>
+            <Entry value="1" meaning="TU5/RU5 has contributed"/>
+          </Element>
+          <Element name="BIT6" bits="1" encoding="table">
+            <Entry value="0" meaning="TU6/RU6 has NOT contributed"/>
+            <Entry value="1" meaning="TU6/RU6 has contributed"/>
+          </Element>
+          <Element name="BIT7" bits="1" encoding="table">
+            <Entry value="0" meaning="TU7/RU7 has NOT contributed"/>
+            <Entry value="1" meaning="TU7/RU7 has contributed"/>
+          </Element>
+          <Element name="BIT8" bits="1" encoding="table">
+            <Entry value="0" meaning="TU8/RU8 has NOT contributed"/>
+            <Entry value="1" meaning="TU8/RU8 has contributed"/>
+          </Element>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I020/500 – Position Accuracy (Compound)
+         DOP (6B: X(16u)+Y(16u)+XY(16u)) + SDP (6B: X+Y+XY) + SDH (2B) -->
+    <DataItem id="500" name="Position Accuracy">
+      <Compound>
+        <SubItem name="DOP">
+          <Fixed>
+            <Element name="X"  bits="16" encoding="unsigned_quantity" scale="0.25" unit=""/>
+            <Element name="Y"  bits="16" encoding="unsigned_quantity" scale="0.25" unit=""/>
+            <Element name="XY" bits="16" encoding="unsigned_quantity" scale="0.25" unit=""/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="SDP">
+          <Fixed>
+            <Element name="X"  bits="16" encoding="unsigned_quantity" scale="0.25" unit="m"/>
+            <Element name="Y"  bits="16" encoding="unsigned_quantity" scale="0.25" unit="m"/>
+            <Element name="XY" bits="16" encoding="unsigned_quantity" scale="0.25" unit=""/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="SDH">
+          <Fixed>
+            <Element name="SDH" bits="16" encoding="unsigned_quantity" scale="0.5" unit="m"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- I020/RE – Reserved Expansion Field -->
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <!-- I020/SP – Special Purpose Field -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- UAP – 28 slots across 4 FSPEC bytes -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>  <!-- B1 bit 7 -->
+      <Item ref="020"/>  <!-- B1 bit 6 -->
+      <Item ref="140"/>  <!-- B1 bit 5 -->
+      <Item ref="041"/>  <!-- B1 bit 4 -->
+      <Item ref="042"/>  <!-- B1 bit 3 -->
+      <Item ref="161"/>  <!-- B1 bit 2 -->
+      <Item ref="170"/>  <!-- B1 bit 1 -->
+      <Item ref="070"/>  <!-- B2 bit 7 -->
+      <Item ref="202"/>  <!-- B2 bit 6 -->
+      <Item ref="090"/>  <!-- B2 bit 5 -->
+      <Item ref="100"/>  <!-- B2 bit 4 -->
+      <Item ref="220"/>  <!-- B2 bit 3 -->
+      <Item ref="245"/>  <!-- B2 bit 2 -->
+      <Item ref="110"/>  <!-- B2 bit 1 -->
+      <Item ref="105"/>  <!-- B3 bit 7 -->
+      <Item ref="210"/>  <!-- B3 bit 6 -->
+      <Item ref="300"/>  <!-- B3 bit 5 -->
+      <Item ref="310"/>  <!-- B3 bit 4 -->
+      <Item ref="500"/>  <!-- B3 bit 3 -->
+      <Item ref="400"/>  <!-- B3 bit 2 -->
+      <Item ref="250"/>  <!-- B3 bit 1 -->
+      <Item ref="230"/>  <!-- B4 bit 7 -->
+      <Item ref="260"/>  <!-- B4 bit 6 -->
+      <Item ref="030"/>  <!-- B4 bit 5 -->
+      <Item ref="055"/>  <!-- B4 bit 4 -->
+      <Item ref="050"/>  <!-- B4 bit 3 -->
+      <Item ref="RE"/>   <!-- B4 bit 2 -->
+      <Item ref="SP"/>   <!-- B4 bit 1 -->
+    </Variation>
+  </UAPs>
+
+</Category>

@@ -111,4 +111,7 @@ if(ASTERIX_BUILD_TESTS)
 
     add_executable(test_cat18 tests/test_cat18.cpp)
     target_link_libraries(test_cat18 PRIVATE ASTERIXCodec)
+
+    add_executable(test_cat20 tests/test_cat20.cpp)
+    target_link_libraries(test_cat20 PRIVATE ASTERIXCodec)
 endif()
