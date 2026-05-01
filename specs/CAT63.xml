@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT63.xml – ASTERIX Category 063 "Sensor Status Reports"
+  Edition 1.7, 2025-06-05.
+-->
+<Category cat="63"
+          name="Sensor Status Reports"
+          edition="1.7"
+          date="2025-06-05">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/015 – Service Identification  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="015" name="Service Identification">
+      <Fixed>
+        <Element name="SID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/030 – Time of Message  (Fixed, 3 bytes)
+         unsigned, LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="Time of Message">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/050 – Sensor Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="050" name="Sensor Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/060 – Sensor Configuration and Status  (Extended, up to 3 octets)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="Sensor Configuration and Status">
+      <Extended>
+        <!-- Octet 1 (7 bits): CON(2)+PSR(1)+SSR(1)+MDS(1)+ADS(1)+MLT(1) -->
+        <Octet>
+          <Element name="CON" bits="2" encoding="table">
+            <Entry value="0" meaning="Operational"/>
+            <Entry value="1" meaning="Degraded"/>
+            <Entry value="2" meaning="Initialization"/>
+            <Entry value="3" meaning="Not currently connected"/>
+          </Element>
+          <Element name="PSR" bits="1" encoding="table">
+            <Entry value="0" meaning="PSR GO"/>
+            <Entry value="1" meaning="PSR NOGO"/>
+          </Element>
+          <Element name="SSR" bits="1" encoding="table">
+            <Entry value="0" meaning="SSR GO"/>
+            <Entry value="1" meaning="SSR NOGO"/>
+          </Element>
+          <Element name="MDS" bits="1" encoding="table">
+            <Entry value="0" meaning="MDS GO"/>
+            <Entry value="1" meaning="MDS NOGO"/>
+          </Element>
+          <Element name="ADS" bits="1" encoding="table">
+            <Entry value="0" meaning="ADS GO"/>
+            <Entry value="1" meaning="ADS NOGO"/>
+          </Element>
+          <Element name="MLT" bits="1" encoding="table">
+            <Entry value="0" meaning="MLT GO"/>
+            <Entry value="1" meaning="MLT NOGO"/>
+          </Element>
+        </Octet>
+        <!-- Octet 2 (7 bits): OPS(1)+ODP(1)+OXT(1)+MSC(1)+TSV(1)+NPW(1)+spare(1) -->
+        <Octet>
+          <Element name="OPS" bits="1" encoding="table">
+            <Entry value="0" meaning="System is released for operational use"/>
+            <Entry value="1" meaning="Operational use of System is inhibited"/>
+          </Element>
+          <Element name="ODP" bits="1" encoding="table">
+            <Entry value="0" meaning="Default, no overload"/>
+            <Entry value="1" meaning="Overload in DP"/>
+          </Element>
+          <Element name="OXT" bits="1" encoding="table">
+            <Entry value="0" meaning="Default, no overload"/>
+            <Entry value="1" meaning="Overload in transmission subsystem"/>
+          </Element>
+          <Element name="MSC" bits="1" encoding="table">
+            <Entry value="0" meaning="Monitoring system connected"/>
+            <Entry value="1" meaning="Monitoring system disconnected"/>
+          </Element>
+          <Element name="TSV" bits="1" encoding="table">
+            <Entry value="0" meaning="Valid"/>
+            <Entry value="1" meaning="Invalid"/>
+          </Element>
+          <Element name="NPW" bits="1" encoding="table">
+            <Entry value="0" meaning="Default (no meaning)"/>
+            <Entry value="1" meaning="No plots being received"/>
+          </Element>
+          <Spare bits="1"/>
+        </Octet>
+        <!-- Octet 3 (7 bits): TTF_EP(1)+TTF_VAL(1)+SPO_EP(1)+SPO_VAL(1)+spare(3) -->
+        <Octet>
+          <Element name="TTF_EP" bits="1" encoding="table">
+            <Entry value="0" meaning="Element not populated"/>
+            <Entry value="1" meaning="Element populated"/>
+          </Element>
+          <Element name="TTF_VAL" bits="1" encoding="table">
+            <Entry value="0" meaning="Test Target Operative"/>
+            <Entry value="1" meaning="Test Target Failure"/>
+          </Element>
+          <Element name="SPO_EP" bits="1" encoding="table">
+            <Entry value="0" meaning="Element not populated"/>
+            <Entry value="1" meaning="Element populated"/>
+          </Element>
+          <Element name="SPO_VAL" bits="1" encoding="table">
+            <Entry value="0" meaning="No spoofing detected"/>
+            <Entry value="1" meaning="Potential spoofing attack"/>
+          </Element>
+          <Spare bits="3"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/070 – Time Stamping Bias  (Fixed, 2 bytes)
+         signed, LSB = 1 ms
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="070" name="Time Stamping Bias">
+      <Fixed>
+        <Element name="TSB" bits="16" encoding="signed_quantity"
+                 scale="1.0" unit="ms"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/080 – SSR / Mode S Range Gain and Bias  (Fixed, 4 bytes)
+         SRG: signed, LSB = 1/100000
+         SRB: signed, LSB = 1/2^7 NM
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="080" name="SSR / Mode S Range Gain and Bias">
+      <Fixed>
+        <Element name="SRG" bits="16" encoding="signed_quantity"
+                 scale="0.00001" unit=""/>
+        <Element name="SRB" bits="16" encoding="signed_quantity"
+                 scale="0.0078125" unit="NM"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/081 – SSR / Mode S Azimuth Bias  (Fixed, 2 bytes)
+         signed, LSB = 360/2^16 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="081" name="SSR / Mode S Azimuth Bias">
+      <Fixed>
+        <Element name="SAB" bits="16" encoding="signed_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/090 – PSR Range Gain and Bias  (Fixed, 4 bytes)
+         PRG: signed, LSB = 1/100000
+         PRB: signed, LSB = 1/2^7 NM
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="PSR Range Gain and Bias">
+      <Fixed>
+        <Element name="PRG" bits="16" encoding="signed_quantity"
+                 scale="0.00001" unit=""/>
+        <Element name="PRB" bits="16" encoding="signed_quantity"
+                 scale="0.0078125" unit="NM"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/091 – PSR Azimuth Bias  (Fixed, 2 bytes)
+         signed, LSB = 360/2^16 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="091" name="PSR Azimuth Bias">
+      <Fixed>
+        <Element name="PAB" bits="16" encoding="signed_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I063/092 – PSR Elevation Bias  (Fixed, 2 bytes)
+         signed, LSB = 360/2^16 °
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="092" name="PSR Elevation Bias">
+      <Fixed>
+        <Element name="PEB" bits="16" encoding="signed_quantity"
+                 scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RE – Reserved Expansion Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         SP – Special Purpose Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 14 slots across 2 FSPEC bytes
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+
+    <Variation name="default">
+      <!-- FSPEC byte 1: slots 1–7 -->
+      <Item ref="010"/>  <!-- slot  1 -->
+      <Item ref="015"/>  <!-- slot  2 -->
+      <Item ref="030"/>  <!-- slot  3 -->
+      <Item ref="050"/>  <!-- slot  4 -->
+      <Item ref="060"/>  <!-- slot  5 -->
+      <Item ref="070"/>  <!-- slot  6 -->
+      <Item ref="080"/>  <!-- slot  7 -->
+      <!-- FSPEC byte 2: slots 8–14 -->
+      <Item ref="081"/>  <!-- slot  8 -->
+      <Item ref="090"/>  <!-- slot  9 -->
+      <Item ref="091"/>  <!-- slot 10 -->
+      <Item ref="092"/>  <!-- slot 11 -->
+      <Item ref="-"/>    <!-- slot 12 (unused) -->
+      <Item ref="RE"/>   <!-- slot 13 -->
+      <Item ref="SP"/>   <!-- slot 14 -->
+    </Variation>
+
+  </UAPs>
+
+</Category>
