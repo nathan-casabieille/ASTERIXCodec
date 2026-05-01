@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="150" name="MADAP Plan Server - Flight Data Message" edition="3.0" date="2004-08-20">
+
+  <DataItems>
+
+    <!-- I010: Destination ID (2 bytes) -->
+    <DataItem id="010" name="Destination ID" presence="optional">
+      <Fixed>
+        <Element name="CEN" bits="8" encoding="raw"/>
+        <Element name="POS" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I020: Source ID (2 bytes) -->
+    <DataItem id="020" name="Source ID" presence="optional">
+      <Fixed>
+        <Element name="CEN" bits="8" encoding="raw"/>
+        <Element name="POS" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I030: Message Type (1 byte) -->
+    <DataItem id="030" name="Message Type" presence="mandatory">
+      <Fixed>
+        <Element name="MT" bits="8" encoding="table">
+          <Entry value="1"   meaning="Flight plan creation"/>
+          <Entry value="2"   meaning="Flight plan modification"/>
+          <Entry value="3"   meaning="Flight plan repetition"/>
+          <Entry value="4"   meaning="Manual flight plan deletion"/>
+          <Entry value="5"   meaning="Automatic flight plan deletion"/>
+          <Entry value="6"   meaning="Flight is beyond extraction area boundary"/>
+          <Entry value="251" meaning="Short term conflict alert"/>
+          <Entry value="252" meaning="Correlations"/>
+          <Entry value="253" meaning="Decorrelations"/>
+          <Entry value="254" meaning="Start of background loop"/>
+          <Entry value="255" meaning="End of background loop"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- I040: Plan Reference Number (2 bytes, 16-bit raw) -->
+    <DataItem id="040" name="Plan Reference Number" presence="optional">
+      <Fixed>
+        <Element name="PRN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I050: Callsign (7 bytes, 56-bit ASCII) -->
+    <DataItem id="050" name="Callsign" presence="optional">
+      <Fixed>
+        <Element name="CS" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I060: Present Mode 3A (4 bytes, 32-bit ASCII) -->
+    <DataItem id="060" name="Present Mode 3A" presence="optional">
+      <Fixed>
+        <Element name="M3A" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I070: Next Mode 3A (4 bytes, 32-bit ASCII) -->
+    <DataItem id="070" name="Next Mode 3A" presence="optional">
+      <Fixed>
+        <Element name="NM3A" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I080: Departure Aerodrome (4 bytes, 32-bit ASCII) -->
+    <DataItem id="080" name="Departure Aerodrome" presence="optional">
+      <Fixed>
+        <Element name="DEP" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I090: Destination Aerodrome (4 bytes, 32-bit ASCII) -->
+    <DataItem id="090" name="Destination Aerodrome" presence="optional">
+      <Fixed>
+        <Element name="DEST" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I100: Type Flags (1 byte) -->
+    <!-- GAT(1)+OAT(1)+spare(3)+CPL(1)+SPN(1)+spare(1) = 8 bits -->
+    <DataItem id="100" name="Type Flags" presence="optional">
+      <Fixed>
+        <Element name="GAT" bits="1" encoding="raw"/>
+        <Element name="OAT" bits="1" encoding="raw"/>
+        <Spare bits="3"/>
+        <Element name="CPL" bits="1" encoding="raw"/>
+        <Element name="SPN" bits="1" encoding="raw"/>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I110: Status Flags (1 byte) -->
+    <!-- spare(1)+HLD(1)+RVQ(1)+RVC(1)+RVX(1)+spare(3) = 8 bits -->
+    <DataItem id="110" name="Status Flags" presence="optional">
+      <Fixed>
+        <Spare bits="1"/>
+        <Element name="HLD" bits="1" encoding="raw"/>
+        <Element name="RVQ" bits="1" encoding="raw"/>
+        <Element name="RVC" bits="1" encoding="raw"/>
+        <Element name="RVX" bits="1" encoding="raw"/>
+        <Spare bits="3"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I120: Aircraft Type (7 bytes) -->
+    <!-- NOA(16,ASCII)+TOA(32,ASCII)+WT(8,ASCII) = 56 bits -->
+    <DataItem id="120" name="Aircraft Type" presence="optional">
+      <Fixed>
+        <Element name="NOA" bits="16" encoding="raw"/>
+        <Element name="TOA" bits="32" encoding="raw"/>
+        <Element name="WT"  bits="8"  encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I130: Cleared Flight Level (3 bytes, 24-bit ASCII) -->
+    <DataItem id="130" name="Cleared Flight Level" presence="optional">
+      <Fixed>
+        <Element name="CFL" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I140: Route Points, Description (count-prefixed, 96-bit entries) -->
+    <!-- T(8,table)+E(88,ASCII) = 96 bits; E exceeds uint64 — spec load only -->
+    <DataItem id="140" name="Route Points, Description" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="96">
+          <Element name="T" bits="8"  encoding="table">
+            <Entry value="1"  meaning="P, point"/>
+            <Entry value="2"  meaning="B, point with bearing and distance"/>
+            <Entry value="3"  meaning="LS, latitude/longitude short format"/>
+            <Entry value="4"  meaning="LL, latitude/longitude long format"/>
+            <Entry value="5"  meaning="X, x/y co-ordinate position"/>
+            <Entry value="6"  meaning="G, georeference position"/>
+            <Entry value="14" meaning="E, airport"/>
+          </Element>
+          <Element name="E"  bits="88" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I150: Route Points, Coordinates (count-prefixed, 32-bit entries) -->
+    <!-- X(16)+Y(16) = 32 bits; scale = 1/64 NM/LSB -->
+    <DataItem id="150" name="Route Points, Coordinates" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="32">
+          <Element name="X" bits="16" encoding="signed_quantity" scale="0.015625" unit="NM"/>
+          <Element name="Y" bits="16" encoding="signed_quantity" scale="0.015625" unit="NM"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I151: Route Points, Geographic Position (count-prefixed, 48-bit entries) -->
+    <!-- LAT(24)+LON(24) = 48 bits; scale = 180/2^23 deg/LSB -->
+    <DataItem id="151" name="Route Points, Geographic Position" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="48">
+          <Element name="LAT" bits="24" encoding="signed_quantity" scale="0.000021457672119140625" unit="deg"/>
+          <Element name="LON" bits="24" encoding="signed_quantity" scale="0.000021457672119140625" unit="deg"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I160: Route Points, Time (count-prefixed, 32-bit entries) -->
+    <!-- HH(16,ASCII)+MM(16,ASCII) = 32 bits -->
+    <DataItem id="160" name="Route Points, Time" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="32">
+          <Element name="HH" bits="16" encoding="raw"/>
+          <Element name="MM" bits="16" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I170: Route Points, Flight Level (count-prefixed, 24-bit ASCII entries) -->
+    <DataItem id="170" name="Route Points, Flight Level" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="24">
+          <Element name="FL" bits="24" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I171: Route Points, Requested Flight Level (count-prefixed, 24-bit ASCII entries) -->
+    <DataItem id="171" name="Route Points, Requested Flight Level" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="24">
+          <Element name="RFL" bits="24" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I180: Route Points, Speed (count-prefixed, 32-bit ASCII entries) -->
+    <DataItem id="180" name="Route Points, Speed" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="32">
+          <Element name="TAS" bits="32" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I190: Controller ID (2 bytes, 16-bit ASCII) -->
+    <DataItem id="190" name="Controller ID" presence="optional">
+      <Fixed>
+        <Element name="CID" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I200: Field 18 free text (count-prefixed, 8-bit ASCII per entry) -->
+    <DataItem id="200" name="Field 18" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="8">
+          <Element name="CH" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I210: Correlated Track Number (2 bytes, 16-bit raw) -->
+    <DataItem id="210" name="Correlated Track Number" presence="optional">
+      <Fixed>
+        <Element name="CTN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I220: Maximum Plan Count (2 bytes, 16-bit unsigned) -->
+    <DataItem id="220" name="Maximum Plan Count" presence="optional">
+      <Fixed>
+        <Element name="MPC" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I230: Number of Plans (2 bytes, 16-bit unsigned) -->
+    <DataItem id="230" name="Number of Plans" presence="optional">
+      <Fixed>
+        <Element name="NOP" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- I240: Newly Correlated Plans (count-prefixed, 32-bit entries) -->
+    <!-- PLAN(16)+TRACK(16) = 32 bits -->
+    <DataItem id="240" name="Newly Correlated Plans" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="32">
+          <Element name="PLAN"  bits="16" encoding="raw"/>
+          <Element name="TRACK" bits="16" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I250: Newly De-correlated Plans (count-prefixed, 16-bit entries) -->
+    <DataItem id="250" name="Newly De-correlated Plans" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="16">
+          <Element name="PLAN" bits="16" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- I251: Tracks in Conflict (count-prefixed, 32-bit entries) -->
+    <!-- TRACK1(16)+TRACK2(16) = 32 bits -->
+    <DataItem id="251" name="Tracks in Conflict" presence="optional">
+      <Repetitive type="count" count_bytes="1">
+        <Group rep_group_bits="32">
+          <Element name="TRACK1" bits="16" encoding="raw"/>
+          <Element name="TRACK2" bits="16" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP (28 slots, 4 FSPEC bytes):
+    Byte 1: 010 | 020 | 030 | 040 | 050 | 060 | 070
+    Byte 2: 080 | 090 | 100 | 110 | 120 | 130 | 140
+    Byte 3: 150 | 160 | 170 | 180 | 190 | 200 | 210
+    Byte 4: 220 | 230 | 240 | 250 | 251 | 171 | 151
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="020"/>
+      <Item ref="030"/>
+      <Item ref="040"/>
+      <Item ref="050"/>
+      <Item ref="060"/>
+      <Item ref="070"/>
+      <Item ref="080"/>
+      <Item ref="090"/>
+      <Item ref="100"/>
+      <Item ref="110"/>
+      <Item ref="120"/>
+      <Item ref="130"/>
+      <Item ref="140"/>
+      <Item ref="150"/>
+      <Item ref="160"/>
+      <Item ref="170"/>
+      <Item ref="180"/>
+      <Item ref="190"/>
+      <Item ref="200"/>
+      <Item ref="210"/>
+      <Item ref="220"/>
+      <Item ref="230"/>
+      <Item ref="240"/>
+      <Item ref="250"/>
+      <Item ref="251"/>
+      <Item ref="171"/>
+      <Item ref="151"/>
+    </Variation>
+  </UAPs>
+
+</Category>

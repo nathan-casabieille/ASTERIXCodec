@@ -20,8 +20,8 @@
 | [![CAT15 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat15.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat15.yml) | [![CAT16 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat16.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat16.yml) | [![CAT17 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat17.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat17.yml) | [![CAT18 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat18.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat18.yml) |
 | [![CAT19 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat19.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat19.yml) | [![CAT20 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat20.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat20.yml) | [![CAT21 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat21.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat21.yml) | [![CAT23 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat23.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat23.yml) |
 | [![CAT25 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat25.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat25.yml) | [![CAT32 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat32.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat32.yml) | [![CAT34 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat34.yml) | [![CAT48 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat48.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat48.yml) |
-| [![CAT62 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat62.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat62.yml) | [![CAT63 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat63.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat63.yml) | [![CAT65 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml) | [![CAT205 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml) |
-| [![CAT240 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml) | [![CAT247 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml) | | |
+| [![CAT62 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat62.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat62.yml) | [![CAT63 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat63.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat63.yml) | [![CAT65 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml) | [![CAT150 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat150.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat150.yml) |
+| [![CAT205 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml) | [![CAT240 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml) | [![CAT247 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml) | |
 
 ---
 
@@ -70,6 +70,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT062   | SDPS Track Messages | 1.21 |
 | CAT063   | Sensor Status Reports | 1.7 |
 | CAT065   | SDPS Service Status Reports | 1.6 |
+| CAT150   | MADAP Plan Server - Flight Data Message | 3.0 |
 | CAT205   | Radio Direction Finder Reports | 1.0 |
 | CAT240   | Radar Video Transmission | 1.3 |
 | CAT247   | Version Number Exchange | 1.3 |
@@ -115,6 +116,7 @@ ASTERIXCodec/
 │   ├── CAT62.xml                    # XML spec consumed by the library
 │   ├── CAT63.xml                    # XML spec consumed by the library
 │   ├── CAT65.xml                    # XML spec consumed by the library
+│   ├── CAT150.xml                   # XML spec consumed by the library
 │   ├── CAT205.xml                   # XML spec consumed by the library
 │   ├── CAT240.xml                   # XML spec consumed by the library
 │   └── CAT247.xml                   # XML spec consumed by the library
@@ -142,6 +144,7 @@ ASTERIXCodec/
     ├── test_cat62.cpp               # 10 test cases, 100 assertions incl. RepetitiveGroupFX
     ├── test_cat63.cpp               # 9 test cases covering all CAT63 item types incl. Extended I060
     ├── test_cat65.cpp               # 7 test cases covering all CAT65 item types incl. all 16 I050 SR values
+    ├── test_cat150.cpp              # 8 test cases covering all CAT150 item types incl. 56-bit ASCII callsign, 11 RepetitiveGroups (Cartesian/WGS-84 route points, correlations, free text)
     ├── test_cat205.cpp              # 8 test cases covering all CAT205 item types incl. 32-bit WGS-84, 24-bit Cartesian, RepetitiveGroup I120
     ├── test_cat240.cpp              # 9 test cases covering all CAT240 item types incl. I051 (8×64-bit blocks), I052 (32×64-bit blocks), RepetitiveGroup I030/I050
     └── test_cat247.cpp              # 6 test cases covering all CAT247 item types incl. I550 version report RepetitiveGroup (multi-entry)
@@ -175,7 +178,7 @@ cmake --build build -j$(nproc)
 ./build/test_cat19  && ./build/test_cat20  && ./build/test_cat25  && \
 ./build/test_cat21  && ./build/test_cat23  && ./build/test_cat32  && ./build/test_cat34  && \
 ./build/test_cat48  && ./build/test_cat62  && ./build/test_cat63  && ./build/test_cat65  && \
-./build/test_cat205 && ./build/test_cat240 && ./build/test_cat247
+./build/test_cat150 && ./build/test_cat205 && ./build/test_cat240 && ./build/test_cat247
 ```
 
 Expected output ends with `ALL TESTS PASSED`.
