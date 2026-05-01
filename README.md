@@ -32,6 +32,7 @@
 | CAT065   | [![CAT65 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml) |
 | CAT205   | [![CAT205 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml) |
 | CAT240   | [![CAT240 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat240.yml) |
+| CAT247   | [![CAT247 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat247.yml) |
 
 ---
 
@@ -74,6 +75,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT065   | SDPS Service Status Reports | 1.6 |
 | CAT205   | Radio Direction Finder Reports | 1.0 |
 | CAT240   | Radar Video Transmission | 1.3 |
+| CAT247   | Version Number Exchange | 1.3 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -109,7 +111,8 @@ ASTERIXCodec/
 │   ├── CAT32.xml                    # XML spec consumed by the library
 │   ├── CAT65.xml                    # XML spec consumed by the library
 │   ├── CAT205.xml                   # XML spec consumed by the library
-│   └── CAT240.xml                   # XML spec consumed by the library
+│   ├── CAT240.xml                   # XML spec consumed by the library
+│   └── CAT247.xml                   # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
     ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
@@ -127,7 +130,8 @@ ASTERIXCodec/
     ├── test_cat32.cpp               # 8 test cases covering all CAT32 item types incl. Fixed I050 (23-bit), RepetitiveGroup I460, Compound I500
     ├── test_cat65.cpp               # 7 test cases covering all CAT65 item types incl. all 16 I050 SR values
     ├── test_cat205.cpp              # 8 test cases covering all CAT205 item types incl. 32-bit WGS-84, 24-bit Cartesian, RepetitiveGroup I120
-    └── test_cat240.cpp              # 9 test cases covering all CAT240 item types incl. I051 (8×64-bit blocks), I052 (32×64-bit blocks), RepetitiveGroup I030/I050
+    ├── test_cat240.cpp              # 9 test cases covering all CAT240 item types incl. I051 (8×64-bit blocks), I052 (32×64-bit blocks), RepetitiveGroup I030/I050
+    └── test_cat247.cpp              # 6 test cases covering all CAT247 item types incl. I550 version report RepetitiveGroup (multi-entry)
 ```
 
 ---
@@ -169,6 +173,7 @@ cmake --build build -j$(nproc)
 ./build/test_cat65
 ./build/test_cat205
 ./build/test_cat240
+./build/test_cat247
 
 # Optionally override the spec file path
 ./build/test_cat01 /path/to/specs/CAT01.xml
@@ -188,6 +193,7 @@ cmake --build build -j$(nproc)
 ./build/test_cat65 /path/to/specs/CAT65.xml
 ./build/test_cat205 /path/to/specs/CAT205.xml
 ./build/test_cat240 /path/to/specs/CAT240.xml
+./build/test_cat247 /path/to/specs/CAT247.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.

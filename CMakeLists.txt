@@ -90,4 +90,7 @@ if(ASTERIX_BUILD_TESTS)
 
     add_executable(test_cat240 tests/test_cat240.cpp)
     target_link_libraries(test_cat240 PRIVATE ASTERIXCodec)
+
+    add_executable(test_cat247 tests/test_cat247.cpp)
+    target_link_libraries(test_cat247 PRIVATE ASTERIXCodec)
 endif()
