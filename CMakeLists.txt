@@ -84,4 +84,7 @@ if(ASTERIX_BUILD_TESTS)
 
     add_executable(test_cat65 tests/test_cat65.cpp)
     target_link_libraries(test_cat65 PRIVATE ASTERIXCodec)
+
+    add_executable(test_cat205 tests/test_cat205.cpp)
+    target_link_libraries(test_cat205 PRIVATE ASTERIXCodec)
 endif()

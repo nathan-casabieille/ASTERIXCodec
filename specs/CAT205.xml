@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="205" name="Radio Direction Finder Reports" edition="1.0" date="2020-03-17">
+
+  <DataItems>
+
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="System Position Report"/>
+          <Entry value="2" meaning="System Bearing Report"/>
+          <Entry value="3" meaning="System Position Report of conflicting transmission"/>
+          <Entry value="4" meaning="System Detection End Report"/>
+          <Entry value="5" meaning="Sensor Data Report"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="015" name="Service Identification">
+      <Fixed>
+        <Element name="SI" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="030" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Sequential cyclic report number, 8-bit raw -->
+    <DataItem id="040" name="Report Number">
+      <Fixed>
+        <Element name="RN" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- LAT+LON: 32-bit signed each, LSB = 180/2^25 ° ≈ 5.364418e-6 ° -->
+    <DataItem id="050" name="Position in WGS-84 Coordinates">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="5.364418e-06" unit="°"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="5.364418e-06" unit="°"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- X+Y: 24-bit signed each, LSB = 0.5 m -->
+    <DataItem id="060" name="Position in Cartesian Coordinates">
+      <Fixed>
+        <Element name="X" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+        <Element name="Y" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit unsigned, LSB = 0.01 ° -->
+    <DataItem id="070" name="Local Bearing">
+      <Fixed>
+        <Element name="BRG" bits="16" encoding="unsigned_quantity" scale="0.01" unit="°"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit unsigned, LSB = 0.01 ° -->
+    <DataItem id="080" name="System Bearing">
+      <Fixed>
+        <Element name="BRG" bits="16" encoding="unsigned_quantity" scale="0.01" unit="°"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 56-bit ASCII channel name (7 bytes); codec has no string_ascii → stored as raw -->
+    <DataItem id="090" name="Radio Channel Name">
+      <Fixed>
+        <Element name="CN" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit raw quality indicator (application dependent) -->
+    <DataItem id="100" name="Quality of Measurement">
+      <Fixed>
+        <Element name="QM" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit unsigned, LSB = 100 m -->
+    <DataItem id="110" name="Estimated Uncertainty">
+      <Fixed>
+        <Element name="EU" bits="8" encoding="unsigned_quantity" scale="100.0" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Repetitive (1-byte count); each entry: 8-bit raw sensor ID -->
+    <DataItem id="120" name="Contributing Sensors">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="ID" bits="8" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- Conflicting transmitter position WGS-84 (same encoding as I050) -->
+    <DataItem id="130" name="Conflicting Transmitter Position in WGS-84 Coordinates">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="5.364418e-06" unit="°"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="5.364418e-06" unit="°"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Conflicting transmitter position Cartesian (same encoding as I060) -->
+    <DataItem id="140" name="Conflicting Transmitter Position in Cartesian Coordinates">
+      <Fixed>
+        <Element name="X" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+        <Element name="Y" bits="24" encoding="signed_quantity" scale="0.5" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit unsigned, LSB = 100 m -->
+    <DataItem id="150" name="Conflicting Transmitter Estimated Uncertainty">
+      <Fixed>
+        <Element name="EU" bits="8" encoding="unsigned_quantity" scale="100.0" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit raw track number -->
+    <DataItem id="160" name="Track Number">
+      <Fixed>
+        <Element name="TN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit raw sensor identification -->
+    <DataItem id="170" name="Sensor Identification">
+      <Fixed>
+        <Element name="SID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit signed, LSB = 0.01 dBµV -->
+    <DataItem id="180" name="Signal Level">
+      <Fixed>
+        <Element name="SL" bits="16" encoding="signed_quantity" scale="0.01" unit="dBµV"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit raw signal quality (0=worst, 255=best) -->
+    <DataItem id="190" name="Signal Quality">
+      <Fixed>
+        <Element name="SQ" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit signed, LSB = 0.01 ° -->
+    <DataItem id="200" name="Signal Elevation">
+      <Fixed>
+        <Element name="SE" bits="16" encoding="signed_quantity" scale="0.01" unit="°"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 28 slots → 4 FSPEC bytes
+    Byte 1: 010 015 000 030 040 090 050
+    Byte 2: 060 070 080 100 110 120 130
+    Byte 3: 140 150 160 170 180 190 200
+    Byte 4: SP   -   -   -   -   -   -
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="015"/>
+      <Item ref="000"/>
+      <Item ref="030"/>
+      <Item ref="040"/>
+      <Item ref="090"/>
+      <Item ref="050"/>
+      <Item ref="060"/>
+      <Item ref="070"/>
+      <Item ref="080"/>
+      <Item ref="100"/>
+      <Item ref="110"/>
+      <Item ref="120"/>
+      <Item ref="130"/>
+      <Item ref="140"/>
+      <Item ref="150"/>
+      <Item ref="160"/>
+      <Item ref="170"/>
+      <Item ref="180"/>
+      <Item ref="190"/>
+      <Item ref="200"/>
+      <Item ref="SP"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+    </Variation>
+  </UAPs>
+
+</Category>

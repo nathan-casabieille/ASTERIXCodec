@@ -30,6 +30,7 @@
 | CAT023   | [![CAT23 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat23.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat23.yml) |
 | CAT032   | [![CAT32 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat32.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat32.yml) |
 | CAT065   | [![CAT65 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat65.yml) |
+| CAT205   | [![CAT205 Tests](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml/badge.svg)](https://github.com/nathan-casabieille/ASTERIXCodec/actions/workflows/ci-cat205.yml) |
 
 ---
 
@@ -70,6 +71,7 @@ The category structure is loaded at runtime from an XML file, making it straight
 | CAT023   | CNS/ATM Ground Station and Service Status Reports | 1.3 |
 | CAT032   | Miniplan Reports to an SDPS | 1.2 |
 | CAT065   | SDPS Service Status Reports | 1.6 |
+| CAT205   | Radio Direction Finder Reports | 1.0 |
 
 Support for additional categories can be added by dropping a new XML spec into `specs/` and calling `codec.registerCategory(loadSpec("specs/CATXX.xml"))`.
 
@@ -103,7 +105,8 @@ ASTERIXCodec/
 │   ├── CAT19.xml                    # XML spec consumed by the library
 │   ├── CAT23.xml                    # XML spec consumed by the library
 │   ├── CAT32.xml                    # XML spec consumed by the library
-│   └── CAT65.xml                    # XML spec consumed by the library
+│   ├── CAT65.xml                    # XML spec consumed by the library
+│   └── CAT205.xml                   # XML spec consumed by the library
 └── tests/
     ├── test_cat01.cpp               # 7 test cases, 87+ assertions
     ├── test_cat02.cpp               # 7 test cases covering all CAT02 item types
@@ -119,7 +122,8 @@ ASTERIXCodec/
     ├── test_cat19.cpp               # 8 test cases covering all CAT19 item types incl. Extended I553 and 32-bit WGS-84
     ├── test_cat23.cpp               # 8 test cases covering all CAT23 item types incl. Extended I100, RepetitiveGroup I120
     ├── test_cat32.cpp               # 8 test cases covering all CAT32 item types incl. Fixed I050 (23-bit), RepetitiveGroup I460, Compound I500
-    └── test_cat65.cpp               # 7 test cases covering all CAT65 item types incl. all 16 I050 SR values
+    ├── test_cat65.cpp               # 7 test cases covering all CAT65 item types incl. all 16 I050 SR values
+    └── test_cat205.cpp              # 8 test cases covering all CAT205 item types incl. 32-bit WGS-84, 24-bit Cartesian, RepetitiveGroup I120
 ```
 
 ---
@@ -159,6 +163,7 @@ cmake --build build -j$(nproc)
 ./build/test_cat23
 ./build/test_cat32
 ./build/test_cat65
+./build/test_cat205
 
 # Optionally override the spec file path
 ./build/test_cat01 /path/to/specs/CAT01.xml
@@ -176,6 +181,7 @@ cmake --build build -j$(nproc)
 ./build/test_cat23 /path/to/specs/CAT23.xml
 ./build/test_cat32 /path/to/specs/CAT32.xml
 ./build/test_cat65 /path/to/specs/CAT65.xml
+./build/test_cat205 /path/to/specs/CAT205.xml
 ```
 
 Expected output ends with `ALL TESTS PASSED`.
