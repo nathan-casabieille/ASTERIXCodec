@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="32" name="Miniplan Reports to an SDPS" edition="1.2" date="2025-06-05">
+
+  <DataItems>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit identifier, User Number -->
+    <DataItem id="015" name="User Number">
+      <Fixed>
+        <Element name="UN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Data Source Identifier of source providing the miniplan data -->
+    <DataItem id="018" name="Data Source Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- TOD: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="020" name="Time of Track Information">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- FAMILY(4) + NATURE(4) = 1 byte; NATURE is conditional on FAMILY, stored as raw -->
+    <DataItem id="035" name="Type of Message">
+      <Fixed>
+        <Element name="FAMILY" bits="4" encoding="table">
+          <Entry value="1" meaning="General information"/>
+          <Entry value="2" meaning="Aircraft related"/>
+          <Entry value="3" meaning="Aerodrome/runway related"/>
+          <Entry value="4" meaning="Departure related"/>
+          <Entry value="5" meaning="Arrival related"/>
+          <Entry value="6" meaning="Standing related"/>
+          <Entry value="7" meaning="En-route related"/>
+        </Element>
+        <Element name="NATURE" bits="4" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit unsigned integer, Track Number -->
+    <DataItem id="040" name="Track Number">
+      <Fixed>
+        <Element name="TN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      I050: SUI(8) + STN(15) = 23 data bits — exceeds the 7-bit/octet Extended model.
+      Modelled as Fixed 3B: SUI(8)+STN(15)+spare(1).
+    -->
+    <DataItem id="050" name="Current Plan Number">
+      <Fixed>
+        <Element name="SUI" bits="8" encoding="raw"/>
+        <Element name="STN" bits="15" encoding="raw"/>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- spare(4) + MODE3A(12) string_octal = 2 bytes -->
+    <DataItem id="060" name="Track Mode 3/A">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="MODE3A" bits="12" encoding="string_octal"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 56-bit ASCII callsign (7 bytes) -->
+    <DataItem id="400" name="Callsign">
+      <Fixed>
+        <Element name="CS" bits="56" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 16-bit identifier, Plan Number -->
+    <DataItem id="410" name="Plan Number">
+      <Fixed>
+        <Element name="PN" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- GATOAT(2)+FR1FR2(2)+SP3(1)+SP2(1)+SP1(1)+spare(1) = 1 byte -->
+    <DataItem id="420" name="Flight Category">
+      <Fixed>
+        <Element name="GATOAT" bits="2" encoding="table">
+          <Entry value="0" meaning="Unknown"/>
+          <Entry value="1" meaning="General Air Traffic"/>
+          <Entry value="2" meaning="Operational Air Traffic"/>
+          <Entry value="3" meaning="Not applicable"/>
+        </Element>
+        <Element name="FR1FR2" bits="2" encoding="table">
+          <Entry value="0" meaning="Instrument Flight Rules"/>
+          <Entry value="1" meaning="Visual Flight Rules"/>
+          <Entry value="2" meaning="Not applicable"/>
+          <Entry value="3" meaning="Controlled VFR"/>
+        </Element>
+        <Element name="SP3" bits="1" encoding="table">
+          <Entry value="0" meaning="No emergency"/>
+          <Entry value="1" meaning="Emergency"/>
+        </Element>
+        <Element name="SP2" bits="1" encoding="table">
+          <Entry value="0" meaning="No NORDO"/>
+          <Entry value="1" meaning="NORDO"/>
+        </Element>
+        <Element name="SP1" bits="1" encoding="table">
+          <Entry value="0" meaning="No special"/>
+          <Entry value="1" meaning="Special"/>
+        </Element>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 32-bit ASCII, Type of Aircraft (4 bytes) -->
+    <DataItem id="430" name="Type of Aircraft">
+      <Fixed>
+        <Element name="TYAC" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- WTC: 8-bit table using ASCII code of ICAO class letter -->
+    <DataItem id="435" name="Wake Turbulence Category">
+      <Fixed>
+        <Element name="WTC" bits="8" encoding="table">
+          <Entry value="76" meaning="Light"/>
+          <Entry value="77" meaning="Medium"/>
+          <Entry value="72" meaning="Heavy"/>
+          <Entry value="74" meaning="Super"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- 32-bit ASCII, Departure Aerodrome ICAO designator (4 bytes) -->
+    <DataItem id="440" name="Departure Aerodrome">
+      <Fixed>
+        <Element name="DEP" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 32-bit ASCII, Destination Aerodrome ICAO designator (4 bytes) -->
+    <DataItem id="450" name="Destination Aerodrome">
+      <Fixed>
+        <Element name="DEST" bits="32" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Repetitive (1-byte count); per entry 2B:
+        spare(4)+OCT1(3)+OCT2(3)+OCT3(3)+OCT4(3) = 16 bits
+    -->
+    <DataItem id="460" name="Allocated SSR Codes">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Spare bits="4"/>
+          <Element name="OCT1" bits="3" encoding="raw"/>
+          <Element name="OCT2" bits="3" encoding="raw"/>
+          <Element name="OCT3" bits="3" encoding="raw"/>
+          <Element name="OCT4" bits="3" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- 16-bit unsigned, LSB = 0.25 FL -->
+    <DataItem id="480" name="Current Cleared Flight Level">
+      <Fixed>
+        <Element name="CFL" bits="16" encoding="unsigned_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- CEN(8) + POS(8) = 2 bytes -->
+    <DataItem id="490" name="Current Control Position">
+      <Fixed>
+        <Element name="CEN" bits="8" encoding="raw"/>
+        <Element name="POS" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!--
+      Compound; 2 PSF bytes:
+        PSF byte 1: IFI(4B) RVP(1B) RDS(3B) -(TOD) AST(6B) STS(1B) SID(7B)
+        PSF byte 2: STAR(7B) - - - - - -
+      TOD is a RepetitiveGroup (not supported inside Compound) → mapped to "-".
+    -->
+    <DataItem id="500" name="Supplementary Flight Data">
+      <Compound>
+        <!-- PSF byte 1 sub-items -->
+        <SubItem name="IFI">
+          <Fixed>
+            <Element name="TYP" bits="2" encoding="table">
+              <Entry value="0" meaning="Plan Number"/>
+              <Entry value="1" meaning="Unit 1 internal flight number"/>
+              <Entry value="2" meaning="Unit 2 internal flight number"/>
+              <Entry value="3" meaning="Unit 3 internal flight number"/>
+            </Element>
+            <Spare bits="3"/>
+            <Element name="NBR" bits="27" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="RVP">
+          <Fixed>
+            <Spare bits="5"/>
+            <Element name="RVSM" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="Approved"/>
+              <Entry value="2" meaning="Exempted"/>
+              <Entry value="3" meaning="Not Approved"/>
+            </Element>
+            <Element name="HPR" bits="1" encoding="table">
+              <Entry value="0" meaning="Normal Priority Flight"/>
+              <Entry value="1" meaning="High Priority Flight"/>
+            </Element>
+          </Fixed>
+        </SubItem>
+        <SubItem name="RDS">
+          <Fixed>
+            <Element name="NU1" bits="8" encoding="raw"/>
+            <Element name="NU2" bits="8" encoding="raw"/>
+            <Element name="LTR" bits="8" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="-"/>
+        <SubItem name="AST">
+          <Fixed>
+            <Element name="AST" bits="48" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="STS">
+          <Fixed>
+            <Element name="EMP" bits="2" encoding="table">
+              <Entry value="0" meaning="Empty"/>
+              <Entry value="1" meaning="Occupied"/>
+              <Entry value="2" meaning="Unknown"/>
+              <Entry value="3" meaning="Not applicable"/>
+            </Element>
+            <Element name="AVL" bits="2" encoding="table">
+              <Entry value="0" meaning="Available"/>
+              <Entry value="1" meaning="Not available"/>
+              <Entry value="2" meaning="Unknown"/>
+              <Entry value="3" meaning="Not applicable"/>
+            </Element>
+            <Spare bits="4"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="SID">
+          <Fixed>
+            <Element name="SID" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- PSF byte 2 sub-items -->
+        <SubItem name="STAR">
+          <Fixed>
+            <Element name="STAR" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+      </Compound>
+    </DataItem>
+
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 21 slots → 3 FSPEC bytes
+    Byte 1: 010 015 018 035 020 040 050
+    Byte 2: 060 400 410 420 440 450 480
+    Byte 3: 490 430 435 460 500  -  RE
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="015"/>
+      <Item ref="018"/>
+      <Item ref="035"/>
+      <Item ref="020"/>
+      <Item ref="040"/>
+      <Item ref="050"/>
+      <Item ref="060"/>
+      <Item ref="400"/>
+      <Item ref="410"/>
+      <Item ref="420"/>
+      <Item ref="440"/>
+      <Item ref="450"/>
+      <Item ref="480"/>
+      <Item ref="490"/>
+      <Item ref="430"/>
+      <Item ref="435"/>
+      <Item ref="460"/>
+      <Item ref="500"/>
+      <Item ref="-"/>
+      <Item ref="RE"/>
+    </Variation>
+  </UAPs>
+
+</Category>
