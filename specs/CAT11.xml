@@ -1,0 +1,954 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ASTERIX Category 011 – Transmission of A-SMGCS Data
+     Edition 1.3  |  2020-05-11
+     Reference: EUROCONTROL A-SMGCS specification
+
+     Codec notes:
+       - Extended items: each <Octet> = 7 data bits; implicit FX LSB.
+       - I170: Extended 4 octets (MON…CNF | SIM…MI | AMA…spare | spare…AAC)
+       - I270: Extended 3 octets (LENGTH | ORIENTATION | WIDTH)
+       - I290: Compound 12 sub-items (PSR SSR MDA MFL MDS ADS ADB | MD1 MD2 LOP TRK MUL)
+       - I380: Compound; MB (repetitive, slot 0) not supported → marked "-".
+               11 slots (2 PSF bytes): -|ADR|-|COMACAS|-|-|- | ACT|ECAT|-|AVTECH
+       - I390: Compound; TOD (repetitive, slot 11) not supported → marked "-".
+               14 slots (2 PSF bytes): FPPSID|CSN|IFPSFLIGHTID|FLIGHTCAT|TOA|WTC|ADEP |
+                                       ADES|RWY|CFL|CCP|-|AST|STS
+       - I500: Compound 6 sub-items (APC APW ATH AVC ARC AAC)
+       - I605: Repetitive count-prefixed, REP×{spare(4)+FTN(12)} = 2B
+       - I610: Repetitive count-prefixed, REP×{BKN(4)+I1…I12} = 2B
+       - UAP: 29 slots (5 FSPEC bytes):
+           B1: 010 000 015 140 041 042 202
+           B2: 210 060 245 380 161 170 290
+           B3: 430 090 093 092 215 270 390
+           B4: 300 310 500 600 605 610 SP
+           B5: RE
+-->
+<Category cat="11" name="Transmission of A-SMGCS Data" edition="1.3" date="2020-05-11">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="Target reports, flight plan data and basic alerts"/>
+          <Entry value="2" meaning="Manual attachment of flight plan to track"/>
+          <Entry value="3" meaning="Manual detachment of flight plan to track"/>
+          <Entry value="4" meaning="Insertion of flight plan data"/>
+          <Entry value="5" meaning="Suppression of flight plan data"/>
+          <Entry value="6" meaning="Modification of flight plan data"/>
+          <Entry value="7" meaning="Holdbar status"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/015 – Service Identification  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="015" name="Service Identification">
+      <Fixed>
+        <Element name="SID" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/041 – Position in WGS-84 Coordinates  (Fixed, 8 bytes)
+         LAT: 32-bit signed, 180/2^31 °/LSB
+         LON: 32-bit signed, 180/2^31 °/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="041" name="Position in WGS-84 Coordinates">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/042 – Calculated Position in Cartesian Co-ordinates  (Fixed, 4 bytes)
+         X, Y: 16-bit signed, 1 m/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="042" name="Calculated Position in Cartesian Co-ordinates">
+      <Fixed>
+        <Element name="X" bits="16" encoding="signed_quantity" scale="1" unit="m"/>
+        <Element name="Y" bits="16" encoding="signed_quantity" scale="1" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/060 – Mode-3/A Code in Octal Representation  (Fixed, 2 bytes)
+         spare(4)+MOD3A(12)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="Mode-3/A Code in Octal Representation">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="MOD3A" bits="12" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/090 – Measured Flight Level  (Fixed, 2 bytes)
+         16-bit signed, 0.25 FL/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Measured Flight Level">
+      <Fixed>
+        <Element name="FL" bits="16" encoding="signed_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/092 – Calculated Track Geometric Altitude  (Fixed, 2 bytes)
+         16-bit signed, 25/4 = 6.25 ft/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="092" name="Calculated Track Geometric Altitude">
+      <Fixed>
+        <Element name="GAlt" bits="16" encoding="signed_quantity" scale="6.25" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/093 – Calculated Track Barometric Altitude  (Fixed, 2 bytes)
+         QNH(1) + CTBA(15 signed, 0.25 FL/LSB)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="093" name="Calculated Track Barometric Altitude">
+      <Fixed>
+        <Element name="QNH" bits="1" encoding="table">
+          <Entry value="0" meaning="No QNH Correction Applied"/>
+          <Entry value="1" meaning="QNH Correction Applied"/>
+        </Element>
+        <Element name="CTBA" bits="15" encoding="signed_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/140 – Time of Track Information  (Fixed, 3 bytes)
+         24-bit unsigned, 1/128 s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="140" name="Time of Track Information">
+      <Fixed>
+        <Element name="TOT" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/161 – Track Number  (Fixed, 2 bytes)
+         spare(1)+FTN(15)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="161" name="Track Number">
+      <Fixed>
+        <Spare bits="1"/>
+        <Element name="FTN" bits="15" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/170 – Track Status  (Extended, up to 4 octets)
+         Octet 1 (7 bits): MON GBS MRH SRC(3) CNF
+         Octet 2 (7 bits): SIM TSE TSB FRIFOE(2) ME MI
+         Octet 3 (7 bits): AMA SPI CST FPC AFF spare(2)
+         Octet 4 (7 bits): spare PSR SSR MDS ADS SUC AAC
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="170" name="Track Status">
+      <Extended>
+        <Octet>
+          <Element name="MON" bits="1" encoding="table">
+            <Entry value="0" meaning="Multisensor Track"/>
+            <Entry value="1" meaning="Monosensor Track"/>
+          </Element>
+          <Element name="GBS" bits="1" encoding="table">
+            <Entry value="0" meaning="Transponder Ground bit not set or unknown"/>
+            <Entry value="1" meaning="Transponder Ground bit set"/>
+          </Element>
+          <Element name="MRH" bits="1" encoding="table">
+            <Entry value="0" meaning="Barometric altitude more reliable"/>
+            <Entry value="1" meaning="Geometric altitude more reliable"/>
+          </Element>
+          <Element name="SRC" bits="3" encoding="table">
+            <Entry value="0" meaning="No source"/>
+            <Entry value="1" meaning="GPS"/>
+            <Entry value="2" meaning="3d radar"/>
+            <Entry value="3" meaning="Triangulation"/>
+            <Entry value="4" meaning="Height from coverage"/>
+            <Entry value="5" meaning="Speed look-up table"/>
+            <Entry value="6" meaning="Default height"/>
+            <Entry value="7" meaning="Multilateration"/>
+          </Element>
+          <Element name="CNF" bits="1" encoding="table">
+            <Entry value="0" meaning="Confirmed track"/>
+            <Entry value="1" meaning="Tentative track"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="SIM" bits="1" encoding="table">
+            <Entry value="0" meaning="Actual Track"/>
+            <Entry value="1" meaning="Simulated track"/>
+          </Element>
+          <Element name="TSE" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Track service end"/>
+          </Element>
+          <Element name="TSB" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Track service begin"/>
+          </Element>
+          <Element name="FRIFOE" bits="2" encoding="table">
+            <Entry value="0" meaning="No Mode 4 interrogation"/>
+            <Entry value="1" meaning="Friendly target"/>
+            <Entry value="2" meaning="Unknown target"/>
+            <Entry value="3" meaning="No reply"/>
+          </Element>
+          <Element name="ME" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Military Emergency present"/>
+          </Element>
+          <Element name="MI" bits="1" encoding="table">
+            <Entry value="0" meaning="End of Data Item"/>
+            <Entry value="1" meaning="Military Identification present"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="AMA" bits="1" encoding="table">
+            <Entry value="0" meaning="Track not from amalgamation"/>
+            <Entry value="1" meaning="Track from amalgamation"/>
+          </Element>
+          <Element name="SPI" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="SPI present"/>
+          </Element>
+          <Element name="CST" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Coasting"/>
+          </Element>
+          <Element name="FPC" bits="1" encoding="table">
+            <Entry value="0" meaning="Not flight-plan correlated"/>
+            <Entry value="1" meaning="Flight plan correlated"/>
+          </Element>
+          <Element name="AFF" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="ADS-B data inconsistent"/>
+          </Element>
+          <Spare bits="2"/>
+        </Octet>
+        <Octet>
+          <Spare bits="1"/>
+          <Element name="PSR" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="PSR track update age high"/>
+          </Element>
+          <Element name="SSR" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="SSR track update age high"/>
+          </Element>
+          <Element name="MDS" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Mode S track update age high"/>
+          </Element>
+          <Element name="ADS" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="ADS track update age high"/>
+          </Element>
+          <Element name="SUC" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Special Used Code"/>
+          </Element>
+          <Element name="AAC" bits="1" encoding="table">
+            <Entry value="0" meaning="Default value"/>
+            <Entry value="1" meaning="Assigned Mode A Code Conflict"/>
+          </Element>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/202 – Calculated Track Velocity in Cartesian Coordinates  (Fixed, 4 bytes)
+         VX, VY: 16-bit signed, 0.25 m/s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="202" name="Calculated Track Velocity in Cartesian Coordinates">
+      <Fixed>
+        <Element name="VX" bits="16" encoding="signed_quantity" scale="0.25" unit="m/s"/>
+        <Element name="VY" bits="16" encoding="signed_quantity" scale="0.25" unit="m/s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/210 – Calculated Acceleration  (Fixed, 2 bytes)
+         AX, AY: 8-bit signed, 0.25 m/s²/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="210" name="Calculated Acceleration">
+      <Fixed>
+        <Element name="AX" bits="8" encoding="signed_quantity" scale="0.25" unit="m/s2"/>
+        <Element name="AY" bits="8" encoding="signed_quantity" scale="0.25" unit="m/s2"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/215 – Calculated Rate Of Climb/Descent  (Fixed, 2 bytes)
+         16-bit signed, 25/4 = 6.25 ft/min/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="215" name="Calculated Rate Of Climb/Descent">
+      <Fixed>
+        <Element name="ROCD" bits="16" encoding="signed_quantity" scale="6.25" unit="ft/min"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/245 – Target Identification  (Fixed, 8 bytes)
+         STI(2)+spare(6)+TID(48 ICAO)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="245" name="Target Identification">
+      <Fixed>
+        <Element name="STI" bits="2" encoding="table">
+          <Entry value="0" meaning="Callsign or registration downlinked from transponder"/>
+          <Entry value="1" meaning="Callsign not downlinked from transponder"/>
+          <Entry value="2" meaning="Registration not downlinked from transponder"/>
+        </Element>
+        <Spare bits="6"/>
+        <Element name="TID" bits="48" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/270 – Target Size and Orientation  (Extended, up to 3 octets)
+         Octet 1 (7 bits): LENGTH (1 m/LSB)
+         Octet 2 (7 bits): ORIENTATION (360/2^7 = 2.8125 °/LSB)
+         Octet 3 (7 bits): WIDTH (1 m/LSB)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="270" name="Target Size and Orientation">
+      <Extended>
+        <Octet>
+          <Element name="LENGTH" bits="7" encoding="unsigned_quantity" scale="1" unit="m"/>
+        </Octet>
+        <Octet>
+          <Element name="ORIENTATION" bits="7" encoding="unsigned_quantity" scale="2.8125" unit="deg"/>
+        </Octet>
+        <Octet>
+          <Element name="WIDTH" bits="7" encoding="unsigned_quantity" scale="1" unit="m"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/290 – System Track Update Ages  (Compound, 12 sub-items)
+         PSF byte 1: PSR(1B) SSR(1B) MDA(1B) MFL(1B) MDS(1B) ADS(2B) ADB(1B)
+         PSF byte 2: MD1(1B) MD2(1B) LOP(1B) TRK(1B) MUL(1B)
+         All ages: unsigned, 0.25 s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="290" name="System Track Update Ages">
+      <Compound>
+        <!-- slot 0: PSR – Age of last primary report -->
+        <SubItem name="PSR">
+          <Fixed>
+            <Element name="PSR" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: SSR – Age of last secondary report -->
+        <SubItem name="SSR">
+          <Fixed>
+            <Element name="SSR" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: MDA – Age of last valid Mode A report -->
+        <SubItem name="MDA">
+          <Fixed>
+            <Element name="MDA" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: MFL – Age of last valid Mode C report -->
+        <SubItem name="MFL">
+          <Fixed>
+            <Element name="MFL" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: MDS – Age of last Mode S report -->
+        <SubItem name="MDS">
+          <Fixed>
+            <Element name="MDS" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: ADS – Age of last ADS report (2 bytes) -->
+        <SubItem name="ADS">
+          <Fixed>
+            <Element name="ADS" bits="16" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 6: ADB – Age of last ADS-B report -->
+        <SubItem name="ADB">
+          <Fixed>
+            <Element name="ADB" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 7: MD1 – Age of last valid Mode 1 report -->
+        <SubItem name="MD1">
+          <Fixed>
+            <Element name="MD1" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 8: MD2 – Age of last valid Mode 2 report -->
+        <SubItem name="MD2">
+          <Fixed>
+            <Element name="MD2" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 9: LOP – Age of last magnetic loop detection -->
+        <SubItem name="LOP">
+          <Fixed>
+            <Element name="LOP" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 10: TRK – Actual track age since first occurrence -->
+        <SubItem name="TRK">
+          <Fixed>
+            <Element name="TRK" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 11: MUL – Age of last multilateration detection -->
+        <SubItem name="MUL">
+          <Fixed>
+            <Element name="MUL" bits="8" encoding="unsigned_quantity" scale="0.25" unit="s"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/300 – Vehicle Fleet Identification  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="300" name="Vehicle Fleet Identification">
+      <Fixed>
+        <Element name="VFI" bits="8" encoding="table">
+          <Entry value="0"  meaning="Flyco (follow me)"/>
+          <Entry value="1"  meaning="ATC equipment maintenance"/>
+          <Entry value="2"  meaning="Airport maintenance"/>
+          <Entry value="3"  meaning="Fire"/>
+          <Entry value="4"  meaning="Bird scarer"/>
+          <Entry value="5"  meaning="Snow plough"/>
+          <Entry value="6"  meaning="Runway sweeper"/>
+          <Entry value="7"  meaning="Emergency"/>
+          <Entry value="8"  meaning="Police"/>
+          <Entry value="9"  meaning="Bus"/>
+          <Entry value="10" meaning="Tug (push/tow)"/>
+          <Entry value="11" meaning="Grass cutter"/>
+          <Entry value="12" meaning="Fuel"/>
+          <Entry value="13" meaning="Baggage"/>
+          <Entry value="14" meaning="Catering"/>
+          <Entry value="15" meaning="Aircraft maintenance"/>
+          <Entry value="16" meaning="Unknown"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/310 – Pre-programmed Message  (Fixed, 1 byte)
+         TRB(1)+MSG(7)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="310" name="Pre-programmed Message">
+      <Fixed>
+        <Element name="TRB" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="In Trouble"/>
+        </Element>
+        <Element name="MSG" bits="7" encoding="table">
+          <Entry value="1" meaning="Towing aircraft"/>
+          <Entry value="2" meaning="FOLLOW-ME operation"/>
+          <Entry value="3" meaning="Runway check"/>
+          <Entry value="4" meaning="Emergency operation (fire, medical...)"/>
+          <Entry value="5" meaning="Work in progress (maintenance, birds scarer, sweepers...)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/380 – Mode-S / ADS-B Related Data  (Compound, 11 slots, 2 PSF bytes)
+         slot 0: "-" (MB – repetitive, not supported)
+         slot 1: ADR (3B)
+         slot 2: "-" (unused)
+         slot 3: COMACAS (3B: COM(3)+STAT(4)+spare(1)+SSC(1)+ARC(1)+AIC(1)+B1A(1)+B1B(4)+AC(1)+MN(1)+DC(1)+spare(5))
+         slots 4-6: "-" (unused)
+         slot 7: ACT (4B ASCII)
+         slot 8: ECAT (1B)
+         slot 9: "-" (unused)
+         slot 10: AVTECH (1B: VDL(1)+MDS(1)+UAT(1)+spare(5))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="380" name="Mode-S / ADS-B Related Data">
+      <Compound>
+        <!-- slot 0: MB (repetitive BDS, not supported) -->
+        <SubItem name="-"/>
+        <!-- slot 1: ADR – 24-bit aircraft address -->
+        <SubItem name="ADR">
+          <Fixed>
+            <Element name="ADR" bits="24" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: unused -->
+        <SubItem name="-"/>
+        <!-- slot 3: COMACAS – 3 bytes -->
+        <SubItem name="COMACAS">
+          <Fixed>
+            <Element name="COM"  bits="3" encoding="table">
+              <Entry value="0" meaning="No communications capability (surveillance only)"/>
+              <Entry value="1" meaning="Comm. A and Comm. B capability"/>
+              <Entry value="2" meaning="Comm. A, Comm. B and Uplink ELM"/>
+              <Entry value="3" meaning="Comm. A, Comm. B, Uplink ELM and Downlink ELM"/>
+              <Entry value="4" meaning="Level 5 Transponder capability"/>
+            </Element>
+            <Element name="STAT" bits="4" encoding="table">
+              <Entry value="0" meaning="No alert, no SPI, aircraft airborne"/>
+              <Entry value="1" meaning="No alert, no SPI, aircraft on ground"/>
+              <Entry value="2" meaning="Alert, no SPI, aircraft airborne"/>
+              <Entry value="3" meaning="Alert, no SPI, aircraft on ground"/>
+              <Entry value="4" meaning="Alert, SPI, aircraft airborne or on ground"/>
+              <Entry value="5" meaning="No alert, SPI, aircraft airborne or on ground"/>
+            </Element>
+            <Spare bits="1"/>
+            <Element name="SSC" bits="1" encoding="table">
+              <Entry value="0" meaning="No"/>
+              <Entry value="1" meaning="Yes"/>
+            </Element>
+            <Element name="ARC" bits="1" encoding="table">
+              <Entry value="0" meaning="100 ft resolution"/>
+              <Entry value="1" meaning="25 ft resolution"/>
+            </Element>
+            <Element name="AIC" bits="1" encoding="table">
+              <Entry value="0" meaning="No"/>
+              <Entry value="1" meaning="Yes"/>
+            </Element>
+            <Element name="B1A" bits="1" encoding="raw"/>
+            <Element name="B1B" bits="4" encoding="raw"/>
+            <Element name="AC"  bits="1" encoding="table">
+              <Entry value="0" meaning="No"/>
+              <Entry value="1" meaning="Yes"/>
+            </Element>
+            <Element name="MN"  bits="1" encoding="table">
+              <Entry value="0" meaning="No"/>
+              <Entry value="1" meaning="Yes"/>
+            </Element>
+            <Element name="DC"  bits="1" encoding="table">
+              <Entry value="0" meaning="Yes"/>
+              <Entry value="1" meaning="No"/>
+            </Element>
+            <Spare bits="5"/>
+          </Fixed>
+        </SubItem>
+        <!-- slots 4-6: unused -->
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+        <SubItem name="-"/>
+        <!-- slot 7: ACT – Aircraft derived aircraft type (4B ASCII) -->
+        <SubItem name="ACT">
+          <Fixed>
+            <Element name="ACT" bits="32" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 8: ECAT – Emitter category (1B) -->
+        <SubItem name="ECAT">
+          <Fixed>
+            <Element name="ECAT" bits="8" encoding="table">
+              <Entry value="1"  meaning="Light aircraft &lt;= 7000 kg"/>
+              <Entry value="3"  meaning="7000 kg &lt; medium aircraft &lt; 136000 kg"/>
+              <Entry value="5"  meaning="136000 kg &lt;= heavy aircraft"/>
+              <Entry value="6"  meaning="Highly manoeuvrable and high speed"/>
+              <Entry value="10" meaning="Rotocraft"/>
+              <Entry value="11" meaning="Glider / sailplane"/>
+              <Entry value="20" meaning="Surface emergency vehicle"/>
+              <Entry value="21" meaning="Surface service vehicle"/>
+              <Entry value="22" meaning="Fixed ground or tethered obstruction"/>
+            </Element>
+          </Fixed>
+        </SubItem>
+        <!-- slot 9: unused -->
+        <SubItem name="-"/>
+        <!-- slot 10: AVTECH – Available technologies (1B) -->
+        <SubItem name="AVTECH">
+          <Fixed>
+            <Element name="VDL" bits="1" encoding="table">
+              <Entry value="0" meaning="VDL Mode 4 available"/>
+              <Entry value="1" meaning="VDL Mode 4 not available"/>
+            </Element>
+            <Element name="MDS" bits="1" encoding="table">
+              <Entry value="0" meaning="Mode S available"/>
+              <Entry value="1" meaning="Mode S not available"/>
+            </Element>
+            <Element name="UAT" bits="1" encoding="table">
+              <Entry value="0" meaning="UAT available"/>
+              <Entry value="1" meaning="UAT not available"/>
+            </Element>
+            <Spare bits="5"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/390 – Flight Plan Related Data  (Compound, 14 slots, 2 PSF bytes)
+         slot 0: FPPSID (2B: SAC+SIC)
+         slot 1: CSN (7B: 56-bit ASCII)
+         slot 2: IFPSFLIGHTID (4B: TYP(2)+spare(3)+NBR(27))
+         slot 3: FLIGHTCAT (1B: GATOAT(2)+FR1FR2(2)+RVSM(2)+HPR(1)+spare(1))
+         slot 4: TOA (4B: 32-bit ASCII)
+         slot 5: WTC (1B: 8-bit table)
+         slot 6: ADEP (4B: 32-bit ASCII)
+         slot 7: ADES (4B: 32-bit ASCII)
+         slot 8: RWY (3B: 24-bit ASCII)
+         slot 9: CFL (2B: unsigned 0.25 FL)
+         slot 10: CCP (2B: CENTRE(8)+POSITION(8))
+         slot 11: "-" (TOD – repetitive, not supported)
+         slot 12: AST (6B: 48-bit ASCII)
+         slot 13: STS (1B: EMP(2)+AVL(2)+spare(4))
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="390" name="Flight Plan Related Data">
+      <Compound>
+        <!-- slot 0: FPPSID – FPPS identification tag -->
+        <SubItem name="FPPSID">
+          <Fixed>
+            <Element name="SAC" bits="8" encoding="raw"/>
+            <Element name="SIC" bits="8" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: CSN – Callsign (7B ASCII) -->
+        <SubItem name="CSN">
+          <Fixed>
+            <Element name="CSN" bits="56" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: IFPSFLIGHTID (4B) -->
+        <SubItem name="IFPSFLIGHTID">
+          <Fixed>
+            <Element name="TYP" bits="2" encoding="table">
+              <Entry value="0" meaning="Plan number"/>
+              <Entry value="1" meaning="Unit 1 internal flight number"/>
+              <Entry value="2" meaning="Unit 2 internal flight number"/>
+              <Entry value="3" meaning="Unit 3 internal flight number"/>
+            </Element>
+            <Spare bits="3"/>
+            <Element name="NBR" bits="27" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: FLIGHTCAT (1B) -->
+        <SubItem name="FLIGHTCAT">
+          <Fixed>
+            <Element name="GATOAT" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="General Air Traffic"/>
+              <Entry value="2" meaning="Operational Air Traffic"/>
+              <Entry value="3" meaning="Not applicable"/>
+            </Element>
+            <Element name="FR1FR2" bits="2" encoding="table">
+              <Entry value="0" meaning="Instrument Flight Rules"/>
+              <Entry value="1" meaning="Visual Flight Rules"/>
+              <Entry value="2" meaning="Not applicable"/>
+              <Entry value="3" meaning="Controlled Visual Flight Rules"/>
+            </Element>
+            <Element name="RVSM" bits="2" encoding="table">
+              <Entry value="0" meaning="Unknown"/>
+              <Entry value="1" meaning="Approved"/>
+              <Entry value="2" meaning="Exempt"/>
+              <Entry value="3" meaning="Not Approved"/>
+            </Element>
+            <Element name="HPR" bits="1" encoding="table">
+              <Entry value="0" meaning="Normal Priority Flight"/>
+              <Entry value="1" meaning="High Priority Flight"/>
+            </Element>
+            <Spare bits="1"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: TOA – Type of aircraft (4B ASCII) -->
+        <SubItem name="TOA">
+          <Fixed>
+            <Element name="TOA" bits="32" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: WTC – Wake turbulence category (1B) -->
+        <SubItem name="WTC">
+          <Fixed>
+            <Element name="WTC" bits="8" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 6: ADEP – Departure airport (4B ASCII) -->
+        <SubItem name="ADEP">
+          <Fixed>
+            <Element name="ADEP" bits="32" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 7: ADES – Destination airport (4B ASCII) -->
+        <SubItem name="ADES">
+          <Fixed>
+            <Element name="ADES" bits="32" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 8: RWY – Runway designation (3B ASCII) -->
+        <SubItem name="RWY">
+          <Fixed>
+            <Element name="RWY" bits="24" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 9: CFL – Current cleared flight level (2B) -->
+        <SubItem name="CFL">
+          <Fixed>
+            <Element name="CFL" bits="16" encoding="unsigned_quantity" scale="0.25" unit="FL"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 10: CCP – Current control position (2B) -->
+        <SubItem name="CCP">
+          <Fixed>
+            <Element name="CENTRE"   bits="8" encoding="raw"/>
+            <Element name="POSITION" bits="8" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 11: TOD (repetitive times of departure, not supported) -->
+        <SubItem name="-"/>
+        <!-- slot 12: AST – Aircraft stand (6B ASCII) -->
+        <SubItem name="AST">
+          <Fixed>
+            <Element name="AST" bits="48" encoding="raw"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 13: STS – Stand status (1B) -->
+        <SubItem name="STS">
+          <Fixed>
+            <Element name="EMP" bits="2" encoding="table">
+              <Entry value="0" meaning="Empty"/>
+              <Entry value="1" meaning="Occupied"/>
+              <Entry value="2" meaning="Unknown"/>
+            </Element>
+            <Element name="AVL" bits="2" encoding="table">
+              <Entry value="0" meaning="Available"/>
+              <Entry value="1" meaning="Not available"/>
+              <Entry value="2" meaning="Unknown"/>
+            </Element>
+            <Spare bits="4"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/430 – Phase of Flight  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="430" name="Phase of Flight">
+      <Fixed>
+        <Element name="POF" bits="8" encoding="table">
+          <Entry value="0" meaning="Unknown"/>
+          <Entry value="1" meaning="On stand"/>
+          <Entry value="2" meaning="Taxiing for departure"/>
+          <Entry value="3" meaning="Taxiing for arrival"/>
+          <Entry value="4" meaning="Runway for departure"/>
+          <Entry value="5" meaning="Runway for arrival"/>
+          <Entry value="6" meaning="Hold for departure"/>
+          <Entry value="7" meaning="Hold for arrival"/>
+          <Entry value="8" meaning="Push back"/>
+          <Entry value="9" meaning="On finals"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/500 – Estimated Accuracies  (Compound, 6 sub-items)
+         slot 0: APC (2B: X(8)+Y(8), 0.25 m)
+         slot 1: APW (4B: LAT(16)+LON(16), 180/2^31 °)
+         slot 2: ATH (2B: signed 16, 0.5 m)
+         slot 3: AVC (2B: X(8)+Y(8), 0.1 m/s)
+         slot 4: ARC (2B: signed 16, 0.1 m/s)
+         slot 5: AAC (2B: X(8)+Y(8), 0.01 m/s²)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="500" name="Estimated Accuracies">
+      <Compound>
+        <!-- slot 0: APC – Accuracy of track position (Cartesian) -->
+        <SubItem name="APC">
+          <Fixed>
+            <Element name="X" bits="8" encoding="unsigned_quantity" scale="0.25" unit="m"/>
+            <Element name="Y" bits="8" encoding="unsigned_quantity" scale="0.25" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 1: APW – Accuracy of track position (WGS84) -->
+        <SubItem name="APW">
+          <Fixed>
+            <Element name="LAT" bits="16" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+            <Element name="LON" bits="16" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 2: ATH – Accuracy of track height -->
+        <SubItem name="ATH">
+          <Fixed>
+            <Element name="ATH" bits="16" encoding="signed_quantity" scale="0.5" unit="m"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 3: AVC – Accuracy of track velocity (Cartesian) -->
+        <SubItem name="AVC">
+          <Fixed>
+            <Element name="X" bits="8" encoding="unsigned_quantity" scale="0.1" unit="m/s"/>
+            <Element name="Y" bits="8" encoding="unsigned_quantity" scale="0.1" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 4: ARC – Accuracy of rate of climb/descent -->
+        <SubItem name="ARC">
+          <Fixed>
+            <Element name="ARC" bits="16" encoding="signed_quantity" scale="0.1" unit="m/s"/>
+          </Fixed>
+        </SubItem>
+        <!-- slot 5: AAC – Accuracy of acceleration (Cartesian) -->
+        <SubItem name="AAC">
+          <Fixed>
+            <Element name="X" bits="8" encoding="unsigned_quantity" scale="0.01" unit="m/s2"/>
+            <Element name="Y" bits="8" encoding="unsigned_quantity" scale="0.01" unit="m/s2"/>
+          </Fixed>
+        </SubItem>
+      </Compound>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/600 – Alert Messages  (Fixed, 3 bytes)
+         ACK(1)+SVR(2)+spare(5)+AT(8)+AN(8)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="600" name="Alert Messages">
+      <Fixed>
+        <Element name="ACK" bits="1" encoding="table">
+          <Entry value="0" meaning="Alert acknowledged"/>
+          <Entry value="1" meaning="Alert not acknowledged"/>
+        </Element>
+        <Element name="SVR" bits="2" encoding="table">
+          <Entry value="0" meaning="End of alert"/>
+          <Entry value="1" meaning="Pre-alarm"/>
+          <Entry value="2" meaning="Severe alert"/>
+        </Element>
+        <Spare bits="5"/>
+        <Element name="AT" bits="8" encoding="raw"/>
+        <Element name="AN" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/605 – Tracks in Alert  (Repetitive count-prefixed)
+         REP(1B) + REP × { spare(4) + FTN(12) } = REP × 2B
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="605" name="Tracks in Alert">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Spare bits="4"/>
+          <Element name="FTN" bits="12" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I011/610 – Holdbar Status  (Repetitive count-prefixed)
+         REP(1B) + REP × { BKN(4) + I1…I12 (12×1) } = REP × 2B
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="610" name="Holdbar Status">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="BKN" bits="4" encoding="raw"/>
+          <Element name="I1"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I2"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I3"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I4"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I5"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I6"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I7"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I8"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I9"  bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I10" bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I11" bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+          <Element name="I12" bits="1" encoding="table">
+            <Entry value="0" meaning="Indicator on"/>
+            <Entry value="1" meaning="Indicator off"/>
+          </Element>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RE – Reserved Expansion Field
+         SP – Special Purpose Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 29 slots across 5 FSPEC bytes
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>  <!-- FSPEC byte 1, bit 1 -->
+      <Item ref="000"/>  <!-- FSPEC byte 1, bit 2 -->
+      <Item ref="015"/>  <!-- FSPEC byte 1, bit 3 -->
+      <Item ref="140"/>  <!-- FSPEC byte 1, bit 4 -->
+      <Item ref="041"/>  <!-- FSPEC byte 1, bit 5 -->
+      <Item ref="042"/>  <!-- FSPEC byte 1, bit 6 -->
+      <Item ref="202"/>  <!-- FSPEC byte 1, bit 7 -->
+      <Item ref="210"/>  <!-- FSPEC byte 2, bit 1 -->
+      <Item ref="060"/>  <!-- FSPEC byte 2, bit 2 -->
+      <Item ref="245"/>  <!-- FSPEC byte 2, bit 3 -->
+      <Item ref="380"/>  <!-- FSPEC byte 2, bit 4 -->
+      <Item ref="161"/>  <!-- FSPEC byte 2, bit 5 -->
+      <Item ref="170"/>  <!-- FSPEC byte 2, bit 6 -->
+      <Item ref="290"/>  <!-- FSPEC byte 2, bit 7 -->
+      <Item ref="430"/>  <!-- FSPEC byte 3, bit 1 -->
+      <Item ref="090"/>  <!-- FSPEC byte 3, bit 2 -->
+      <Item ref="093"/>  <!-- FSPEC byte 3, bit 3 -->
+      <Item ref="092"/>  <!-- FSPEC byte 3, bit 4 -->
+      <Item ref="215"/>  <!-- FSPEC byte 3, bit 5 -->
+      <Item ref="270"/>  <!-- FSPEC byte 3, bit 6 -->
+      <Item ref="390"/>  <!-- FSPEC byte 3, bit 7 -->
+      <Item ref="300"/>  <!-- FSPEC byte 4, bit 1 -->
+      <Item ref="310"/>  <!-- FSPEC byte 4, bit 2 -->
+      <Item ref="500"/>  <!-- FSPEC byte 4, bit 3 -->
+      <Item ref="600"/>  <!-- FSPEC byte 4, bit 4 -->
+      <Item ref="605"/>  <!-- FSPEC byte 4, bit 5 -->
+      <Item ref="610"/>  <!-- FSPEC byte 4, bit 6 -->
+      <Item ref="SP"/>   <!-- FSPEC byte 4, bit 7 -->
+      <Item ref="RE"/>   <!-- FSPEC byte 5, bit 1 -->
+    </Variation>
+  </UAPs>
+
+</Category>
