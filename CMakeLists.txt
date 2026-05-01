@@ -99,4 +99,7 @@ if(ASTERIX_BUILD_TESTS)
 
     add_executable(test_cat07 tests/test_cat07.cpp)
     target_link_libraries(test_cat07 PRIVATE ASTERIXCodec)
+
+    add_executable(test_cat10 tests/test_cat10.cpp)
+    target_link_libraries(test_cat10 PRIVATE ASTERIXCodec)
 endif()

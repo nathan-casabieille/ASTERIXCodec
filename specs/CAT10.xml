@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ASTERIX Category 010 – Transmission of Monosensor Surface Movement Data
+     Edition 1.1  |  2007-03-01
+     Reference: EUROCONTROL SUR.ET1.ST05.2000-STD-06-01
+
+     Codec notes:
+       - Extended items: each <Octet> = 7 data bits; implicit FX LSB.
+       - I020: Extended 3 octets (TYP…CRT | SIM…TOT | SPI+spare)
+       - I170: Extended 3 octets (CNF…STH | TOM…MRS | GHO+spare)
+       - I270: Extended 3 octets (LENGTH | ORIENTATION | WIDTH)
+       - I250: Repetitive count-prefixed, REP×{MBDATA(56)+BDS1(4)+BDS2(4)} = 8B
+       - I280: Repetitive count-prefixed, REP×{DRHO(8)+DTHETA(8)} = 2B
+       - UAP: 28 slots (4 FSPEC bytes):
+           B1: 010 000 020 140 041 040 042
+           B2: 200 202 161 170 060 220 245
+           B3: 250 300 090 091 270 550 310
+           B4: 500 280 131 210 -   SP  RE
+-->
+<Category cat="10" name="Transmission of Monosensor Surface Movement Data" edition="1.1" date="2007-03-01">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="Target Report"/>
+          <Entry value="2" meaning="Start of Update Cycle"/>
+          <Entry value="3" meaning="Periodic Status Message"/>
+          <Entry value="4" meaning="Event-triggered Status Message"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/020 – Target Report Descriptor  (Extended, up to 3 octets)
+         Octet 1 (7 bits): TYP DCR CHN GBS CRT
+         Octet 2 (7 bits): SIM TST RAB LOP TOT
+         Octet 3 (7 bits): SPI spare(6)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Target Report Descriptor">
+      <Extended>
+        <Octet>
+          <Element name="TYP" bits="3" encoding="table">
+            <Entry value="0" meaning="SSR multilateration"/>
+            <Entry value="1" meaning="Mode S multilateration"/>
+            <Entry value="2" meaning="ADS-B"/>
+            <Entry value="3" meaning="PSR"/>
+            <Entry value="4" meaning="Magnetic Loop System"/>
+            <Entry value="5" meaning="HF multilateration"/>
+            <Entry value="6" meaning="Not defined"/>
+            <Entry value="7" meaning="Other types"/>
+          </Element>
+          <Element name="DCR" bits="1" encoding="table">
+            <Entry value="0" meaning="No differential correction"/>
+            <Entry value="1" meaning="Differential correction applied"/>
+          </Element>
+          <Element name="CHN" bits="1" encoding="table">
+            <Entry value="0" meaning="Chain 1"/>
+            <Entry value="1" meaning="Chain 2"/>
+          </Element>
+          <Element name="GBS" bits="1" encoding="table">
+            <Entry value="0" meaning="Transponder Ground bit not set"/>
+            <Entry value="1" meaning="Transponder Ground bit set"/>
+          </Element>
+          <Element name="CRT" bits="1" encoding="table">
+            <Entry value="0" meaning="No corrupted reply in multilateration"/>
+            <Entry value="1" meaning="Corrupted replies in multilateration"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="SIM" bits="1" encoding="table">
+            <Entry value="0" meaning="Actual target report"/>
+            <Entry value="1" meaning="Simulated target report"/>
+          </Element>
+          <Element name="TST" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Test Target"/>
+          </Element>
+          <Element name="RAB" bits="1" encoding="table">
+            <Entry value="0" meaning="Report from target transponder"/>
+            <Entry value="1" meaning="Report from field monitor (fixed transponder)"/>
+          </Element>
+          <Element name="LOP" bits="2" encoding="table">
+            <Entry value="0" meaning="Undetermined"/>
+            <Entry value="1" meaning="Loop start"/>
+            <Entry value="2" meaning="Loop finish"/>
+          </Element>
+          <Element name="TOT" bits="2" encoding="table">
+            <Entry value="0" meaning="Undetermined"/>
+            <Entry value="1" meaning="Aircraft"/>
+            <Entry value="2" meaning="Ground vehicle"/>
+            <Entry value="3" meaning="Helicopter"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="SPI" bits="1" encoding="table">
+            <Entry value="0" meaning="Absence of SPI"/>
+            <Entry value="1" meaning="Special Position Identification"/>
+          </Element>
+          <Spare bits="6"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/040 – Measured Position in Polar Coordinates  (Fixed, 4 bytes)
+         RHO: 16-bit unsigned, 1 m/LSB
+         TH:  16-bit unsigned, 360/2^16 °/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="040" name="Measured Position in Polar Coordinates">
+      <Fixed>
+        <Element name="RHO" bits="16" encoding="unsigned_quantity" scale="1"          unit="m"/>
+        <Element name="TH"  bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/041 – Position in WGS-84 Coordinates  (Fixed, 8 bytes)
+         LAT: 32-bit signed, 180/2^31 °/LSB
+         LON: 32-bit signed, 180/2^31 °/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="041" name="Position in WGS-84 Coordinates">
+      <Fixed>
+        <Element name="LAT" bits="32" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+        <Element name="LON" bits="32" encoding="signed_quantity" scale="0.000000083819031" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/042 – Position in Cartesian Coordinates  (Fixed, 4 bytes)
+         X, Y: 16-bit signed, 1 m/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="042" name="Position in Cartesian Coordinates">
+      <Fixed>
+        <Element name="X" bits="16" encoding="signed_quantity" scale="1" unit="m"/>
+        <Element name="Y" bits="16" encoding="signed_quantity" scale="1" unit="m"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/060 – Mode-3/A Code in Octal Representation  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="Mode-3/A Code in Octal Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="L" bits="1" encoding="table">
+          <Entry value="0" meaning="Mode-3/A code derived from transponder reply"/>
+          <Entry value="1" meaning="Mode-3/A code not extracted during last scan"/>
+        </Element>
+        <Spare bits="1"/>
+        <Element name="MODE3A" bits="12" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/090 – Flight Level in Binary Representation  (Fixed, 2 bytes)
+         V(1)+G(1)+FL(14 signed, 1/4 FL/LSB)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Flight Level in Binary Representation">
+      <Fixed>
+        <Element name="V" bits="1" encoding="table">
+          <Entry value="0" meaning="Code validated"/>
+          <Entry value="1" meaning="Code not validated"/>
+        </Element>
+        <Element name="G" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Garbled code"/>
+        </Element>
+        <Element name="FL" bits="14" encoding="signed_quantity" scale="0.25" unit="FL"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/091 – Measured Height  (Fixed, 2 bytes)
+         16-bit signed, 6.25 ft/LSB (25/4)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="091" name="Measured Height">
+      <Fixed>
+        <Element name="MH" bits="16" encoding="signed_quantity" scale="6.25" unit="ft"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/131 – Amplitude of Primary Plot  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="131" name="Amplitude of Primary Plot">
+      <Fixed>
+        <Element name="AMPL" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/140 – Time of Day  (Fixed, 3 bytes)
+         24-bit unsigned, 1/128 s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="140" name="Time of Day">
+      <Fixed>
+        <Element name="ToD" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/161 – Track Number  (Fixed, 2 bytes)
+         spare(4)+TRK(12)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="161" name="Track Number">
+      <Fixed>
+        <Spare bits="4"/>
+        <Element name="TRK" bits="12" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/170 – Track Status  (Extended, up to 3 octets)
+         Octet 1 (7 bits): CNF TRE CST MAH TCC STH
+         Octet 2 (7 bits): TOM DOU MRS
+         Octet 3 (7 bits): GHO spare(6)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="170" name="Track Status">
+      <Extended>
+        <Octet>
+          <Element name="CNF" bits="1" encoding="table">
+            <Entry value="0" meaning="Confirmed track"/>
+            <Entry value="1" meaning="Track in initialisation phase"/>
+          </Element>
+          <Element name="TRE" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Last report for this track"/>
+          </Element>
+          <Element name="CST" bits="2" encoding="table">
+            <Entry value="0" meaning="No extrapolation"/>
+            <Entry value="1" meaning="Predictable extrapolation due to sensor refresh period"/>
+            <Entry value="2" meaning="Predictable extrapolation in masked area"/>
+            <Entry value="3" meaning="Extrapolation due to unpredictable absence of updates"/>
+          </Element>
+          <Element name="MAH" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Horizontal manoeuvre"/>
+          </Element>
+          <Element name="TCC" bits="1" encoding="table">
+            <Entry value="0" meaning="Tracking performed in so-called sensor plane"/>
+            <Entry value="1" meaning="Tracking performed in 2D reference plane with slant range corrections"/>
+          </Element>
+          <Element name="STH" bits="1" encoding="table">
+            <Entry value="0" meaning="Measured position"/>
+            <Entry value="1" meaning="Smoothed position"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="TOM" bits="2" encoding="table">
+            <Entry value="0" meaning="Unknown type of movement"/>
+            <Entry value="1" meaning="Taking-off"/>
+            <Entry value="2" meaning="Landing"/>
+            <Entry value="3" meaning="Other"/>
+          </Element>
+          <Element name="DOU" bits="3" encoding="table">
+            <Entry value="0" meaning="No doubt"/>
+            <Entry value="1" meaning="Doubtful correlation (undetermined)"/>
+            <Entry value="2" meaning="Doubtful correlation in clutter"/>
+            <Entry value="3" meaning="Loss of accuracy (large covariance)"/>
+            <Entry value="4" meaning="Loss of accuracy (very large covariance)"/>
+            <Entry value="5" meaning="Unstable track"/>
+            <Entry value="6" meaning="Coasted track"/>
+          </Element>
+          <Element name="MRS" bits="2" encoding="table">
+            <Entry value="0" meaning="Undetermined"/>
+            <Entry value="1" meaning="Merged by association to adjacent target"/>
+            <Entry value="2" meaning="Merged by non-association to adjacent target"/>
+            <Entry value="3" meaning="Split target"/>
+          </Element>
+        </Octet>
+        <Octet>
+          <Element name="GHO" bits="1" encoding="table">
+            <Entry value="0" meaning="Default"/>
+            <Entry value="1" meaning="Ghost track"/>
+          </Element>
+          <Spare bits="6"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/200 – Calculated Track Velocity in Polar Coordinates  (Fixed, 4 bytes)
+         GSP: 16-bit unsigned, 1/2^14 NM/s/LSB
+         TRA: 16-bit unsigned, 360/2^16 °/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="200" name="Calculated Track Velocity in Polar Coordinates">
+      <Fixed>
+        <Element name="GSP" bits="16" encoding="unsigned_quantity" scale="0.000061035156" unit="NM/s"/>
+        <Element name="TRA" bits="16" encoding="unsigned_quantity" scale="0.0054931640625" unit="deg"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/202 – Calculated Track Velocity in Cartesian Coordinates  (Fixed, 4 bytes)
+         VX, VY: 16-bit signed, 1/16 m/s/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="202" name="Calculated Track Velocity in Cartesian Coordinates">
+      <Fixed>
+        <Element name="VX" bits="16" encoding="signed_quantity" scale="0.0625" unit="m/s"/>
+        <Element name="VY" bits="16" encoding="signed_quantity" scale="0.0625" unit="m/s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/210 – Calculated Acceleration  (Fixed, 2 bytes)
+         AX, AY: 8-bit signed, 1/16 m/s²/LSB
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="210" name="Calculated Acceleration">
+      <Fixed>
+        <Element name="AX" bits="8" encoding="signed_quantity" scale="0.0625" unit="m/s2"/>
+        <Element name="AY" bits="8" encoding="signed_quantity" scale="0.0625" unit="m/s2"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/220 – Target Address  (Fixed, 3 bytes)
+         24-bit Mode S address
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="220" name="Target Address">
+      <Fixed>
+        <Element name="AA" bits="24" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/245 – Target Identification  (Fixed, 7 bytes)
+         STI(2)+spare(6)+CHR(48 = 8×6-bit ICAO chars)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="245" name="Target Identification">
+      <Fixed>
+        <Element name="STI" bits="2" encoding="table">
+          <Entry value="0" meaning="Callsign or registration downlinked from transponder"/>
+          <Entry value="1" meaning="Callsign not downlinked, may be from flight plan"/>
+          <Entry value="2" meaning="Registration not downlinked, may be from flight plan"/>
+        </Element>
+        <Spare bits="6"/>
+        <Element name="CHR" bits="48" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/250 – Mode S MB Data  (Repetitive count-prefixed)
+         REP(1B) + REP × { MBDATA(56) + BDS1(4) + BDS2(4) } = REP × 8B
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="250" name="Mode S MB Data">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="MBDATA" bits="56" encoding="raw"/>
+          <Element name="BDS1"   bits="4"  encoding="raw"/>
+          <Element name="BDS2"   bits="4"  encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/270 – Target Size and Orientation  (Extended, up to 3 octets)
+         Octet 1 (7 bits): LENGTH (1 m/LSB)
+         Octet 2 (7 bits): ORIENTATION (360/2^7 °/LSB = 2.8125 °/LSB)
+         Octet 3 (7 bits): WIDTH (1 m/LSB)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="270" name="Target Size and Orientation">
+      <Extended>
+        <Octet>
+          <Element name="LENGTH" bits="7" encoding="unsigned_quantity" scale="1" unit="m"/>
+        </Octet>
+        <Octet>
+          <Element name="ORIENTATION" bits="7" encoding="unsigned_quantity" scale="2.8125" unit="deg"/>
+        </Octet>
+        <Octet>
+          <Element name="WIDTH" bits="7" encoding="unsigned_quantity" scale="1" unit="m"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/280 – Presence  (Repetitive count-prefixed)
+         REP(1B) + REP × { DRHO(8 signed, 1 m) + DTHETA(8 signed, 3/20 °) }
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="280" name="Presence">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="DRHO"   bits="8" encoding="signed_quantity" scale="1"   unit="m"/>
+          <Element name="DTHETA" bits="8" encoding="signed_quantity" scale="0.15" unit="deg"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/300 – Vehicle Fleet Identification  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="300" name="Vehicle Fleet Identification">
+      <Fixed>
+        <Element name="VFI" bits="8" encoding="table">
+          <Entry value="0"  meaning="Unknown"/>
+          <Entry value="1"  meaning="ATC maintenance"/>
+          <Entry value="2"  meaning="Airport maintenance"/>
+          <Entry value="3"  meaning="Fire"/>
+          <Entry value="4"  meaning="Bird scarer"/>
+          <Entry value="5"  meaning="Snow plough"/>
+          <Entry value="6"  meaning="Runway sweeper"/>
+          <Entry value="7"  meaning="Emergency"/>
+          <Entry value="8"  meaning="Police"/>
+          <Entry value="9"  meaning="Bus"/>
+          <Entry value="10" meaning="Tug"/>
+          <Entry value="11" meaning="Grass cutter"/>
+          <Entry value="12" meaning="Fuel"/>
+          <Entry value="13" meaning="Baggage"/>
+          <Entry value="14" meaning="Catering"/>
+          <Entry value="15" meaning="Aircraft maintenance"/>
+          <Entry value="16" meaning="Flyco (follow me car)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/310 – Pre-programmed Message  (Fixed, 1 byte)
+         TRB(1)+MSG(7)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="310" name="Pre-programmed Message">
+      <Fixed>
+        <Element name="TRB" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="In Trouble"/>
+        </Element>
+        <Element name="MSG" bits="7" encoding="table">
+          <Entry value="1" meaning="Towing aircraft"/>
+          <Entry value="2" meaning="Follow me operation"/>
+          <Entry value="3" meaning="Runway check"/>
+          <Entry value="4" meaning="Emergency operation (fire, medical…)"/>
+          <Entry value="5" meaning="Work in progress (maintenance, …)"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/500 – Standard Deviation of Position  (Fixed, 4 bytes)
+         DEVX(8 unsigned, 0.25 m) + DEVY(8 unsigned, 0.25 m)
+         + COVXY(16 signed, 0.25 m²)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="500" name="Standard Deviation of Position">
+      <Fixed>
+        <Element name="DEVX"  bits="8"  encoding="unsigned_quantity" scale="0.25" unit="m"/>
+        <Element name="DEVY"  bits="8"  encoding="unsigned_quantity" scale="0.25" unit="m"/>
+        <Element name="COVXY" bits="16" encoding="signed_quantity"   scale="0.25" unit="m2"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I010/550 – System Status  (Fixed, 1 byte)
+         NOGO(2)+OVL(1)+TSV(1)+DIV(1)+TTF(1)+spare(2)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="550" name="System Status">
+      <Fixed>
+        <Element name="NOGO" bits="2" encoding="table">
+          <Entry value="0" meaning="Operational"/>
+          <Entry value="1" meaning="Degraded"/>
+          <Entry value="2" meaning="NOGO"/>
+        </Element>
+        <Element name="OVL" bits="1" encoding="table">
+          <Entry value="0" meaning="No overload"/>
+          <Entry value="1" meaning="Overload"/>
+        </Element>
+        <Element name="TSV" bits="1" encoding="table">
+          <Entry value="0" meaning="Valid"/>
+          <Entry value="1" meaning="Invalid"/>
+        </Element>
+        <Element name="DIV" bits="1" encoding="table">
+          <Entry value="0" meaning="Normal operation"/>
+          <Entry value="1" meaning="Diversity degraded"/>
+        </Element>
+        <Element name="TTF" bits="1" encoding="table">
+          <Entry value="0" meaning="Test Target Operative"/>
+          <Entry value="1" meaning="Test Target Failure"/>
+        </Element>
+        <Spare bits="2"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RE – Reserved Expansion Field
+         SP – Special Purpose Field
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 28 slots across 4 FSPEC bytes
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>  <!-- FSPEC byte 1, bit 1 -->
+      <Item ref="000"/>  <!-- FSPEC byte 1, bit 2 -->
+      <Item ref="020"/>  <!-- FSPEC byte 1, bit 3 -->
+      <Item ref="140"/>  <!-- FSPEC byte 1, bit 4 -->
+      <Item ref="041"/>  <!-- FSPEC byte 1, bit 5 -->
+      <Item ref="040"/>  <!-- FSPEC byte 1, bit 6 -->
+      <Item ref="042"/>  <!-- FSPEC byte 1, bit 7 -->
+      <Item ref="200"/>  <!-- FSPEC byte 2, bit 1 -->
+      <Item ref="202"/>  <!-- FSPEC byte 2, bit 2 -->
+      <Item ref="161"/>  <!-- FSPEC byte 2, bit 3 -->
+      <Item ref="170"/>  <!-- FSPEC byte 2, bit 4 -->
+      <Item ref="060"/>  <!-- FSPEC byte 2, bit 5 -->
+      <Item ref="220"/>  <!-- FSPEC byte 2, bit 6 -->
+      <Item ref="245"/>  <!-- FSPEC byte 2, bit 7 -->
+      <Item ref="250"/>  <!-- FSPEC byte 3, bit 1 -->
+      <Item ref="300"/>  <!-- FSPEC byte 3, bit 2 -->
+      <Item ref="090"/>  <!-- FSPEC byte 3, bit 3 -->
+      <Item ref="091"/>  <!-- FSPEC byte 3, bit 4 -->
+      <Item ref="270"/>  <!-- FSPEC byte 3, bit 5 -->
+      <Item ref="550"/>  <!-- FSPEC byte 3, bit 6 -->
+      <Item ref="310"/>  <!-- FSPEC byte 3, bit 7 -->
+      <Item ref="500"/>  <!-- FSPEC byte 4, bit 1 -->
+      <Item ref="280"/>  <!-- FSPEC byte 4, bit 2 -->
+      <Item ref="131"/>  <!-- FSPEC byte 4, bit 3 -->
+      <Item ref="210"/>  <!-- FSPEC byte 4, bit 4 -->
+      <Item ref="-"/>    <!-- FSPEC byte 4, bit 5 – reserved -->
+      <Item ref="SP"/>   <!-- FSPEC byte 4, bit 6 -->
+      <Item ref="RE"/>   <!-- FSPEC byte 4, bit 7 -->
+    </Variation>
+  </UAPs>
+
+</Category>
