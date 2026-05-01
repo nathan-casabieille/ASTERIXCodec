@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CAT09.xml – ASTERIX Category 009 "Composite Weather Reports"
+  Edition 2.1, 2014-10-22.
+-->
+<Category cat="9"
+          name="Composite Weather Reports"
+          edition="2.1"
+          date="2014-10-22">
+
+  <DataItems>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/000 – Message Type  (Fixed, 1 byte)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="2"   meaning="Cartesian vector"/>
+          <Entry value="253" meaning="Intermediate-update-step message"/>
+          <Entry value="254" meaning="Start-of-picture message"/>
+          <Entry value="255" meaning="End-of-picture message"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/010 – Data Source Identifier  (Fixed, 2 bytes)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/020 – Vector Qualifier  (Extended, 1 octet)
+         Octet 1 (7 bits): ORG(1)+I(3)+S(3)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="020" name="Vector Qualifier">
+      <Extended>
+        <Octet>
+          <Element name="ORG" bits="1" encoding="table">
+            <Entry value="0" meaning="Local Coordinates"/>
+            <Entry value="1" meaning="System Coordinates"/>
+          </Element>
+          <Element name="I" bits="3" encoding="raw"/>
+          <Element name="S" bits="3" encoding="table">
+            <Entry value="0" meaning="0 deg"/>
+            <Entry value="1" meaning="22.5 deg"/>
+            <Entry value="2" meaning="45 deg"/>
+            <Entry value="3" meaning="67.5 deg"/>
+            <Entry value="4" meaning="90 deg"/>
+            <Entry value="5" meaning="112.5 deg"/>
+            <Entry value="6" meaning="135 deg"/>
+            <Entry value="7" meaning="157.5 deg"/>
+          </Element>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/030 – Sequence of Cartesian Vectors
+         count-prefixed RepetitiveGroup; 6 bytes per entry:
+           X(16) + Y(16) + L(16)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="030" name="Sequence of Cartesian Vectors">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="X" bits="16" encoding="raw"/>
+          <Element name="Y" bits="16" encoding="raw"/>
+          <Element name="L" bits="16" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/060 – Synchronisation/Control Signal  (Extended, 1 octet)
+         Octet 1 (7 bits): SN(6)+spare(1)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="060" name="Synchronisation/Control Signal">
+      <Extended>
+        <Octet>
+          <Element name="SN" bits="6" encoding="raw"/>
+          <Spare bits="1"/>
+        </Octet>
+      </Extended>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/070 – Time of Day  (Fixed, 3 bytes)
+         unsigned, LSB = 1/2^7 s
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="070" name="Time of Day">
+      <Fixed>
+        <Element name="TOD" bits="24" encoding="unsigned_quantity"
+                 scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/080 – Processing Status  (Fixed, 3 bytes)
+         F(5 signed)+R(3)+Q(15)+spare(1) = 24 bits
+         Note: the standard defines this as Extended but F(5)+R(3) spans a
+         full byte; modelled here as Fixed to stay within the 7-bit-per-octet
+         Extended model used by the codec.
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="080" name="Processing Status">
+      <Fixed>
+        <Element name="F" bits="5" encoding="signed_quantity" scale="1.0" unit=""/>
+        <Element name="R" bits="3" encoding="raw"/>
+        <Element name="Q" bits="15" encoding="raw"/>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/090 – Radar Configuration and Status
+         count-prefixed RepetitiveGroup; 3 bytes per entry:
+           SAC(8)+SIC(8)+spare(3)+CP(1)+WO(1)+R(3)
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="090" name="Radar Configuration and Status">
+      <Repetitive type="count" count_bytes="1">
+        <Group>
+          <Element name="SAC" bits="8" encoding="raw"/>
+          <Element name="SIC" bits="8" encoding="raw"/>
+          <Spare bits="3"/>
+          <Element name="CP" bits="1" encoding="raw"/>
+          <Element name="WO" bits="1" encoding="raw"/>
+          <Element name="R"  bits="3" encoding="raw"/>
+        </Group>
+      </Repetitive>
+    </DataItem>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         I009/100 – Vector Count  (Fixed, 2 bytes)
+         unsigned 16-bit total count
+         ═════════════════════════════════════════════════════════════════════ -->
+    <DataItem id="100" name="Vector Count">
+      <Fixed>
+        <Element name="TOTAL" bits="16" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+  </DataItems>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       UAP – 9 defined slots, padded to 14 across 2 FSPEC bytes
+       ════════════════════════════════════════════════════════════════════════ -->
+  <UAPs default="default">
+
+    <Variation name="default">
+      <!-- FSPEC byte 1: slots 1–7 -->
+      <Item ref="010"/>  <!-- slot  1 -->
+      <Item ref="000"/>  <!-- slot  2 -->
+      <Item ref="020"/>  <!-- slot  3 -->
+      <Item ref="030"/>  <!-- slot  4 -->
+      <Item ref="060"/>  <!-- slot  5 -->
+      <Item ref="070"/>  <!-- slot  6 -->
+      <Item ref="080"/>  <!-- slot  7 -->
+      <!-- FSPEC byte 2: slots 8–14 -->
+      <Item ref="090"/>  <!-- slot  8 -->
+      <Item ref="100"/>  <!-- slot  9 -->
+      <Item ref="-"/>    <!-- slot 10 (unused) -->
+      <Item ref="-"/>    <!-- slot 11 (unused) -->
+      <Item ref="-"/>    <!-- slot 12 (unused) -->
+      <Item ref="-"/>    <!-- slot 13 (unused) -->
+      <Item ref="-"/>    <!-- slot 14 (unused) -->
+    </Variation>
+
+  </UAPs>
+
+</Category>
