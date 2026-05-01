@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Category cat="65" name="SDPS Service Status Reports" edition="1.6" date="2023-03-21">
+
+  <DataItems>
+
+    <DataItem id="000" name="Message Type">
+      <Fixed>
+        <Element name="MSGTYP" bits="8" encoding="table">
+          <Entry value="1" meaning="SDPS Status"/>
+          <Entry value="2" meaning="End of Batch"/>
+          <Entry value="3" meaning="Service Status Report"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="010" name="Data Source Identifier" presence="mandatory">
+      <Fixed>
+        <Element name="SAC" bits="8" encoding="raw"/>
+        <Element name="SIC" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit raw identifier allocated by the SDPS -->
+    <DataItem id="015" name="Service Identification">
+      <Fixed>
+        <Element name="SI" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- 8-bit batch counter, 0 to N-1 -->
+    <DataItem id="020" name="Batch Number">
+      <Fixed>
+        <Element name="BN" bits="8" encoding="raw"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- Time of Message: 24-bit unsigned, LSB = 1/128 s -->
+    <DataItem id="030" name="Time of Message">
+      <Fixed>
+        <Element name="TOM" bits="24" encoding="unsigned_quantity" scale="0.0078125" unit="s"/>
+      </Fixed>
+    </DataItem>
+
+    <!-- NOGO(2)+OVL(1)+TSV(1)+PSS(2)+STTN(1)+spare(1) = 8 bits -->
+    <DataItem id="040" name="SDPS Configuration and Status">
+      <Fixed>
+        <Element name="NOGO" bits="2" encoding="table">
+          <Entry value="0" meaning="Operational"/>
+          <Entry value="1" meaning="Degraded"/>
+          <Entry value="2" meaning="Not currently connected"/>
+          <Entry value="3" meaning="Unknown"/>
+        </Element>
+        <Element name="OVL" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Overload"/>
+        </Element>
+        <Element name="TSV" bits="1" encoding="table">
+          <Entry value="0" meaning="Default"/>
+          <Entry value="1" meaning="Invalid Time Source"/>
+        </Element>
+        <Element name="PSS" bits="2" encoding="table">
+          <Entry value="0" meaning="Not applicable"/>
+          <Entry value="1" meaning="SDPS-1 selected"/>
+          <Entry value="2" meaning="SDPS-2 selected"/>
+          <Entry value="3" meaning="SDPS-3 selected"/>
+        </Element>
+        <Element name="STTN" bits="1" encoding="raw"/>
+        <Spare bits="1"/>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="050" name="Service Status Report">
+      <Fixed>
+        <Element name="SR" bits="8" encoding="table">
+          <Entry value="1"  meaning="Service degradation"/>
+          <Entry value="2"  meaning="Service degradation ended"/>
+          <Entry value="3"  meaning="Main radar out of service"/>
+          <Entry value="4"  meaning="Service interrupted by the operator"/>
+          <Entry value="5"  meaning="Service interrupted due to contingency"/>
+          <Entry value="6"  meaning="Ready for service restart after contingency"/>
+          <Entry value="7"  meaning="Service ended by the operator"/>
+          <Entry value="8"  meaning="Failure of user main radar"/>
+          <Entry value="9"  meaning="Service restarted by the operator"/>
+          <Entry value="10" meaning="Main radar becoming operational"/>
+          <Entry value="11" meaning="Main radar becoming degraded"/>
+          <Entry value="12" meaning="Service continuity interrupted due to disconnection with adjacent unit"/>
+          <Entry value="13" meaning="Service continuity restarted"/>
+          <Entry value="14" meaning="Service synchronised on backup radar"/>
+          <Entry value="15" meaning="Service synchronised on main radar"/>
+          <Entry value="16" meaning="Main and backup radar, if any, failed"/>
+        </Element>
+      </Fixed>
+    </DataItem>
+
+    <DataItem id="RE" name="Reserved Expansion Field">
+      <Explicit type="re"/>
+    </DataItem>
+
+    <DataItem id="SP" name="Special Purpose Field">
+      <Explicit type="sp"/>
+    </DataItem>
+
+  </DataItems>
+
+  <!--
+    UAP: 14 slots → 2 FSPEC bytes
+    Byte 1: 010 000 015 030 020 040 050
+    Byte 2:  -   -   -   -   -  RE  SP
+  -->
+  <UAPs default="default">
+    <Variation name="default">
+      <Item ref="010"/>
+      <Item ref="000"/>
+      <Item ref="015"/>
+      <Item ref="030"/>
+      <Item ref="020"/>
+      <Item ref="040"/>
+      <Item ref="050"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="-"/>
+      <Item ref="RE"/>
+      <Item ref="SP"/>
+    </Variation>
+  </UAPs>
+
+</Category>
